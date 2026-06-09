@@ -1,0 +1,7 @@
+{
+  "buildCommand": "cd frontend && echo 'Building...'",
+  "outputDirectory": "frontend",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/frontend/index.html" }
+  ]
+}
