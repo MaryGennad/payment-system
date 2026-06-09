@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Авторизация</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- Заглушка для фавикона, чтобы браузер не искал файл -->
+<link rel="icon" href="data:,">
+  <style>
+    /* Стили для вкладок */
+    .auth-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 25px;
+      background: #1e293b;
+      padding: 5px;
+      border-radius: 10px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      border: none;
+      background: transparent;
+      color: #94a3b8;
+      cursor: pointer;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    .tab-btn:hover {
+      color: white;
+    }
+    .tab-btn.active {
+      background: #8b5cf6;
+      color: white;
+    }
+    .form-container {
+      display: none;
+    }
+    .form-container.active {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" style="max-width: 400px; margin: 50px auto; padding: 30px;">
+      <div class="card-header" style="text-align: center; margin-bottom: 30px;">
+        <h2 style="color: white; margin: 0;">Добро пожаловать</h2>
+        <p style="color: #94a3b8; font-size: 13px; margin-top: 5px;">Войдите или создайте аккаунт</p>
+      </div>
+
+      <!-- Вкладки -->
+      <div class="auth-tabs">
+        <button class="tab-btn active" data-tab="login">Вход</button>
+        <button class="tab-btn" data-tab="register">Регистрация</button>
+      </div>
+
+      <!-- Форма ВХОДА -->
+      <div id="loginForm" class="form-container active">
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Email</label>
+          <input type="email" id="loginEmail" placeholder="example@mail.ru" 
+                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
+                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Пароль</label>
+          <input type="password" id="loginPassword" placeholder="••••••" 
+                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
+                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        </div>
+        <button type="button" onclick="handleLogin()" 
+                style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
+                       border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
+                       cursor: pointer; transition: background 0.3s;">
+          Войти
+        </button>
+      </div>
+
+      <!-- Форма РЕГИСТРАЦИИ -->
+      <div id="registerForm" class="form-container">
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Имя</label>
+          <input type="text" id="registerName" placeholder="Ваше имя" 
+                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
+                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        </div>
+        <div class="form-group">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Email</label>
+          <input type="email" id="registerEmail" placeholder="example@mail.ru" 
+                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
+                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Пароль (мин. 6 символов)</label>
+          <input type="password" id="registerPassword" placeholder="••••••" 
+                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
+                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        </div>
+        <button type="button" onclick="handleRegister()" 
+                style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
+                       border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
+                       cursor: pointer; transition: background 0.3s;">
+          Зарегистрироваться
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3000/api';
+
+    // Переключение вкладок
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Убираем active у всех кнопок и форм
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
+        
+        // Добавляем active нажатой кнопке
+        btn.classList.add('active');
+        
+        // Показываем нужную форму
+        const tab = btn.dataset.tab;
+        document.getElementById(tab + 'Form').classList.add('active');
+      });
+    });
+
+    // Вход
+    async function handleLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      if (!email || !password) {
+        alert('Введите email и пароль');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || 'Ошибка входа');
+        
+        // Сохраняем токен
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Переходим на страницу карт
+        window.location.href = 'cards.html';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Регистрация
+    async function handleRegister() {
+      const name = document.getElementById('registerName').value;
+      const email = document.getElementById('registerEmail').value;
+      const password = document.getElementById('registerPassword').value;
+      
+      if (!email || !password) {
+        alert('Email и пароль обязательны');
+        return;
+      }
+      if (password.length < 6) {
+        alert('Пароль должен быть не менее 6 символов');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, password })
+        });
+        const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || 'Ошибка регистрации');
+        
+        // Сохраняем токен
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        
+        // Переходим на страницу карт
+        window.location.href = 'cards.html';
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    // Если уже авторизован — сразу на карты
+    if (localStorage.getItem('token')) {
+      window.location.href = 'cards.html';
+    }
+  </script>
+</body>
+</html>

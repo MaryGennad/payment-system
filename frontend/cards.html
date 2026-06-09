@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Мои карты | Оплата</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-top">
+        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <h1>Мои карты</h1>
+        <div class="header-spacer"></div>
+      </div>
+      <p class="header-subtitle">Управление привязанными картами</p>
+    </header>
+
+    <!-- Alerts -->
+    <div id="alertContainer"></div>
+
+    <!-- Cards List -->
+    <div id="cardsList" class="cards-list">
+      <div class="loading">Загрузка...</div>
+    </div>
+
+    <!-- Empty State -->
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon">💳</div>
+      <h3>Нет привязанных карт</h3>
+      <p>Привяжите карту для быстрых платежей</p>
+      <button class="btn btn-primary" onclick="window.location.href='index.html'">
+        Привязать карту
+      </button>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-links">
+      <a href="index.html">Новая привязка</a>
+      <a href="#">Помощь</a>
+    </div>
+  </div>
+
+  <script src="js/auth.js"></script>   <!-- Сначала auth.js -->
+<script src="js/cards.js"></script>  <!-- Потом cards.js -->
+</body>
+</html>
