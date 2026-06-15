@@ -1,13 +1,22 @@
-// 🔧 Явно указываем путь к .env
+//путь к .env
 require('dotenv').config({ path: __dirname + '/.env' });
 
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // ✅ ОБЪЯВЛЯЕМ ТОЛЬКО ОДИН РАЗ!
+const cors = require('cors'); // ОБЪЯВЛЯЕМ ТОЛЬКО ОДИН РАЗ!
 
 const app = express();
 
 // === CORS настройки ===
+const cors = require('cors');
+
+app.use(cors({
+  origin: ['https://payment-system-alpha-eight.vercel.app', 'http://localhost:8080'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 const corsOptions = {
   origin: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
@@ -19,15 +28,15 @@ app.use(cors(corsOptions));
 // Middleware
 app.use(express.json());
 
-// 🔍 Отладка
-console.log('🔍 MONGO_URI:', process.env.MONGO_URI ? '✅ Загружено' : '❌ undefined');
-console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? '✅ Загружено' : '❌ undefined');
+// Отладка
+console.log('🔍 MONGO_URI:', process.env.MONGO_URI ? ' Загружено' : ' undefined');
+console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? ' Загружено' : ' undefined');
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB подключена'))
+  .then(() => console.log(' MongoDB подключена'))
   .catch(err => {
-    console.error('❌ Ошибка MongoDB:', err.message);
+    console.error(' Ошибка MongoDB:', err.message);
     process.exit(1);
   });
 
