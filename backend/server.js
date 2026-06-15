@@ -28,15 +28,15 @@ app.use(cors(corsOptions));
 // Middleware
 app.use(express.json());
 
-// 🔍 Отладка
-console.log('🔍 MONGO_URI:', process.env.MONGO_URI ? '✅ Загружено' : '❌ undefined');
-console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? '✅ Загружено' : '❌ undefined');
+// Отладка
+console.log('🔍 MONGO_URI:', process.env.MONGO_URI ? ' Загружено' : ' undefined');
+console.log('🔍 JWT_SECRET:', process.env.JWT_SECRET ? ' Загружено' : ' undefined');
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI)
-  .then(() => console.log('✅ MongoDB подключена'))
+  .then(() => console.log(' MongoDB подключена'))
   .catch(err => {
-    console.error('❌ Ошибка MongoDB:', err.message);
+    console.error(' Ошибка MongoDB:', err.message);
     process.exit(1);
   });
 
