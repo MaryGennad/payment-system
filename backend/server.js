@@ -1,13 +1,22 @@
-// 🔧 Явно указываем путь к .env
+//путь к .env
 require('dotenv').config({ path: __dirname + '/.env' });
 
 const express = require('express');
 const mongoose = require('mongoose');
-const cors = require('cors'); // ✅ ОБЪЯВЛЯЕМ ТОЛЬКО ОДИН РАЗ!
+const cors = require('cors'); // ОБЪЯВЛЯЕМ ТОЛЬКО ОДИН РАЗ!
 
 const app = express();
 
 // === CORS настройки ===
+const cors = require('cors');
+
+app.use(cors({
+  origin: ['https://payment-system-alpha-eight.vercel.app', 'http://localhost:8080'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 const corsOptions = {
   origin: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
