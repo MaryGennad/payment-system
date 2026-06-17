@@ -1,4 +1,4 @@
-const API_BASE = 'https://payment-system-production.up.railway.app/api';
+const API_BASE = '/api';  // Относительный путь!
 const { token } = window.auth?.getAuth() || {};
 if (!token) window.location.href = 'auth.html';
 

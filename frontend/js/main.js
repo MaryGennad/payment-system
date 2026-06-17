@@ -1,5 +1,5 @@
 // frontend/js/main.js
-const API_BASE = 'https://payment-system-production.up.railway.app/api';
+const API_BASE = '/api';  // Относительный путь!
 
 // 🔐 Проверка авторизации
 const { token } = window.auth?.getAuth() || {};
