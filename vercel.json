@@ -1,7 +1,30 @@
 {
-  "buildCommand": "cd frontend && echo 'Building...'",
-  "outputDirectory": "frontend",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/frontend/index.html" }
-  ]
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "frontend/**/*",
+      "use": "@vercel/static"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend/$1"
+    }
+  ],
+  "env": {
+    "MONGO_URI": "@mongo_uri",
+    "JWT_SECRET": "@jwt_secret",
+    "YOOKASSA_SHOP_ID": "@yookassa_shop_id",
+    "YOOKASSA_SECRET_KEY": "@yookassa_secret_key",
+    "YOOKASSA_RETURN_URL": "@yookassa_return_url"
+  }
 }
