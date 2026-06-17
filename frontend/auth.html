@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Авторизация</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="/css/style.css">
   <!-- Заглушка для фавикона, чтобы браузер не искал файл -->
 <link rel="icon" href="data:,">
   <style>
@@ -112,7 +112,7 @@
   </div>
 
   <script>
-    const API_BASE = 'https://payment-system-production.up.railway.app/api';
+    const API_BASE = '/api'; 
     // Переключение вкладок
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
