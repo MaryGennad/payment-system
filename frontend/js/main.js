@@ -1,7 +1,7 @@
 // frontend/js/main.js
 const API_BASE = '/api';  // Относительный путь!
 
-// 🔐 Проверка авторизации
+//  Проверка авторизации
 const { token } = window.auth?.getAuth() || {};
 if (!token) {
   window.location.href = 'auth.html';
@@ -81,7 +81,7 @@ if (btnSubmit) {
     
     const originalText = btnSubmit.textContent;
     btnSubmit.disabled = true;
-    btnSubmit.textContent = '⏳ Подготовка...';
+    btnSubmit.textContent = ' Подготовка...';
     
     try {
       const res = await fetch(`${API_BASE}/payments/create`, {
