@@ -130,13 +130,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const status = urlParams.get('status');
   
   if (status === 'success') {
-    alert('✅ Оплата прошла успешно! Карта привязана.');
+    alert('Оплата прошла успешно! Карта привязана.');
     localStorage.removeItem('pending_payment');
     setTimeout(() => {
       window.location.href = 'cards.html';
     }, 2000);
   } else if (status === 'fail' || status === 'canceled') {
-    alert('❌ Оплата не прошла. Попробуйте ещё раз.');
+    alert('Оплата не прошла. Попробуйте ещё раз.');
     localStorage.removeItem('pending_payment');
   }
 });
