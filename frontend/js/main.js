@@ -1,4 +1,4 @@
-// frontend/js/main.js
+// frontend/js/main.js // fix cache
 const API_BASE = '/api';  // Относительный путь!
 
 //  Проверка авторизации
