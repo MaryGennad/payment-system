@@ -1,5 +1,5 @@
 // frontend/js/main.js // fix cache
-const API_BASE = '/api';  // Относительный путь
+const API_URL = '/api';  // Относительный путь
 
 //  Проверка авторизации
 const { token } = window.auth?.getAuth() || {};
