@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+// models/Payment.js
+import mongoose from 'mongoose';
 
-const paymentSchema = new mongoose.Schema({
+const PaymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -32,4 +33,4 @@ const paymentSchema = new mongoose.Schema({
   description: String
 }, { timestamps: true });
 
-module.exports = mongoose.model('Payment', paymentSchema);
+export default mongoose.models.Payment || mongoose.model('Payment', PaymentSchema);

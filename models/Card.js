@@ -1,6 +1,7 @@
-const mongoose = require('mongoose');
+// models/Card.js
+import mongoose from 'mongoose';
 
-const cardSchema = new mongoose.Schema({
+const CardSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -31,4 +32,4 @@ const cardSchema = new mongoose.Schema({
   }
 }, { timestamps: true });
 
-module.exports = mongoose.model('Card', cardSchema);
+export default mongoose.models.Card || mongoose.model('Card', CardSchema);
