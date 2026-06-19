@@ -1,0 +1,19 @@
+# MONGO_URI=mongodb+srv://admin:admin@cluster-web-develop.9kt5ss3.mongodb.net/?appName=Cluster-web-develop
+# # JWT Секреты (можно поменять на любые случайные строки)
+# JWT_SECRET=SuperSecretKey_Joker_2026
+# JWT_EXPIRES_IN=7d
+
+# # YooKassa
+# YOOKASSA_SHOP_ID=1360323
+# YOOKASSA_SECRET_KEY=test_vaBQqBh3ccul269Ti96cuQhzfwRKvFDPb48WZbeO0Dc
+# YOOKASSA_RETURN_URL=https://payment-system-alpha-eight.vercel.app/cards
+
+# # Robokassa
+# ROBOKASSA_LOGIN=ваш_login
+# ROBOKASSA_PASS1=ваш_pass1
+# ROBOKASSA_PASS2=ваш_pass2
+# ROBOKASSA_IS_TEST=1  # 1 для тестов, 0 для прода
+
+
+
+
