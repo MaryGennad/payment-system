@@ -1,5 +1,4 @@
 // api/auth/register.js
-import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '../../lib/db.js';
@@ -13,7 +12,7 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    const { email, password } = req.body;
+    const { name, email, password } = req.body;
 
     // Проверка пользователя
     const existingUser = await User.findOne({ email });
@@ -21,12 +20,13 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Пользователь уже существует' });
     }
 
-    // Хэширование пароля
+    // Хэширование пароля (вручную, так как убрали хук из модели)
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     // Создание пользователя
     const user = await User.create({
+      name: name || 'Пользователь',
       email,
       password: hashedPassword
     });
@@ -42,6 +42,7 @@ export default async function handler(req, res) {
       token,
       user: {
         id: user._id,
+        name: user.name,
         email: user.email
       }
     });

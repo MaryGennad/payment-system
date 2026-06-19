@@ -1,8 +1,11 @@
-// backend/models/User.js
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+// models/User.js
+import mongoose from 'mongoose';
 
-const userSchema = new mongoose.Schema({
+const UserSchema = new mongoose.Schema({
+  name: {
+    type: String,
+    trim: true
+  },
   email: { 
     type: String, 
     required: true, 
@@ -13,30 +16,10 @@ const userSchema = new mongoose.Schema({
   password: { 
     type: String, 
     required: true,
-    minlength: 6,
-    select: false // 🔒 Пароль не возвращается в ответах
-  },
-  name: { 
-    type: String, 
-    trim: true 
+    minlength: 6
+    // Мы убрали select: false, чтобы видеть пароль при отладке, но можно вернуть
   }
 }, { timestamps: true });
 
-// 🛡 Хеширование пароля перед сохранением
-// ✅ Используем async БЕЗ next() — Mongoose сам обработает Promise
-userSchema.pre('save', async function() {
-  // Если пароль не менялся — выходим
-  if (!this.isModified('password')) return;
-  
-  // Хэшируем пароль
-  const salt = await bcrypt.genSalt(10);
-  this.password = await bcrypt.hash(this.password, salt);
-  // ✅ Не вызываем next() — async функция сама вернёт Promise
-});
-
-// 🗝 Метод для проверки пароля при входе
-userSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
-
-module.exports = mongoose.model('User', userSchema);
+// ВАЖНО: Эта строка предотвращает ошибку "OverwriteModelError" на Vercel
+export default mongoose.models.User || mongoose.model('User', UserSchema);

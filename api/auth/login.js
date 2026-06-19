@@ -15,7 +15,7 @@ export default async function handler(req, res) {
     const { email, password } = req.body;
 
     // Поиск пользователя
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }).select('+password'); // +password нужен, если в схеме стоит select: false
     if (!user) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
@@ -37,6 +37,7 @@ export default async function handler(req, res) {
       token,
       user: {
         id: user._id,
+        name: user.name,
         email: user.email
       }
     });
