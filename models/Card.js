@@ -1,35 +1,43 @@
 // models/Card.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const CardSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'User', // Ссылка на модель User
     required: true
   },
   provider: {
     type: String,
-    enum: ['yookassa', 'robokassa'],
+    enum: ['yookassa', 'robokassa'], // Ограничение по провайдерам
     required: true
   },
   cardToken: {
     type: String,
-    required: true
+    required: true // Токен карты от платежной системы
   },
   last4: {
     type: String,
-    required: true
+    required: true // Последние 4 цифры карты
   },
   cardType: {
     type: String,
+    required: true // Тип карты (visa, mastercard и т.д.)
+  },
+  expiryMonth: {
+    type: String,
     required: true
   },
-  expiryMonth: String,
-  expiryYear: String,
+  expiryYear: {
+    type: String,
+    required: true
+  },
   isDefault: {
     type: Boolean,
-    default: false
+    default: false // Является ли карта основной
   }
-}, { timestamps: true });
+}, { 
+  timestamps: true // Автоматически добавляет поля createdAt и updatedAt
+});
 
-export default mongoose.models.Card || mongoose.model('Card', CardSchema);
+module.exports = mongoose.model('Card', CardSchema);

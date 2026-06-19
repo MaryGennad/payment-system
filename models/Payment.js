@@ -1,5 +1,5 @@
 // models/Payment.js
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const PaymentSchema = new mongoose.Schema({
   userId: {
@@ -9,12 +9,12 @@ const PaymentSchema = new mongoose.Schema({
   },
   paymentId: {
     type: String,
-    unique: true,
+    unique: true, // ID платежа в ЮKassa должен быть уникальным
     required: true
   },
   provider: {
     type: String,
-    required: true
+    required: true // yookassa или robokassa
   },
   amount: {
     type: Number,
@@ -29,8 +29,15 @@ const PaymentSchema = new mongoose.Schema({
     enum: ['pending', 'succeeded', 'canceled', 'failed'],
     default: 'pending'
   },
-  email: String,
-  description: String
-}, { timestamps: true });
+  email: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String
+  }
+}, { 
+  timestamps: true 
+});
 
-export default mongoose.models.Payment || mongoose.model('Payment', PaymentSchema);
+module.exports = mongoose.model('Payment', PaymentSchema);
