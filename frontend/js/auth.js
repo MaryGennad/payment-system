@@ -1,3 +1,4 @@
+const API_BASE = '/api';
 // Глобальный объект авторизации
 window.auth = {
   saveAuth: (token, user) => {
