@@ -1,5 +1,5 @@
 // backend/routes/payments.js
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 const axios = require('axios');
 const jwt = require('jsonwebtoken');
@@ -102,4 +102,4 @@ router.post('/create', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;

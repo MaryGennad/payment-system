@@ -1,5 +1,5 @@
 // backend/routes/cards.js
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const Card = require('../../models/Card');
@@ -71,4 +71,4 @@ router.post('/set-default', auth, async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
