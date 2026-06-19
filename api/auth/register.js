@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Пользователь уже существует' });
     }
 
-    // Хэширование пароля (вручную, так как убрали хук из модели)
+    // Хэширование пароля
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
