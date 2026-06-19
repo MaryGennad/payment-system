@@ -1,3 +1,4 @@
+//frontend/js/cards.js
 const API_BASE = '/api';  // Относительный путь!
 const { token } = window.auth?.getAuth() || {};
 if (!token) window.location.href = 'auth.html';
