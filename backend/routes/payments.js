@@ -1,9 +1,9 @@
 // backend/routes/payments.js
 import express from 'express';
-import axios from 'axios'; // <-- Замени require на import
-import jwt from 'jsonwebtoken'; // <-- Замени require на import
-import Payment from '../../models/Payment.js'; // <-- Добавь .js в конце!
-import Card from '../../models/Card.js'; // <-- Добавь .js в конце!
+import axios from 'axios'; 
+import jwt from 'jsonwebtoken'; 
+import Payment from '../../models/Payment.js'; 
+import Card from '../../models/Card.js'; 
 
 const router = express.Router();
 

@@ -1,8 +1,8 @@
 // backend/routes/auth.js
 import express from 'express';
-import bcrypt from 'bcryptjs'; // <-- Замени require на import
-import jwt from 'jsonwebtoken'; // <-- Замени require на import
-import User from '../../models/User.js'; // <-- Добавь .js в конце!
+import bcrypt from 'bcryptjs'; 
+import jwt from 'jsonwebtoken'; 
+import User from '../../models/User.js'; 
 
 const router = express.Router();
 

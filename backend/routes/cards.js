@@ -1,9 +1,9 @@
 // backend/routes/cards.js
 import express from 'express';
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const Card = require('../../models/Card');
+import jwt from 'jsonwebtoken';   
+import Card from '../../models/Card.js';
 
+const router = express.Router();
 // Middleware для проверки токена
 const auth = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
