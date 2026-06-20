@@ -1,10 +1,11 @@
 // backend/routes/payments.js
 import express from 'express';
+import axios from 'axios'; // <-- Замени require на import
+import jwt from 'jsonwebtoken'; // <-- Замени require на import
+import Payment from '../../models/Payment.js'; // <-- Добавь .js в конце!
+import Card from '../../models/Card.js'; // <-- Добавь .js в конце!
+
 const router = express.Router();
-const axios = require('axios');
-const jwt = require('jsonwebtoken');
-const Payment = require('../../models/Payment');
-const Card = require('../../models/Card');
 
 // Middleware для проверки токена
 const auth = (req, res, next) => {

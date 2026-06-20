@@ -1,9 +1,10 @@
 // backend/routes/auth.js
 import express from 'express';
+import bcrypt from 'bcryptjs'; // <-- Замени require на import
+import jwt from 'jsonwebtoken'; // <-- Замени require на import
+import User from '../../models/User.js'; // <-- Добавь .js в конце!
+
 const router = express.Router();
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const User = require('../../models/User'); // Путь к модели User
 
 // Регистрация
 router.post('/register', async (req, res) => {

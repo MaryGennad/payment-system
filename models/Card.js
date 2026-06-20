@@ -1,5 +1,5 @@
 // models/Card.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const CardSchema = new mongoose.Schema({
   userId: {
@@ -40,4 +40,4 @@ const CardSchema = new mongoose.Schema({
   timestamps: true // Автоматически добавляет поля createdAt и updatedAt
 });
 
-module.exports = mongoose.model('Card', CardSchema);
+export default mongoose.model('User', UserSchema);

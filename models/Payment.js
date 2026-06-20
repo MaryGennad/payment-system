@@ -1,5 +1,5 @@
 // models/Payment.js
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'; 
 
 const PaymentSchema = new mongoose.Schema({
   userId: {
@@ -40,4 +40,4 @@ const PaymentSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-module.exports = mongoose.model('Payment', PaymentSchema);
+export default mongoose.model('User', UserSchema);
