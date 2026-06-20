@@ -1,5 +1,5 @@
 // models/Payment.js
-import mongoose from 'mongoose'; 
+import mongoose from 'mongoose'; // <-- Используйте import
 
 const PaymentSchema = new mongoose.Schema({
   userId: {
@@ -9,12 +9,12 @@ const PaymentSchema = new mongoose.Schema({
   },
   paymentId: {
     type: String,
-    unique: true, // ID платежа в ЮKassa должен быть уникальным
+    unique: true,
     required: true
   },
   provider: {
     type: String,
-    required: true // yookassa или robokassa
+    required: true
   },
   amount: {
     type: Number,
@@ -40,4 +40,5 @@ const PaymentSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-export default mongoose.model('User', UserSchema);
+// ВАЖНО: Здесь должно быть PaymentSchema, а НЕ UserSchema!
+export default mongoose.model('Payment', PaymentSchema); 
