@@ -1,5 +1,4 @@
-// backend/routes/cards.js
-import express from 'express';
+import express from 'express';// backend/routes/cards.js
 import jwt from 'jsonwebtoken';
 import Card from '../../models/Card.js';
 

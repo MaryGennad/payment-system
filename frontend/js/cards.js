@@ -1,7 +1,5 @@
-// frontend/cards.js
 
-// Проверка авторизации
-const { token } = window.auth?.getAuth() || {};
+const { token } = window.auth?.getAuth() || {};// Проверка авторизации
 if (!token) {
   window.location.href = 'auth.html';
 }
