@@ -88,6 +88,49 @@ if (save_payment_method && paymentData.payment_method?.card) {
   });
   await card.save();
 }
+// Webhook от ЮKassa
+router.post('/webhook', async (req, res) => {
+  try {
+    const event = req.body;
+    
+    if (event.event === 'payment.succeeded') {
+      const paymentData = event.object;
+      
+      // Найди платеж в БД
+      const payment = await Payment.findOne({ paymentId: paymentData.id });
+      
+      if (payment && paymentData.payment_method?.card) {
+        // Сохрани карту
+        const card = new Card({
+          userId: payment.userId,
+          provider: payment.provider,
+          cardToken: paymentData.id,
+          last4: paymentData.payment_method.card.last4,
+          cardType: paymentData.payment_method.card.card_type,
+          expiryMonth: paymentData.payment_method.card.expiry_month,
+          expiryYear: paymentData.payment_method.card.expiry_year,
+          isDefault: false
+        });
+        
+        await card.save();
+        console.log('Card saved:', card);
+      }
+      
+      // Обнови статус платежа
+      await Payment.updateOne(
+        { paymentId: paymentData.id },
+        { status: paymentData.status }
+      );
+    }
+    
+    res.json({ status: 'ok' });
+  } catch (err) {
+    console.error('Webhook error:', err);
+    res.status(500).json({ error: 'Webhook error' });
+  }
+});
+
+export default router;
 
  // Проверяем, что confirmation существует
 if (!paymentData.confirmation || !paymentData.confirmation.confirmation_url) {
