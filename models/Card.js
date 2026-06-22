@@ -1,10 +1,10 @@
-// models/Card.js
-import mongoose from 'mongoose'; // <-- Используйте import
+// backend/models/Card.js
+import mongoose from 'mongoose';
 
 const CardSchema = new mongoose.Schema({
   userId: {
-    type: mongoose.Schema.Types.ObjectId, // <-- Правильный тип для ссылки на ID
-    ref: 'User',                          // <-- Ссылка на имя модели 'User'
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
     required: true
   },
   provider: {
@@ -40,5 +40,11 @@ const CardSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-// ВАЖНО: Убедитесь, что здесь нет упоминания UserSchema!
+// Уникальный индекс: пользователь + последние 4 цифры + срок действия
+// Это предотвратит создание дубликатов на уровне базы данных
+CardSchema.index(
+  { userId: 1, last4: 1, expiryMonth: 1, expiryYear: 1 }, 
+  { unique: true, name: 'unique_user_card' }
+);
+
 export default mongoose.model('Card', CardSchema);

@@ -24,6 +24,18 @@ const auth = (req, res, next) => {
 };
 
 // ============================================
+// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: Проверка дубликата карты
+// ============================================
+async function findExistingCard(userId, last4, expiryMonth, expiryYear) {
+  return await Card.findOne({
+    userId: userId,
+    last4: last4,
+    expiryMonth: expiryMonth,
+    expiryYear: expiryYear
+  });
+}
+
+// ============================================
 // СОЗДАТЬ ПЛАТЕЖ
 // ============================================
 router.post('/create', auth, async (req, res) => {
@@ -81,18 +93,33 @@ router.post('/create', auth, async (req, res) => {
 
     // Если нужно сохранить карту И данные карты есть
     if (save_payment_method && paymentData.payment_method?.card) {
-      const card = new Card({
-        userId: req.userId,
-        provider: provider || 'yookassa',
-        cardToken: paymentData.id,
-        last4: paymentData.payment_method.card.last4,
-        cardType: paymentData.payment_method.card.card_type,
-        expiryMonth: paymentData.payment_method.card.expiry_month,
-        expiryYear: paymentData.payment_method.card.expiry_year,
-        isDefault: false
-      });
-      await card.save();
-      console.log('Card saved:', card);
+      const cardData = paymentData.payment_method.card;
+      
+      // ПРОВЕРКА: Ищем существующую карту
+      const existingCard = await findExistingCard(
+        req.userId,
+        cardData.last4,
+        cardData.expiry_month,
+        cardData.expiry_year
+      );
+
+      if (existingCard) {
+        console.log('⚠️ Карта уже существует, пропускаем сохранение:', existingCard._id);
+      } else {
+        // Создаём новую карту только если её нет
+        const card = new Card({
+          userId: req.userId,
+          provider: provider || 'yookassa',
+          cardToken: paymentData.id,
+          last4: cardData.last4,
+          cardType: cardData.card_type,
+          expiryMonth: cardData.expiry_month,
+          expiryYear: cardData.expiry_year,
+          isDefault: false
+        });
+        await card.save();
+        console.log('✅ Новая карта сохранена:', card);
+      }
     }
 
     // Проверяем, что confirmation существует
@@ -129,27 +156,41 @@ router.post('/webhook', async (req, res) => {
       const payment = await Payment.findOne({ paymentId: paymentData.id });
 
       if (payment && paymentData.payment_method?.card) {
-        // Сохрани карту
-        const card = new Card({
-          userId: payment.userId,
-          provider: payment.provider,
-          cardToken: paymentData.id,
-          last4: paymentData.payment_method.card.last4,
-          cardType: paymentData.payment_method.card.card_type,
-          expiryMonth: paymentData.payment_method.card.expiry_month,
-          expiryYear: paymentData.payment_method.card.expiry_year,
-          isDefault: false
-        });
+        const cardData = paymentData.payment_method.card;
+        
+        // ПРОВЕРКА: Ищем существующую карту
+        const existingCard = await findExistingCard(
+          payment.userId,
+          cardData.last4,
+          cardData.expiry_month,
+          cardData.expiry_year
+        );
 
-        await card.save();
-        console.log('Card saved via webhook:', card);
+        if (existingCard) {
+          console.log('⚠️ Карта уже существует (webhook):', existingCard._id);
+        } else {
+          // Сохрани карту только если её нет
+          const card = new Card({
+            userId: payment.userId,
+            provider: payment.provider,
+            cardToken: paymentData.id,
+            last4: cardData.last4,
+            cardType: cardData.card_type,
+            expiryMonth: cardData.expiry_month,
+            expiryYear: cardData.expiry_year,
+            isDefault: false
+          });
+
+          await card.save();
+          console.log('✅ Новая карта сохранена через webhook:', card);
+        }
+
+        // Обнови статус платежа
+        await Payment.updateOne(
+          { paymentId: paymentData.id },
+          { status: paymentData.status }
+        );
       }
-
-      // Обнови статус платежа
-      await Payment.updateOne(
-        { paymentId: paymentData.id },
-        { status: paymentData.status }
-      );
     }
 
     res.json({ status: 'ok' });
