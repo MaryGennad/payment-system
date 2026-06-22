@@ -1,4 +1,3 @@
-//frontend/js/auth.js
 const API_BASE = '/api';
 // Глобальный объект авторизации
 window.auth = {

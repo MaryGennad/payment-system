@@ -1,4 +1,3 @@
-// frontend/js/main.js 
 const API_BASE = '/api';  // Относительный путь
 
 //  Проверка авторизации
