@@ -1,8 +1,10 @@
+// backend/routes/cards.js
 import express from 'express';
-import jwt from 'jsonwebtoken';   
+import jwt from 'jsonwebtoken';
 import Card from '../../models/Card.js';
 
 const router = express.Router();
+
 // Middleware для проверки токена
 const auth = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
@@ -19,37 +21,59 @@ const auth = (req, res, next) => {
   }
 };
 
-// Получить все карты пользователя
+// ============================================
+// ПОЛУЧИТЬ ВСЕ КАРТЫ ПОЛЬЗОВАТЕЛЯ
+// ============================================
 router.get('/', auth, async (req, res) => {
   try {
-    const cards = await Card.find({ userId: req.userId });
+    const cards = await Card.find({ userId: req.userId }).sort({ createdAt: -1 });
     res.json(cards);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Ошибка сервера');
+    console.error('Get cards error:', err.message);
+    res.status(500).json({ error: 'Ошибка сервера' });
   }
 });
 
-// Удалить карту
-router.delete('/:id', auth, async (req, res) => {
+// ============================================
+// УДАЛИТЬ КАРТУ
+// ============================================
+router.delete('/:cardId', auth, async (req, res) => {
   try {
-    const card = await Card.findOneAndDelete({ _id: req.params.id, userId: req.userId });
+    const { cardId } = req.params;
+
+    // Найди карту и убедись, что она принадлежит текущему пользователю
+    const card = await Card.findOneAndDelete({ 
+      _id: cardId, 
+      userId: req.userId 
+    });
+
     if (!card) {
-      return res.status(404).json({ error: 'Карта не найдена' });
+      return res.status(404).json({ error: 'Карта не найдена или уже удалена' });
     }
-    res.json({ message: 'Карта удалена' });
+
+    console.log(' Карта удалена:', cardId);
+
+    res.json({ 
+      success: true, 
+      message: 'Карта успешно удалена' 
+    });
+
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Ошибка сервера');
+    console.error('Delete card error:', err.message);
+    res.status(500).json({ 
+      error: 'Ошибка удаления карты' 
+    });
   }
 });
 
-// Сделать карту основной
+// ============================================
+// СДЕЛАТЬ КАРТУ ОСНОВНОЙ
+// ============================================
 router.post('/set-default', auth, async (req, res) => {
   try {
     const { cardId } = req.body;
     
-    // Сбросить флаг isDefault у всех карт
+    // Сбросить флаг isDefault у всех карт пользователя
     await Card.updateMany({ userId: req.userId }, { isDefault: false });
     
     // Установить флаг у выбранной карты
@@ -63,10 +87,12 @@ router.post('/set-default', auth, async (req, res) => {
       return res.status(404).json({ error: 'Карта не найдена' });
     }
 
+    console.log(' Карта установлена как основная:', cardId);
+
     res.json(card);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Ошибка сервера');
+    console.error('Set default error:', err.message);
+    res.status(500).json({ error: 'Ошибка установки основной карты' });
   }
 });
 

@@ -1,59 +1,144 @@
+// frontend/cards.js
+
+// Проверка авторизации
 const { token } = window.auth?.getAuth() || {};
-if (!token) window.location.href = 'auth.html';
-
-const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` };
-
-async function loadCards() {
-  const res = await fetch(`${API_BASE}/cards`, { headers });
-  const cards = await res.json();
-  const list = document.getElementById('cardsList');
-  const empty = document.getElementById('emptyState');
-  
-  if (!cards.length) { list.style.display = 'none'; empty.style.display = 'block'; return; }
-  
-  list.innerHTML = cards.map(c => `
-    <div class="card-item">
-      <div class="card-info">•••• ${c.last4} | ${c.cardType} ${c.expiryMonth}/${c.expiryYear}</div>
-      <div class="card-actions">
-        ${!c.isDefault ? `<button class="btn-small" onclick="setDefault('${c._id}')">Основная</button>` : '<span class="badge">Основная</span>'}
-        <button class="btn-small" onclick="chargeSavedCard('${c._id}', 10)">
-        Списать 10₽
-      </button>
-        <button class="btn-small danger" onclick="deleteCard('${c._id}')">Удалить</button>
-      </div>
-    </div>
-  `).join('');
+if (!token) {
+  window.location.href = 'auth.html';
 }
 
-window.setDefault = async (id) => {
-  await fetch(`${API_BASE}/cards/set-default`, { method: 'POST', headers, body: JSON.stringify({ cardId: id }) });
-  loadCards();
+// Заголовки с токеном
+const headers = { 
+  'Content-Type': 'application/json', 
+  'Authorization': `Bearer ${token}` 
 };
 
-window.deleteCard = async (id) => {
-  if (!confirm('Удалить?')) return;
-  await fetch(`${API_BASE}/cards/${id}`, { method: 'DELETE', headers });
-  loadCards();
+// ============================================
+// ЗАГРУЗКА СПИСКА КАРТ
+// ============================================
+async function loadCards() {
+  try {
+    const res = await fetch(`${API_BASE}/cards`, { headers });
+    
+    if (!res.ok) {
+      throw new Error('Ошибка загрузки карт');
+    }
+    
+    const cards = await res.json();
+    const list = document.getElementById('cardsList');
+    const empty = document.getElementById('emptyState');
+    
+    if (!cards || !cards.length) {
+      list.style.display = 'none';
+      empty.style.display = 'block';
+      return;
+    }
+    
+    list.style.display = 'block';
+    empty.style.display = 'none';
+    
+    list.innerHTML = cards.map(c => `
+      <div class="card-item">
+        <div class="card-info">
+          💳 •••• ${c.last4} | ${c.cardType} ${c.expiryMonth}/${c.expiryYear}
+        </div>
+        <div class="card-actions">
+          ${!c.isDefault 
+            ? `<button class="btn-small" onclick="setDefault('${c._id}')">⭐ Основная</button>` 
+            : '<span class="badge">⭐ Основная</span>'}
+          <button class="btn-small" onclick="chargeSavedCard('${c._id}', 10)">
+            💰 Списать 10₽
+          </button>
+          <button class="btn-small danger" onclick="deleteCard('${c._id}')">
+            🗑️ Удалить
+          </button>
+        </div>
+      </div>
+    `).join('');
+    
+  } catch (err) {
+    console.error('Load cards error:', err);
+    alert('❌ Ошибка загрузки карт: ' + err.message);
+  }
+}
+
+// ============================================
+// СДЕЛАТЬ КАРТУ ОСНОВНОЙ
+// ============================================
+window.setDefault = async (cardId) => {
+  try {
+    const res = await fetch(`${API_BASE}/cards/set-default`, { 
+      method: 'POST', 
+      headers, 
+      body: JSON.stringify({ cardId }) 
+    });
+    
+    if (!res.ok) {
+      throw new Error('Ошибка установки основной карты');
+    }
+    
+    alert('Карта установлена как основная!');
+    loadCards();
+    
+  } catch (err) {
+    console.error('Set default error:', err);
+    alert('❌ Ошибка: ' + err.message);
+  }
 };
-// Проверка статуса оплаты при загрузке страницы
+
+// ============================================
+// УДАЛЕНИЕ КАРТЫ
+// ============================================
+window.deleteCard = async (cardId) => {
+  try {
+    const confirmed = confirm('🗑️ Удалить эту карту? Это действие нельзя отменить.');
+    if (!confirmed) return;
+
+    const res = await fetch(`${API_BASE}/cards/${cardId}`, { 
+      method: 'DELETE', 
+      headers 
+    });
+    
+    const data = await res.json();
+    
+    if (!res.ok) {
+      throw new Error(data.error || 'Ошибка удаления');
+    }
+
+    alert('Карта удалена!');
+    loadCards();
+    
+  } catch (err) {
+    console.error('Delete card error:', err);
+    alert('❌ Ошибка: ' + err.message);
+  }
+};
+
+// ============================================
+// ПРОВЕРКА СТАТУСА ОПЛАТЫ ПРИ ЗАГРУЗКЕ
+// ============================================
 window.addEventListener('DOMContentLoaded', () => {
   const urlParams = new URLSearchParams(window.location.search);
   const status = urlParams.get('status');
   
   if (status === 'success') {
-    // Показать сообщение об успехе
-    alert('Оплата прошла успешно! Карта будет сохранена.');
-    
-    // Очистить флаг pending payment
+    alert('Оплата прошла успешно! Карта привязана.');
     localStorage.removeItem('pending_payment');
-    
-    // Обновить список карт
     loadCards();
+  } else if (status === 'fail' || status === 'canceled') {
+    alert('Оплата не прошла. Попробуйте ещё раз.');
+    localStorage.removeItem('pending_payment');
   }
 });
-// Кнопка выхода
+
+// ============================================
+// КНОПКА ВЫХОДА
+// ============================================
 document.querySelector('.header-top')?.insertAdjacentHTML('beforeend', 
-  `<button onclick="window.auth.clearAuth(); location.href='auth.html'" style="margin-left:auto; background:none; border:none; color:#8b5cf6; cursor:pointer;">🚪 Выйти</button>`
+  `<button onclick="window.auth.clearAuth(); location.href='auth.html'" 
+    style="margin-left:auto; background:none; border:none; color:#8b5cf6; cursor:pointer; font-weight:bold;">
+    🚪 Выйти
+  </button>`
 );
 
+// Загрузка карт при старте
 loadCards();
