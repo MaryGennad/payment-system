@@ -76,18 +76,18 @@ console.log('Payment ID:', paymentData.id);
 
     await payment.save();
 
-    // Если нужно сохранить карту
-    if (save_payment_method && paymentData.payment_method) {
-      const card = new Card({
-        userId: req.userId,
-        last4: paymentData.payment_method.card.last4,
-        cardType: paymentData.payment_method.card.card_type,
-        expiryMonth: paymentData.payment_method.card.expiry_month,
-        expiryYear: paymentData.payment_method.card.expiry_year,
-        isDefault: false
-      });
-      await card.save();
-    }
+  // Если нужно сохранить карту И данные карты есть
+if (save_payment_method && paymentData.payment_method?.card) {
+  const card = new Card({
+    userId: req.userId,
+    last4: paymentData.payment_method.card.last4,
+    cardType: paymentData.payment_method.card.card_type,
+    expiryMonth: paymentData.payment_method.card.expiry_month,
+    expiryYear: paymentData.payment_method.card.expiry_year,
+    isDefault: false
+  });
+  await card.save();
+}
 
  // Проверяем, что confirmation существует
 if (!paymentData.confirmation || !paymentData.confirmation.confirmation_url) {
