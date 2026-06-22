@@ -1,4 +1,4 @@
-const API_BASE = '/api';  // Относительный путь
+//const API_BASE = '/api';  // Относительный путь
 
 //  Проверка авторизации
 const { token } = window.auth?.getAuth() || {};
