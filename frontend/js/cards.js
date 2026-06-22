@@ -114,7 +114,7 @@
         throw new Error(data.error || 'Ошибка удаления');
       }
 
-      alert('Карта удалена!');
+      alert('✅ Карта удалена!');
       await loadCards();
       
     } catch (err) {
@@ -131,7 +131,7 @@
     const status = urlParams.get('status');
     
     if (status === 'success') {
-      alert(' Оплата прошла успешно! Карта привязана.');
+      alert('✅ Оплата прошла успешно! Карта привязана.');
       localStorage.removeItem('pending_payment');
       loadCards();
     } else if (status === 'fail' || status === 'canceled') {
