@@ -104,7 +104,7 @@ router.post('/create', auth, async (req, res) => {
       );
 
       if (existingCard) {
-        console.log('⚠️ Карта уже существует, пропускаем сохранение:', existingCard._id);
+        console.log('Карта уже существует, пропускаем сохранение:', existingCard._id);
       } else {
         // Создаём новую карту только если её нет
         const card = new Card({
@@ -118,7 +118,7 @@ router.post('/create', auth, async (req, res) => {
           isDefault: false
         });
         await card.save();
-        console.log('✅ Новая карта сохранена:', card);
+        console.log('Новая карта сохранена:', card);
       }
     }
 
@@ -167,7 +167,7 @@ router.post('/webhook', async (req, res) => {
         );
 
         if (existingCard) {
-          console.log('⚠️ Карта уже существует (webhook):', existingCard._id);
+          console.log(' Карта уже существует (webhook):', existingCard._id);
         } else {
           // Сохрани карту только если её нет
           const card = new Card({
@@ -182,7 +182,7 @@ router.post('/webhook', async (req, res) => {
           });
 
           await card.save();
-          console.log('✅ Новая карта сохранена через webhook:', card);
+          console.log(' Новая карта сохранена через webhook:', card);
         }
 
         // Обнови статус платежа
