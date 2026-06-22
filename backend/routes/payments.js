@@ -277,4 +277,20 @@ router.post('/charge-saved', auth, async (req, res) => {
   }
 });
 
+// ============================================
+// ПОЛУЧИТЬ ИСТОРИЮ ПЛАТЕЖЕЙ ПОЛЬЗОВАТЕЛЯ
+// ============================================
+router.get('/history', auth, async (req, res) => {
+  try {
+    const payments = await Payment.find({ userId: req.userId })
+      .sort({ createdAt: -1 })
+      .limit(10);
+    
+    res.json(payments);
+  } catch (err) {
+    console.error('Get history error:', err);
+    res.status(500).json({ error: 'Ошибка получения истории' });
+  }
+});
+
 export default router;
