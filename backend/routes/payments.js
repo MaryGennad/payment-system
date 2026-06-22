@@ -28,39 +28,35 @@ router.post('/create', auth, async (req, res) => {
     const { provider, amount, email, description, save_payment_method } = req.body;
 
     // Создание платежа в ЮKassa
-    const yookassaResponse = await axios.post(
-      'https://api.yookassa.ru/v3/payments',
-      {
-        amount: {
-          value: amount.toFixed(2),
-          currency: 'RUB'
-        },
-        confirmation: {
-          type: 'redirect',
-          return_url: process.env.YOOKASSA_RETURN_URL || 'https://payment-system-coral.vercel.app/cards.html?status=success'
-        },
-        capture: true,
-        description: description || 'Привязка карты',
-        save_payment_method: save_payment_method || false,
-        payment_method_data: {
-          type: 'bank_card'
-        },
-        recipient: {
-          account_id: process.env.YOOKASSA_SHOP_ID,
-          gateway_id: process.env.YOOKASSA_GATEWAY_ID
-        }
-      },
-      {
-        auth: {
-          username: process.env.YOOKASSA_SHOP_ID,
-          password: process.env.YOOKASSA_SECRET_KEY
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotence-Key': Date.now().toString()
-        }
-      }
-    );
+   const yookassaResponse = await axios.post(
+  'https://api.yookassa.ru/v3/payments',
+  {
+    amount: {
+      value: amount.toFixed(2),
+      currency: 'RUB'
+    },
+    confirmation: {
+      type: 'redirect',
+      return_url: process.env.YOOKASSA_RETURN_URL || 'https://payment-system-coral.vercel.app/cards.html?status=success'
+    },
+    capture: true,
+    description: description || 'Привязка карты',
+    save_payment_method: save_payment_method || false,
+    payment_method_data: {
+      type: 'bank_card'
+    }
+  },
+  {
+    auth: {
+      username: process.env.YOOKASSA_SHOP_ID,
+      password: process.env.YOOKASSA_SECRET_KEY
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      'Idempotence-Key': Date.now().toString()
+    }
+  }
+);
 
     const paymentData = yookassaResponse.data;
 
