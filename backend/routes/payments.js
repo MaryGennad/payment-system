@@ -1,4 +1,3 @@
-// backend/routes/payments.js
 import express from 'express';
 import axios from 'axios'; 
 import jwt from 'jsonwebtoken'; 
