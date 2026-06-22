@@ -60,6 +60,10 @@ router.post('/create', auth, async (req, res) => {
 
     const paymentData = yookassaResponse.data;
 
+    // ДЛЯ ОТЛАДКИ:
+console.log('YooKassa response:', paymentData);
+console.log('Payment ID:', paymentData.id);
+
     // Сохранение платежа в БД
     const payment = new Payment({
       userId: req.userId,
