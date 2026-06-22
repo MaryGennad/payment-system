@@ -16,6 +16,9 @@ async function loadCards() {
       <div class="card-info">•••• ${c.last4} | ${c.cardType} ${c.expiryMonth}/${c.expiryYear}</div>
       <div class="card-actions">
         ${!c.isDefault ? `<button class="btn-small" onclick="setDefault('${c._id}')">Основная</button>` : '<span class="badge">Основная</span>'}
+        <button class="btn-small" onclick="chargeSavedCard('${c._id}', 10)">
+        Списать 10₽
+      </button>
         <button class="btn-small danger" onclick="deleteCard('${c._id}')">Удалить</button>
       </div>
     </div>
@@ -32,7 +35,22 @@ window.deleteCard = async (id) => {
   await fetch(`${API_BASE}/cards/${id}`, { method: 'DELETE', headers });
   loadCards();
 };
-
+// Проверка статуса оплаты при загрузке страницы
+window.addEventListener('DOMContentLoaded', () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('status');
+  
+  if (status === 'success') {
+    // Показать сообщение об успехе
+    alert('Оплата прошла успешно! Карта будет сохранена.');
+    
+    // Очистить флаг pending payment
+    localStorage.removeItem('pending_payment');
+    
+    // Обновить список карт
+    loadCards();
+  }
+});
 // Кнопка выхода
 document.querySelector('.header-top')?.insertAdjacentHTML('beforeend', 
   `<button onclick="window.auth.clearAuth(); location.href='auth.html'" style="margin-left:auto; background:none; border:none; color:#8b5cf6; cursor:pointer;">🚪 Выйти</button>`

@@ -159,4 +159,77 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
+// ============================================
+// СПИСАНИЕ С СОХРАНЁННОЙ КАРТЫ
+// ============================================
+router.post('/charge-saved', auth, async (req, res) => {
+  try {
+    const { amount, email, description, cardId } = req.body;
+
+    // Найди сохранённую карту
+    const card = await Card.findOne({ 
+      _id: cardId, 
+      userId: req.userId 
+    });
+
+    if (!card) {
+      return res.status(404).json({ error: 'Карта не найдена' });
+    }
+
+    // Создание платежа с использованием сохранённой карты
+    const yookassaResponse = await axios.post(
+      'https://api.yookassa.ru/v3/payments',
+      {
+        amount: {
+          value: amount.toFixed(2),
+          currency: 'RUB'
+        },
+        confirmation: {
+          type: 'external'  // Для рекуррентных платежей
+        },
+        capture: true,
+        description: description || 'Регулярный платёж',
+        payment_method_id: card.cardToken,  // ID сохранённого платежа
+        save_payment_method: true
+      },
+      {
+        auth: {
+          username: process.env.YOOKASSA_SHOP_ID,
+          password: process.env.YOOKASSA_SECRET_KEY
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': Date.now().toString()
+        }
+      }
+    );
+
+    const paymentData = yookassaResponse.data;
+
+    // Сохранение платежа в БД
+    const payment = new Payment({
+      userId: req.userId,
+      amount,
+      provider: card.provider,
+      status: paymentData.status,
+      paymentId: paymentData.id,
+      email
+    });
+
+    await payment.save();
+
+    res.json({
+      success: true,
+      paymentId: payment._id,
+      status: paymentData.status
+    });
+
+  } catch (err) {
+    console.error('Charge saved card error:', err.message);
+    res.status(500).json({
+      error: err.response?.data?.error_description || 'Ошибка списания'
+    });
+  }
+});
+
 export default router;
