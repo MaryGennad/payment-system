@@ -1,4 +1,3 @@
-// api/payments/create.js
 import axios from 'axios';
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
