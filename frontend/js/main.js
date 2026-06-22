@@ -1,5 +1,3 @@
-//const API_BASE = '/api';  // Относительный путь
-
 //  Проверка авторизации
 const { token } = window.auth?.getAuth() || {};
 if (!token) {
@@ -51,79 +49,54 @@ function checkForm() {
     emailInput.classList.remove('error');
   }
 }
-
 // ============================================
-// СПИСАНИЕ С СОХРАНЁННОЙ КАРТЫ
+// ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ СПИСАНИЯ С КАРТЫ
 // ============================================
-router.post('/charge-saved', auth, async (req, res) => {
+window.chargeSavedCard = async function(cardId, amount) {
   try {
-    const { amount, email, description, cardId } = req.body;
+    const { token } = window.auth.getAuth();
+    
+    if (!token) {
+      alert('Ошибка авторизации. Войдите снова.');
+      window.location.href = 'auth.html';
+      return;
+    }
+    
+    const confirmed = confirm(`Списать ${amount}₽ с карты?`);
+    if (!confirmed) return;
 
-    // Найди сохранённую карту
-    const card = await Card.findOne({ 
-      _id: cardId, 
-      userId: req.userId 
+    const res = await fetch(`${API_BASE}/payments/charge-saved`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        amount: amount,
+        email: 'user@example.com',
+        description: 'Регулярный платёж',
+        cardId: cardId
+      })
     });
 
-    if (!card) {
-      return res.status(404).json({ error: 'Карта не найдена' });
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Ошибка списания');
     }
 
-    // Создание платежа с использованием сохранённой карты
-    const yookassaResponse = await axios.post(
-      'https://api.yookassa.ru/v3/payments',
-      {
-        amount: {
-          value: amount.toFixed(2),
-          currency: 'RUB'
-        },
-        confirmation: {
-          type: 'external'  // Для рекуррентных платежей
-        },
-        capture: true,
-        description: description || 'Регулярный платёж',
-        payment_method_id: card.cardToken,  // ID сохранённого платежа
-        save_payment_method: true
-      },
-      {
-        auth: {
-          username: process.env.YOOKASSA_SHOP_ID,
-          password: process.env.YOOKASSA_SECRET_KEY
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotence-Key': Date.now().toString()
-        }
-      }
-    );
-
-    const paymentData = yookassaResponse.data;
-
-    // Сохранение платежа в БД
-    const payment = new Payment({
-      userId: req.userId,
-      amount,
-      provider: card.provider,
-      status: paymentData.status,
-      paymentId: paymentData.id,
-      email
-    });
-
-    await payment.save();
-
-    res.json({
-      success: true,
-      paymentId: payment._id,
-      status: paymentData.status
-    });
-
+    alert('✅ Платёж успешно проведён!');
+    
+    // Перезагрузи страницу для обновления списка
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+    
   } catch (err) {
-    console.error('Charge saved card error:', err.message);
-    res.status(500).json({
-      error: err.response?.data?.error_description || 'Ошибка списания'
-    });
+    console.error('Charge error:', err);
+    alert('❌ Ошибка: ' + err.message);
   }
-});
+};
 
 
 // === Обработчики событий ===

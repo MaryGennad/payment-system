@@ -160,7 +160,7 @@ router.post('/webhook', async (req, res) => {
 });
 
 // ============================================
-// СПИСАНИЕ С СОХРАНЁННОЙ КАРТЫ
+// СПИСАНИЕ С СОХРАНЁННОЙ КАРТЫ (РЕКУРРЕНТНЫЙ ПЛАТЁЖ)
 // ============================================
 router.post('/charge-saved', auth, async (req, res) => {
   try {
@@ -176,7 +176,11 @@ router.post('/charge-saved', auth, async (req, res) => {
       return res.status(404).json({ error: 'Карта не найдена' });
     }
 
-    // Создание платежа с использованием сохранённой карты
+    if (!card.cardToken) {
+      return res.status(400).json({ error: 'Карта не привязана для повторных списаний' });
+    }
+
+    // Создание рекуррентного платежа (БЕЗ confirmation!)
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
       {
@@ -184,12 +188,9 @@ router.post('/charge-saved', auth, async (req, res) => {
           value: amount.toFixed(2),
           currency: 'RUB'
         },
-        confirmation: {
-          type: 'external'  // Для рекуррентных платежей
-        },
         capture: true,
         description: description || 'Регулярный платёж',
-        payment_method_id: card.cardToken,  // ID сохранённого платежа
+        payment_method_id: card.cardToken,  // ID сохранённого метода оплаты
         save_payment_method: true
       },
       {
@@ -205,6 +206,7 @@ router.post('/charge-saved', auth, async (req, res) => {
     );
 
     const paymentData = yookassaResponse.data;
+    console.log('Recurrent payment response:', paymentData);
 
     // Сохранение платежа в БД
     const payment = new Payment({
@@ -221,13 +223,15 @@ router.post('/charge-saved', auth, async (req, res) => {
     res.json({
       success: true,
       paymentId: payment._id,
-      status: paymentData.status
+      status: paymentData.status,
+      amount: paymentData.amount.value
     });
 
   } catch (err) {
     console.error('Charge saved card error:', err.message);
+    console.error('YooKassa error details:', err.response?.data);
     res.status(500).json({
-      error: err.response?.data?.error_description || 'Ошибка списания'
+      error: err.response?.data?.description || err.response?.data?.error_description || 'Ошибка списания'
     });
   }
 });
