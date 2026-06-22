@@ -70,7 +70,7 @@ console.log('Payment ID:', paymentData.id);
       amount,
       provider,
       status: paymentData.status,
-      yookassaPaymentId: paymentData.id,
+      paymentId: paymentData.id,
       email
     });
 
