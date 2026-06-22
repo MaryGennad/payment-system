@@ -1,4 +1,4 @@
-const { token } = window.auth?.getAuth() || {};// Проверка авторизации
+const { token } = window.auth?.getAuth() || {};
 if (!token) {
   window.location.href = 'auth.html';
 }
