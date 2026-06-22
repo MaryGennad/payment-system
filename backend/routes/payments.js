@@ -89,10 +89,16 @@ console.log('Payment ID:', paymentData.id);
       await card.save();
     }
 
-    res.json({
-      confirmation_url: paymentData.confirmation.confirmation_url,
-      paymentId: payment._id
-    });
+ // Проверяем, что confirmation существует
+if (!paymentData.confirmation || !paymentData.confirmation.confirmation_url) {
+  console.error('No confirmation URL in YooKassa response');
+  return res.status(500).json({ error: 'No confirmation URL' });
+}
+
+res.json({
+  confirmation_url: paymentData.confirmation.confirmation_url,
+  paymentId: payment._id
+});
 
   } catch (err) {
     console.error(err.message);
