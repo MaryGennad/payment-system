@@ -13,15 +13,18 @@
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <button class="back-btn" onclick="window.location.href='index.html'" title="На главную">←</button>
         <h1>Мои карты</h1>
-        <div class="header-spacer"></div>
+        <!-- КНОПКА ВЫХОДА -->
+        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">
+          🚪 Выйти
+        </button>
       </div>
       <p class="header-subtitle">Управление привязанными картами</p>
     </header>
 
-    <!-- Alerts -->
-    <div id="alertContainer"></div>
+    <!-- Статистика (вставится сюда динамически) -->
+    <div id="paymentStats"></div>
 
     <!-- Cards List -->
     <div id="cardsList" class="cards-list">
@@ -38,21 +41,20 @@
       </button>
     </div>
 
-    <!-- Footer -->
-    <div class="footer-links">
-      <a href="index.html">Новая привязка</a>
-      <a href="#">Помощь</a>
-    </div>
-
     <!-- История платежей -->
     <div id="paymentHistory" style="margin-top:30px; padding:20px;">
       <h3 style="margin-bottom:15px;">📊 История платежей</h3>
       <p style="text-align:center; color:#888;">Загрузка...</p>
     </div>
+
+    <!-- Footer -->
+    <div class="footer-links">
+      <a href="index.html">Новая привязка</a>
+      <a href="#">Помощь</a>
+    </div>
   </div>
 
   <script src="/js/auth.js"></script>
-  <script src="/js/main.js"></script>
   <script src="/js/cards.js"></script>
 </body>
 
