@@ -55,8 +55,8 @@
             ${!c.isDefault 
               ? `<button class="btn-small" onclick="window.setDefault('${c._id}')"> Основная</button>` 
               : '<span class="badge"> Основная</span>'}
-            <button class="btn-small" onclick="window.chargeSavedCard('${c._id}', 2)">
-               Списать 2₽
+            <button class="btn-small" onclick="window.chargeSavedCard('${c._id}', 3)">
+               Списать 3₽
             </button>
             <button class="btn-small danger" onclick="window.deleteCard('${c._id}')">
               🗑️ Удалить
