@@ -55,8 +55,8 @@
             ${!c.isDefault 
               ? `<button class="btn-small" onclick="window.setDefault('${c._id}')"> Основная</button>` 
               : '<span class="badge"> Основная</span>'}
-            <button class="btn-small" onclick="window.chargeSavedCard('${c._id}', 10)">
-               Списать 10₽
+            <button class="btn-small" onclick="window.chargeSavedCard('${c._id}', 1)">
+               Списать 1₽
             </button>
             <button class="btn-small danger" onclick="window.deleteCard('${c._id}')">
               🗑️ Удалить
@@ -261,12 +261,12 @@ async function loadPaymentHistory() {
     }
     
     historyDiv.innerHTML = `
-      <h3 style="margin-bottom:15px;">📊 История платежей</h3>
+      <h3 style="margin-bottom:15px;"> История платежей</h3>
       <div style="max-height:300px; overflow-y:auto;">
         ${payments.map(p => `
           <div style="background:#1e293b; padding:12px; margin-bottom:10px; border-radius:8px; border-left:4px solid ${p.status === 'succeeded' ? '#10b981' : '#f59e0b'}">
             <div style="display:flex; justify-content:space-between;">
-              <span style="font-weight:600;">💰 ${p.amount} ₽</span>
+              <span style="font-weight:600;"> ${p.amount} ₽</span>
               <span style="color:${p.status === 'succeeded' ? '#10b981' : '#f59e0b'}">
                 ${p.status === 'succeeded' ? '✅ Успешно' : '⏳ В обработке'}
               </span>
