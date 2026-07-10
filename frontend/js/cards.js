@@ -132,23 +132,107 @@ function showToast(message, type = 'success') {
   }, 3000);
 }
 
-// Используй в функции chargeSavedCard
-window.chargeSavedCard = async function(cardId, amount) {
+// ============================================
+// РЕКУРРЕНТНЫЕ СПИСАНИЯ (10 раз по 1₽)
+// ============================================
+window.chargeSavedCard = async (cardId, amount = 1, count = 10) => {
+  if (!confirm(`💳 Списать ${amount}₽ × ${count} раз (всего ${amount * count}₽)?`)) return;
+
   try {
-    // ... существующий код ...
-    
-    if (!res.ok) {
-      throw new Error(data.error || 'Ошибка списания');
+    // Создаём контейнер для прогресса
+    const progressDiv = document.createElement('div');
+    progressDiv.id = 'chargeProgress';
+    progressDiv.style.cssText = `
+      position:fixed; top:80px; right:20px; 
+      background:#1e293b; color:white; padding:20px; 
+      border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5);
+      z-index:10000; min-width:250px;
+    `;
+    progressDiv.innerHTML = `
+      <div style="font-weight:bold; margin-bottom:10px;"> Рекуррентные списания</div>
+      <div id="chargeStatus">Подготовка...</div>
+      <div style="margin-top:10px; background:#334155; height:8px; border-radius:4px; overflow:hidden;">
+        <div id="chargeProgressBar" style="background:#10b981; height:100%; width:0%; transition:width 0.3s;"></div>
+      </div>
+    `;
+    document.body.appendChild(progressDiv);
+
+    const statusDiv = document.getElementById('chargeStatus');
+    const progressBar = document.getElementById('chargeProgressBar');
+
+    let successCount = 0;
+    let failCount = 0;
+
+    // Выполняем списания последовательно
+    for (let i = 1; i <= count; i++) {
+      statusDiv.textContent = `Списание ${i}/${count}...`;
+      progressBar.style.width = `${((i - 1) / count) * 100}%`;
+
+      try {
+        const res = await fetch(`${API_BASE}/payments/charge-saved`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            cardId,
+            amount,
+            email: 'user@example.com',
+            description: `Рекуррентный платёж ${i}/${count}`
+          })
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.error || 'Ошибка списания');
+        }
+
+        successCount++;
+        console.log(`✅ Списание ${i}/${count} успешно:`, data.paymentId);
+
+        // Небольшая задержка между запросами (500мс)
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+      } catch (err) {
+        failCount++;
+        console.error(`❌ Списание ${i}/${count} ошибка:`, err);
+        
+        // Если ошибка авторизации — останавливаем
+        if (err.message.includes('токен') || err.message.includes('401')) {
+          statusDiv.textContent = '❌ Ошибка авторизации!';
+          await new Promise(resolve => setTimeout(resolve, 2000));
+          throw err;
+        }
+
+        // Продолжаем со следующим
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
 
-    showToast(`✅ Успешно списано ${amount}₽!`, 'success');
-    
+    // Финальный статус
+    progressBar.style.width = '100%';
+    statusDiv.innerHTML = `
+      <div style="margin-top:10px;">
+        ✅ Успешно: ${successCount}<br>
+        ❌ Ошибок: ${failCount}<br>
+         Всего: ${successCount * amount}₽
+      </div>
+    `;
+
+    // Закрываем через 3 секунды
     setTimeout(() => {
+      progressDiv.remove();
+      historyCache = null; // сбрасываем кэш истории
       window.location.reload();
-    }, 1000);
-    
+    }, 3000);
+
   } catch (err) {
-    showToast(`❌ Ошибка: ${err.message}`, 'error');
+    console.error('Charge error:', err);
+    showToast('❌ ' + err.message, 'error');
+    const progressDiv = document.getElementById('chargeProgress');
+    if (progressDiv) progressDiv.remove();
   }
 };
 
