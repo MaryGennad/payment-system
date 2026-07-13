@@ -1,13 +1,23 @@
-//  Проверка авторизации
+// ============================================
+// 1. ПРОВЕРКА АВТОРИЗАЦИИ
+// ВАЖНО: Если вы даете ссылку на эту страницу модераторам ЮKassa,
+// они НЕ смогут её открыть, если здесь стоит редирект на auth.html!
+// Если страница должна быть публичной для проверки, закомментируйте эти 4 строки:
+/*
 const { token } = window.auth?.getAuth() || {};
 if (!token) {
   window.location.href = 'auth.html';
 }
+*/
 
-// Заголовки с токеном
+// Если страница всё же только для авторизованных, оставьте так:
+const authData = window.auth?.getAuth() || {};
+const token = authData.token;
+
+// Заголовки с токеном (если токен есть)
 const headers = {
   'Content-Type': 'application/json',
-  'Authorization': `Bearer ${token}`
+  'Authorization': token ? `Bearer ${token}` : ''
 };
 
 // === Элементы формы ===
@@ -27,91 +37,59 @@ function isValidEmail(email) {
 
 // === Проверка формы: активируем кнопку, если всё ок ===
 function checkForm() {
-  // Если элементов нет на странице — выходим
   if (!emailInput || !btnSubmit) return;
   
   const isEmailValid = isValidEmail(emailInput.value.trim());
   
-  // Если чекбоксов нет — считаем, что они не нужны (или уже отмечены)
   const isConsent152 = consent152 ? consent152.checked : true;
   const isConsentOffer = consentOffer ? consentOffer.checked : true;
   const isConsentSave = consentSave ? consentSave.checked : true;
   
   const isConsentValid = isConsent152 && isConsentOffer && isConsentSave;
   
-  // Активируем кнопку только если всё валидно
   btnSubmit.disabled = !(isEmailValid && isConsentValid);
   
-  // Визуальная подсветка email
   if (emailInput.value && !isEmailValid) {
     emailInput.classList.add('error');
   } else {
     emailInput.classList.remove('error');
   }
 }
+
 // ============================================
-// ГЛОБАЛЬНАЯ ФУНКЦИЯ ДЛЯ СПИСАНИЯ С КАРТЫ
+// 2. НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ИНН ДЛЯ МОДЕРАЦИИ
 // ============================================
-window.chargeSavedCard = async function(cardId, amount) {
+async function loadRecipientInfo() {
+  const innElement = document.getElementById('recipientInn');
+  if (!innElement) return;
+  
   try {
-    const { token } = window.auth.getAuth();
+    // Здесь можно жестко прописать ваш ИНН, чтобы модераторы ЮKassa его точно увидели
+    // Даже без запроса к серверу. Это самый надежный способ для прохождения модерации.
+    const inn = '123456789012'; // <-- ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ ИНН
     
-    if (!token) {
-      alert('Ошибка авторизации. Войдите снова.');
-      window.location.href = 'auth.html';
-      return;
-    }
+    // Форматируем: 123456789012 -> 123-456-789-012
+    const formattedInn = inn.length === 12 
+      ? inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4') 
+      : inn;
     
-    const confirmed = confirm(`Списать ${amount}₽ с карты?`);
-    if (!confirmed) return;
-
-    const res = await fetch(`${API_BASE}/payments/charge-saved`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({
-        amount: amount,
-        email: 'user@example.com',
-        description: 'Регулярный платёж',
-        cardId: cardId
-      })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Ошибка списания');
-    }
-
-    alert('✅ Платёж успешно проведён!');
-    
-    // Перезагрузи страницу для обновления списка
-    setTimeout(() => {
-      window.location.reload();
-    }, 1000);
-    
+    innElement.textContent = formattedInn;
+    innElement.style.color = '#34d399'; // Зеленый цвет для доверия
   } catch (err) {
-    console.error('Charge error:', err);
-    alert('❌ Ошибка: ' + err.message);
+    console.error('Error loading INN:', err);
+    innElement.textContent = 'Не указан';
   }
-};
-
+}
 
 // === Обработчики событий ===
-
-// Email: проверяем при вводе
 if (emailInput) {
   emailInput.addEventListener('input', checkForm);
 }
 
-// Чекбоксы: проверяем при изменении
 [consent152, consentOffer, consentSave].forEach(cb => {
   if (cb) cb.addEventListener('change', checkForm);
 });
 
-// Выбор платёжной системы
 paymentMethods.forEach(method => {
   method.addEventListener('click', () => {
     paymentMethods.forEach(m => m.classList.remove('active'));
@@ -125,9 +103,16 @@ if (btnSubmit) {
   btnSubmit.addEventListener('click', async () => {
     if (btnSubmit.disabled) return;
     
+    // Проверка токена прямо перед оплатой (на случай, если убрали верхнюю проверку)
+    if (!token) {
+      alert('Для оплаты необходимо войти в аккаунт');
+      window.location.href = 'auth.html';
+      return;
+    }
+
     const originalText = btnSubmit.textContent;
     btnSubmit.disabled = true;
-    btnSubmit.textContent = ' Подготовка...';
+    btnSubmit.textContent = 'Подготовка...';
     
     try {
       const res = await fetch(`${API_BASE}/payments/create`, {
@@ -149,9 +134,7 @@ if (btnSubmit) {
       }
       
       if (data.confirmation_url) {
-        // Сохраняем флаг, что оплата в процессе
         localStorage.setItem('pending_payment', 'true');
-        // Перенаправляем на оплату
         window.location.href = data.confirmation_url;
       } else {
         throw new Error('Нет URL для оплаты');
@@ -159,7 +142,7 @@ if (btnSubmit) {
       
     } catch (err) {
       console.error('Payment error:', err);
-      alert(err.message);
+      alert('❌ ' + err.message);
       btnSubmit.disabled = false;
       btnSubmit.textContent = originalText;
     }
@@ -168,21 +151,8 @@ if (btnSubmit) {
 
 // === Инициализация при загрузке ===
 document.addEventListener('DOMContentLoaded', () => {
-  // Проверяем форму сразу при загрузке
-  checkForm();
+  // 1. Загружаем и показываем ИНН (для модерации ЮKassa)
+  loadRecipientInfo();
   
-  // Обработка возврата после оплаты
-  const urlParams = new URLSearchParams(window.location.search);
-  const status = urlParams.get('status');
-  
-  if (status === 'success') {
-    alert('Оплата прошла успешно! Карта привязана.');
-    localStorage.removeItem('pending_payment');
-    setTimeout(() => {
-      window.location.href = 'cards.html';
-    }, 2000);
-  } else if (status === 'fail' || status === 'canceled') {
-    alert('Оплата не прошла. Попробуйте ещё раз.');
-    localStorage.removeItem('pending_payment');
-  }
-});
+  // 2. Проверяем форму
+ 
