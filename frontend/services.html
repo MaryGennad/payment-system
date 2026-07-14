@@ -2,8 +2,8 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Услуги и тарифы | Оплата</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Каталог услуг | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -11,11 +11,14 @@
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
-        <h1>Наши услуги</h1>
-        <button class="logout-btn" onclick="window.logout()">🚪 Выйти</button>
+        <!-- Кнопка назад ведет в личный кабинет (Мои карты) -->
+        <button class="back-btn" onclick="window.location.href='cards.html'" title="Мои карты">←</button>
+        <h1>Каталог услуг</h1>
+        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">
+          🚪 <span>Выйти</span>
+        </button>
       </div>
-      <p class="header-subtitle">Выберите услугу для оплаты</p>
+      <p class="header-subtitle">Выберите услугу для безопасной оплаты</p>
     </header>
 
     <!-- Каталог услуг -->
@@ -31,13 +34,14 @@
         <div class="service-body">
           <ul class="service-features">
             <li>✅ Быстрая привязка карты</li>
-            <li>✅ Безопасное хранение</li>
+            <li>✅ Безопасное хранение данных</li>
             <li>✅ Для будущих платежей</li>
-            <li>✅ Поддержка всех карт</li>
+            <li>✅ Поддержка МИР, Visa, MC</li>
           </ul>
-          <button class="btn btn-primary" onclick="payForService('card-binding', 1)">
+          <!-- Перенаправляем на форму оплаты с нужными параметрами -->
+          <a href="index.html?amount=1&description=Привязка%20карты&save=true" class="btn btn-primary">
             Оплатить 1 ₽
-          </button>
+          </a>
         </div>
       </div>
 
@@ -54,17 +58,17 @@
           <ul class="service-features">
             <li>✅ 5 автоматических списаний</li>
             <li>✅ По 1 ₽ каждое</li>
-            <li>✅ Без подтверждения</li>
+            <li>✅ Без повторного подтверждения</li>
             <li>✅ Экономия времени</li>
-            <li>✅ Удобно для подписок</li>
+            <li>✅ Идеально для подписок</li>
           </ul>
-          <button class="btn btn-primary" onclick="payForService('recurrent-pack', 5)">
+          <a href="index.html?amount=5&description=Пакет%20автоплатежей%20(5%20шт)&save=true" class="btn btn-primary">
             Оплатить 5 ₽
-          </button>
+          </a>
         </div>
       </div>
 
-      <!-- Услуга 3: Консультация (дополнительно) -->
+      <!-- Услуга 3: Консультация -->
       <div class="service-card">
         <div class="service-header">
           <div class="service-icon">💬</div>
@@ -74,93 +78,86 @@
         <div class="service-body">
           <ul class="service-features">
             <li>✅ Помощь в настройке</li>
-            <li>✅ Ответы на вопросы</li>
-            <li>✅ Техническая поддержка</li>
+            <li>✅ Ответы на технические вопросы</li>
+            <li>✅ Индивидуальная поддержка</li>
           </ul>
-          <button class="btn btn-primary" onclick="payForService('consultation', 10)">
+          <a href="index.html?amount=10&description=Техническая%20консультация&save=false" class="btn btn-primary">
             Оплатить 10 ₽
-          </button>
+          </a>
         </div>
       </div>
 
     </div>
 
-    <!-- Описание для ЮKassa -->
+    <!-- Описание для модерации ЮKassa (КРИТИЧНО ВАЖНО) -->
     <div class="services-description">
-      <h2>📋 Описание услуг</h2>
+      <h2>📋 Подробное описание услуг</h2>
       <div class="description-block">
-        <h3>Что вы можете оплатить:</h3>
+        <h3>Что вы можете оплатить на этом сайте:</h3>
         <ul>
-          <li><strong>Привязка карты (1 ₽)</strong> — одноразовая услуга по сохранению данных карты для будущих платежей</li>
-          <li><strong>Пакет автоплатежей (5 ₽)</strong> — пакет из 5 рекуррентных платежей по 1 ₽ каждый для автоматических списаний</li>
-          <li><strong>Консультация (10 ₽)</strong> — техническая консультация и помощь в настройке</li>
+          <li><strong>Привязка карты (1 ₽)</strong> — одноразовая услуга по безопасному сохранению токена банковской карты в системе для совершения будущих платежей без повторного ввода данных.</li>
+          <li><strong>Пакет автоплатежей (5 ₽)</strong> — пакетная услуга, включающая 5 рекуррентных (автоматических) списаний по 1 ₽ каждое. Используется для тестирования или оплаты подписок без необходимости подтверждения каждой операции.</li>
+          <li><strong>Техническая консультация (10 ₽)</strong> — разовая услуга по оказанию технической поддержки и помощи в настройке платежных инструментов.</li>
         </ul>
       </div>
       <div class="description-block">
-        <h3>Как это работает:</h3>
+        <h3>Как происходит оплата:</h3>
         <ol>
-          <li>Выберите услугу и нажмите "Оплатить"</li>
-          <li>Введите email для получения чека</li>
-          <li>Оплатите картой через защищённое соединение</li>
-          <li>После оплаты услуга будет активирована</li>
+          <li>Выберите нужную услугу в каталоге выше.</li>
+          <li>На странице оплаты введите ваш Email для получения электронного чека (в соответствии с 54-ФЗ).</li>
+          <li>Нажмите "Продолжить" и перейдите на защищенную страницу платежной системы (ЮKassa).</li>
+          <li>Введите данные карты и подтвердите платеж. После успешной оплаты услуга активируется автоматически.</li>
         </ol>
+      </div>
+    </div>
+
+    <!-- Реквизиты получателя (для доверия и модерации) -->
+    <div class="recipient-info">
+      <div class="recipient-title">🏢 Реквизиты получателя платежей</div>
+      <div class="recipient-row">
+        <span class="r-label">Статус:</span>
+        <span class="r-value">Самозанятый (НПД)</span>
+      </div>
+      <div class="recipient-row">
+        <span class="r-label">ИНН:</span>
+        <!-- ЗАМЕНИТЕ ЦИФРЫ НА ВАШ РЕАЛЬНЫЙ ИНН -->
+        <span class="r-value inn-number" id="recipientInn">123-456-789-012</span>
+      </div>
+      <div class="recipient-row">
+        <span class="r-label">Обработка платежей:</span>
+        <span class="r-value">АО "ЮKassa" (НКО ООО "ЮМани")</span>
       </div>
     </div>
 
     <!-- Footer -->
     <div class="footer-links">
-      <a href="index.html">Привязать карту</a>
       <a href="cards.html">Мои карты</a>
-      <a href="#">Помощь</a>
+      <a href="#">Пользовательское соглашение</a>
+      <a href="#">Политика конфиденциальности</a>
     </div>
   </div>
 
   <script src="/js/auth.js"></script>
   <script>
-    // Функция оплаты услуги
-    async function payForService(serviceName, amount) {
+    // Проверка авторизации при загрузке этой страницы
+    (function() {
       const auth = window.auth?.getAuth() || {};
-      const token = auth.token;
-      
-      if (!token) {
-        alert('Сначала войдите в аккаунт');
+      if (!auth.token) {
+        // Если не авторизован, кидаем на вход, а оттуда вернемся сюда
         window.location.href = 'auth.html';
-        return;
       }
+    })();
 
-      const email = prompt('Введите email для чека:');
-      if (!email) return;
-
-      try {
-        const res = await fetch(`${API_BASE}/payments/create`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            provider: 'yookassa',
-            amount: amount,
-            email: email,
-            description: `Оплата услуги: ${serviceName}`,
-            save_payment_method: true
-          })
-        });
-
-        const data = await res.json();
-        
-        if (!res.ok) {
-          throw new Error(data.error || 'Ошибка создания платежа');
+    // Форматирование ИНН при загрузке (если он прописан жестко выше, это для красоты)
+    document.addEventListener('DOMContentLoaded', () => {
+      const innElement = document.getElementById('recipientInn');
+      if (innElement) {
+        let inn = innElement.textContent.replace(/\D/g, ''); // Убираем все не-цифры
+        if (inn.length === 12) {
+          innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
         }
-
-        if (data.confirmation_url) {
-          window.location.href = data.confirmation_url;
-        }
-
-      } catch (err) {
-        alert('❌ ' + err.message);
       }
-    }
+    });
   </script>
 </body>
 </html>

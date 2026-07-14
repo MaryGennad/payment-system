@@ -1,5 +1,8 @@
 const API_BASE = '/api';
-// Глобальный объект авторизации
+
+// ============================================
+// ГЛОБАЛЬНЫЙ ОБЪЕКТ АВТОРИЗАЦИИ
+// ============================================
 window.auth = {
   saveAuth: (token, user) => {
     localStorage.setItem('token', token);
@@ -7,8 +10,11 @@ window.auth = {
   },
   getAuth: () => {
     const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    return { token, user: user ? JSON.parse(user) : null };
+    const userStr = localStorage.getItem('user');
+    return { 
+      token, 
+      user: userStr ? JSON.parse(userStr) : null 
+    };
   },
   clearAuth: () => {
     localStorage.removeItem('token');
@@ -16,12 +22,16 @@ window.auth = {
   }
 };
 
-// Если уже авторизован — редирект на карты
+// ============================================
+// АВТОРЕДИРЕКТ: Если уже авторизован, кидаем в КАТАЛОГ УСЛУГ
+// ============================================
 if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
-  window.location.href = 'cards.html';
+  window.location.href = 'services.html';
 }
 
-// Переключение вкладок — только если элементы есть
+// ============================================
+// ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (Вход / Регистрация)
+// ============================================
 const tabBtns = document.querySelectorAll('.tab-btn');
 if (tabBtns.length > 0) {
   tabBtns.forEach(btn => {
@@ -41,56 +51,97 @@ if (tabBtns.length > 0) {
   });
 }
 
-// Вход — только если форма есть
+// ============================================
+// ВХОД В АККАУНТ
+// ============================================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
   loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const email = document.getElementById('loginEmail').value;
-    const password = document.getElementById('loginPassword').value;
     
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const submitBtn = loginForm.querySelector('button[type="submit"]');
+
     try {
+      // Блокируем кнопку, чтобы избежать двойной отправки
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Вход...';
+      }
+
       const res = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || 'Ошибка входа');
       
       window.auth.saveAuth(data.token, data.user);
-      window.location.href = 'cards.html';
+      
+      // 🎯 РЕДИРЕКТ НА КАТАЛОГ УСЛУГ
+      window.location.href = 'services.html';
+      
     } catch (err) {
-      alert(err.message);
+      alert('❌ ' + err.message);
+    } finally {
+      // Возвращаем кнопку в исходное состояние
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Войти';
+      }
     }
   });
 }
 
-// Регистрация — только если форма есть
+// ============================================
+// РЕГИСТРАЦИЯ
+// ============================================
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
   registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = document.getElementById('registerName').value;
-    const email = document.getElementById('registerEmail').value;
-    const password = document.getElementById('registerPassword').value;
     
+    const name = document.getElementById('registerName').value.trim();
+    const email = document.getElementById('registerEmail').value.trim();
+    const password = document.getElementById('registerPassword').value;
+    const submitBtn = registerForm.querySelector('button[type="submit"]');
+
     try {
+      // Блокируем кнопку, чтобы избежать двойной отправки
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Регистрация...';
+      }
+
       const res = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password })
       });
+      
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) throw new Error(data.error || 'Ошибка регистрации');
       
       window.auth.saveAuth(data.token, data.user);
-      window.location.href = 'cards.html';
+      
+      // 🎯 РЕДИРЕКТ НА КАТАЛОГ УСЛУГ
+      window.location.href = 'services.html';
+      
     } catch (err) {
-      alert(err.message);
+      alert('❌ ' + err.message);
+    } finally {
+      // Возвращаем кнопку в исходное состояние
+      if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Зарегистрироваться';
+      }
     }
   });
 }
+
 // ============================================
 // ФУНКЦИЯ ВЫХОДА (доступна на всех страницах)
 // ============================================

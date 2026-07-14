@@ -243,49 +243,99 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
-// ЗАГРУЗКА ИСТОРИИ ПЛАТЕЖЕЙ
+// ИСТОРИЯ ПЛАТЕЖЕЙ (с кнопкой возврата)
 // ============================================
 async function loadPaymentHistory() {
   try {
-    const res = await fetch(`${API_BASE}/payments/history`, { headers });
-    if (!res.ok) return;
-    
-    const payments = await res.json();
+    const payments = await getPaymentHistory();
     const historyDiv = document.getElementById('paymentHistory');
-    
     if (!historyDiv) return;
-    
+
     if (!payments.length) {
-      historyDiv.innerHTML = '<p style="text-align:center; color:#888;">Нет платежей</p>';
+      historyDiv.innerHTML = '<p style="text-align:center;color:#888;">Нет платежей</p>';
       return;
     }
-    
+
     historyDiv.innerHTML = `
-      <h3 style="margin-bottom:15px;"> История платежей</h3>
-      <div style="max-height:300px; overflow-y:auto;">
-        ${payments.map(p => `
-          <div style="background:#1e293b; padding:12px; margin-bottom:10px; border-radius:8px; border-left:4px solid ${p.status === 'succeeded' ? '#10b981' : '#f59e0b'}">
-            <div style="display:flex; justify-content:space-between;">
-              <span style="font-weight:600;"> ${p.amount} ₽</span>
-              <span style="color:${p.status === 'succeeded' ? '#10b981' : '#f59e0b'}">
-                ${p.status === 'succeeded' ? '✅ Успешно' : '⏳ В обработке'}
-              </span>
-            </div>
-            <div style="font-size:12px; color:#888; margin-top:5px;">
-              📅 ${new Date(p.createdAt).toLocaleString('ru-RU')}
-            </div>
-            <div style="font-size:12px; color:#888;">
-              🏦 ${p.provider}
-            </div>
-          </div>
-        `).join('')}
-      </div>
-    `;
-    
+      <h3 style="margin-bottom:15px;">📊 История платежей</h3>
+      <div style="max-height:400px;overflow-y:auto;">
+        ${payments.map(p => {
+          const isSucceeded = p.status === 'succeeded';
+          const isRefunded = p.status === 'refunded';
+          
+          let statusColor = '#f59e0b'; // pending
+          let statusText = '⏳ В обработке';
+          
+          if (isSucceeded) { statusColor = '#10b981'; statusText = '✅ Успешно'; }
+          if (isRefunded) { statusColor = '#6b7280'; statusText = '🔄 Возвращено'; }
+          if (p.status === 'failed' || p.status === 'canceled') { statusColor = '#ef4444'; statusText = '❌ Отменено'; }
+
+          // Кнопка возврата показывается только для успешных платежей
+          const refundButton = isSucceeded ? `
+            <button class="btn-small" style="margin-top:8px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db;" 
+              onclick="window.requestRefund('${p._id}', ${p.amount})">
+              🔄 Вернуть средства
+            </button>
+          ` : '';
+
+          return `
+            <div style="background:#1e293b;padding:12px;margin-bottom:10px;border-radius:8px;border-left:4px solid ${statusColor}">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <span style="font-weight:600;">💰 ${escape(p.amount)} ₽</span>
+                <span style="color:${statusColor}; font-size:13px; font-weight:600;">${statusText}</span>
+              </div>
+              <div style="font-size:12px;color:#888;margin-top:5px;">
+                📅 ${new Date(p.createdAt).toLocaleString('ru-RU')}
+              </div>
+              <div style="font-size:12px;color:#888;">
+                🏦 ${escape(p.provider)} | ${escape(p.description || 'Платеж')}
+              </div>
+              ${refundButton}
+            </div>`;
+        }).join('')}
+      </div>`;
   } catch (err) {
     console.error('Load history error:', err);
   }
 }
+
+// ============================================
+// ФУНКЦИЯ ЗАПРОСА ВОЗВРАТА
+// ============================================
+window.requestRefund = async (paymentId, amount) => {
+  if (!confirm(`Вы уверены, что хотите оформить возврат ${amount}₽?\n\nДеньги вернутся на карту в течение 1-3 рабочих дней.`)) {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/payments/refund`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ paymentId })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Ошибка оформления возврата');
+    }
+
+    showToast(`✅ Возврат ${amount}₽ успешно инициирован!`, 'success');
+    
+    // Очищаем кэш и перезагружаем историю
+    historyCache = null;
+    setTimeout(() => {
+      loadPaymentHistory();
+    }, 1000);
+
+  } catch (err) {
+    console.error('Refund error:', err);
+    showToast('❌ ' + err.message, 'error');
+  }
+};
 
 // Вызови загрузку истории после загрузки карт
 window.addEventListener('DOMContentLoaded', () => {

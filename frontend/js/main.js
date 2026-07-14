@@ -1,26 +1,22 @@
 // ============================================
-// 1. ПРОВЕРКА АВТОРИЗАЦИИ
-// ВАЖНО: Если вы даете ссылку на эту страницу модераторам ЮKassa,
-// они НЕ смогут её открыть, если здесь стоит редирект на auth.html!
-// Если страница должна быть публичной для проверки, закомментируйте эти 4 строки:
-/*
-const { token } = window.auth?.getAuth() || {};
-if (!token) {
-  window.location.href = 'auth.html';
-}
-*/
+// 1. ИНИЦИАЛИЗАЦИЯ И ПЕРЕМЕННЫЕ
+// ============================================
+const API_BASE = window.API_BASE || '/api';
 
-// Если страница всё же только для авторизованных, оставьте так:
 const authData = window.auth?.getAuth() || {};
 const token = authData.token;
 
-// Заголовки с токеном (если токен есть)
+// Если нет токена, отправляем на страницу входа
+if (!token) {
+  window.location.href = 'auth.html';
+}
+
 const headers = {
   'Content-Type': 'application/json',
-  'Authorization': token ? `Bearer ${token}` : ''
+  'Authorization': `Bearer ${token}`
 };
 
-// === Элементы формы ===
+// Элементы формы
 const emailInput = document.getElementById('email');
 const btnSubmit = document.getElementById('btnSubmit');
 const paymentMethods = document.querySelectorAll('.payment-method');
@@ -30,12 +26,35 @@ const consentSave = document.getElementById('consentSave');
 
 let selectedProvider = 'yookassa';
 
-// === Валидация email ===
+// Чтение параметров из URL (при переходе из каталога услуг)
+const urlParams = new URLSearchParams(window.location.search);
+const urlAmount = urlParams.get('amount');
+const urlDesc = urlParams.get('description');
+const urlSave = urlParams.get('save');
+
+// ============================================
+// 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОД ВЫБРАННУЮ УСЛУГУ
+// ============================================
+if (urlAmount) {
+  // Обновляем итоговую сумму в блоке summary, если он есть
+  const totalElement = document.querySelector('.summary-row.total span:last-child');
+  if (totalElement) {
+    totalElement.textContent = `${parseFloat(urlAmount).toFixed(2)} ₽`;
+  }
+  
+  // Если есть чекбокс "Сохранить карту", проставляем его по умолчанию из URL
+  if (urlSave === 'true' && consentSave) {
+    consentSave.checked = true;
+  }
+}
+
+// ============================================
+// 3. ВАЛИДАЦИЯ ФОРМЫ
+// ============================================
 function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
-// === Проверка формы: активируем кнопку, если всё ок ===
 function checkForm() {
   if (!emailInput || !btnSubmit) return;
   
@@ -47,8 +66,10 @@ function checkForm() {
   
   const isConsentValid = isConsent152 && isConsentOffer && isConsentSave;
   
+  // Активируем кнопку только если email валиден и все согласия получены
   btnSubmit.disabled = !(isEmailValid && isConsentValid);
   
+  // Визуальная подсветка ошибки в поле email
   if (emailInput.value && !isEmailValid) {
     emailInput.classList.add('error');
   } else {
@@ -57,31 +78,8 @@ function checkForm() {
 }
 
 // ============================================
-// 2. НОВАЯ ФУНКЦИЯ: ЗАГРУЗКА ИНН ДЛЯ МОДЕРАЦИИ
+// 4. ОБРАБОТЧИКИ СОБЫТИЙ
 // ============================================
-async function loadRecipientInfo() {
-  const innElement = document.getElementById('recipientInn');
-  if (!innElement) return;
-  
-  try {
-    // Здесь можно жестко прописать ваш ИНН, чтобы модераторы ЮKassa его точно увидели
-    // Даже без запроса к серверу. Это самый надежный способ для прохождения модерации.
-    const inn = '532113934079'; // <-- ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ ИНН
-    
-    // Форматируем: 123456789012 -> 123-456-789-012
-    const formattedInn = inn.length === 12 
-      ? inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4') 
-      : inn;
-    
-    innElement.textContent = formattedInn;
-    innElement.style.color = '#34d399'; // Зеленый цвет для доверия
-  } catch (err) {
-    console.error('Error loading INN:', err);
-    innElement.textContent = 'Не указан';
-  }
-}
-
-// === Обработчики событий ===
 if (emailInput) {
   emailInput.addEventListener('input', checkForm);
 }
@@ -98,21 +96,17 @@ paymentMethods.forEach(method => {
   });
 });
 
-// === Отправка формы ===
+// ============================================
+// 5. ОТПРАВКА ФОРМЫ (СОЗДАНИЕ ПЛАТЕЖА)
+// ============================================
 if (btnSubmit) {
-  btnSubmit.addEventListener('click', async () => {
+  btnSubmit.addEventListener('click', async (e) => {
+    e.preventDefault();
     if (btnSubmit.disabled) return;
     
-    // Проверка токена прямо перед оплатой (на случай, если убрали верхнюю проверку)
-    if (!token) {
-      alert('Для оплаты необходимо войти в аккаунт');
-      window.location.href = 'auth.html';
-      return;
-    }
-
     const originalText = btnSubmit.textContent;
     btnSubmit.disabled = true;
-    btnSubmit.textContent = 'Подготовка...';
+    btnSubmit.textContent = '⏳ Подготовка платежа...';
     
     try {
       const res = await fetch(`${API_BASE}/payments/create`, {
@@ -120,10 +114,10 @@ if (btnSubmit) {
         headers,
         body: JSON.stringify({
           provider: selectedProvider,
-          amount: 1.00,
+          amount: parseFloat(urlAmount || 1.00), // Берем из URL или 1₽ по умолчанию
           email: emailInput.value.trim(),
-          description: 'Привязка карты',
-          save_payment_method: true
+          description: urlDesc || 'Привязка карты', // Берем из URL или по умолчанию
+          save_payment_method: urlSave === 'true' // Берем из URL
         })
       });
       
@@ -137,7 +131,7 @@ if (btnSubmit) {
         localStorage.setItem('pending_payment', 'true');
         window.location.href = data.confirmation_url;
       } else {
-        throw new Error('Нет URL для оплаты');
+        throw new Error('Платежная система не вернула ссылку для оплаты');
       }
       
     } catch (err) {
@@ -149,10 +143,52 @@ if (btnSubmit) {
   });
 }
 
-// === Инициализация при загрузке ===
+// ============================================
+// 6. ОБРАБОТКА ВОЗВРАТА ОТ ЮKASSA
+// ============================================
 document.addEventListener('DOMContentLoaded', () => {
-  // 1. Загружаем и показываем ИНН (для модерации ЮKassa)
+  // Инициализация валидации при загрузке
+  checkForm();
+  
+  // Загрузка ИНН для модерации (если элемент существует на странице)
   loadRecipientInfo();
   
-  // 2. Проверяем форму
- 
+  // Проверка статуса возврата
+  const status = urlParams.get('status');
+  
+  if (status === 'success') {
+    // Небольшая задержка, чтобы пользователь успел заметить сообщение
+    setTimeout(() => {
+      alert('✅ Оплата прошла успешно! Карта привязана.');
+      localStorage.removeItem('pending_payment');
+      window.location.href = 'cards.html';
+    }, 500);
+  } else if (status === 'fail' || status === 'canceled') {
+    alert('❌ Оплата не прошла или была отменена. Попробуйте ещё раз.');
+    localStorage.removeItem('pending_payment');
+  }
+});
+
+// ============================================
+// 7. ЗАГРУЗКА ИНН (ДЛЯ МОДЕРАЦИИ ЮKASSA)
+// ============================================
+async function loadRecipientInfo() {
+  const innElement = document.getElementById('recipientInn');
+  if (!innElement) return;
+  
+  try {
+    // ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ ИНН
+    const inn = '123456789012'; 
+    
+    if (inn && inn.length === 12) {
+      innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
+    } else {
+      innElement.textContent = inn;
+    }
+    
+    innElement.style.color = '#059669'; // Зеленый цвет для доверия
+  } catch (err) {
+    console.error('Error loading INN:', err);
+    innElement.textContent = 'Не указан';
+  }
+}

@@ -24,9 +24,9 @@ const PaymentSchema = new mongoose.Schema({
     type: String,
     default: 'RUB'
   },
-  status: {
+    status: {
     type: String,
-    enum: ['pending', 'succeeded', 'canceled', 'failed'],
+    enum: ['pending', 'succeeded', 'canceled', 'failed', 'refunded'], 
     default: 'pending'
   },
   email: {
