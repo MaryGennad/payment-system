@@ -190,27 +190,3 @@ async function loadRecipientInfo() {
     innElement.textContent = 'Не указан';
   }
 }
-// ============================================
-// 3D CARD INTERACTION
-// ============================================
-const card3d = document.getElementById('card3d');
-
-if (card3d) {
-  card3d.addEventListener('mousemove', (e) => {
-    const rect = card3d.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    
-    const centerX = rect.width / 2;
-    const centerY = rect.height / 2;
-    
-    const rotateX = (y - centerY) / 10;
-    const rotateY = (centerX - x) / 10;
-    
-    card3d.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-  });
-  
-  card3d.addEventListener('mouseleave', () => {
-    card3d.style.transform = 'rotateX(0) rotateY(0)';
-  });
-}
