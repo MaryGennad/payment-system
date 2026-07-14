@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Услуги и тарифы | Оплата</title>
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="header-top">
+        <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+        <h1>Наши услуги</h1>
+        <button class="logout-btn" onclick="window.logout()">🚪 Выйти</button>
+      </div>
+      <p class="header-subtitle">Выберите услугу для оплаты</p>
+    </header>
+
+    <!-- Каталог услуг -->
+    <div class="services-catalog">
+      
+      <!-- Услуга 1: Разовая привязка карты -->
+      <div class="service-card">
+        <div class="service-header">
+          <div class="service-icon">💳</div>
+          <h2>Привязка карты</h2>
+          <div class="service-price">1 ₽</div>
+        </div>
+        <div class="service-body">
+          <ul class="service-features">
+            <li>✅ Быстрая привязка карты</li>
+            <li>✅ Безопасное хранение</li>
+            <li>✅ Для будущих платежей</li>
+            <li>✅ Поддержка всех карт</li>
+          </ul>
+          <button class="btn btn-primary" onclick="payForService('card-binding', 1)">
+            Оплатить 1 ₽
+          </button>
+        </div>
+      </div>
+
+      <!-- Услуга 2: Пакет рекуррентных платежей -->
+      <div class="service-card featured">
+        <div class="service-badge">Популярное</div>
+        <div class="service-header">
+          <div class="service-icon">🔄</div>
+          <h2>Пакет автоплатежей</h2>
+          <div class="service-price">5 ₽</div>
+          <div class="service-subprice">5 платежей по 1 ₽</div>
+        </div>
+        <div class="service-body">
+          <ul class="service-features">
+            <li>✅ 5 автоматических списаний</li>
+            <li>✅ По 1 ₽ каждое</li>
+            <li>✅ Без подтверждения</li>
+            <li>✅ Экономия времени</li>
+            <li>✅ Удобно для подписок</li>
+          </ul>
+          <button class="btn btn-primary" onclick="payForService('recurrent-pack', 5)">
+            Оплатить 5 ₽
+          </button>
+        </div>
+      </div>
+
+      <!-- Услуга 3: Консультация (дополнительно) -->
+      <div class="service-card">
+        <div class="service-header">
+          <div class="service-icon">💬</div>
+          <h2>Консультация</h2>
+          <div class="service-price">10 ₽</div>
+        </div>
+        <div class="service-body">
+          <ul class="service-features">
+            <li>✅ Помощь в настройке</li>
+            <li>✅ Ответы на вопросы</li>
+            <li>✅ Техническая поддержка</li>
+          </ul>
+          <button class="btn btn-primary" onclick="payForService('consultation', 10)">
+            Оплатить 10 ₽
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Описание для ЮKassa -->
+    <div class="services-description">
+      <h2>📋 Описание услуг</h2>
+      <div class="description-block">
+        <h3>Что вы можете оплатить:</h3>
+        <ul>
+          <li><strong>Привязка карты (1 ₽)</strong> — одноразовая услуга по сохранению данных карты для будущих платежей</li>
+          <li><strong>Пакет автоплатежей (5 ₽)</strong> — пакет из 5 рекуррентных платежей по 1 ₽ каждый для автоматических списаний</li>
+          <li><strong>Консультация (10 ₽)</strong> — техническая консультация и помощь в настройке</li>
+        </ul>
+      </div>
+      <div class="description-block">
+        <h3>Как это работает:</h3>
+        <ol>
+          <li>Выберите услугу и нажмите "Оплатить"</li>
+          <li>Введите email для получения чека</li>
+          <li>Оплатите картой через защищённое соединение</li>
+          <li>После оплаты услуга будет активирована</li>
+        </ol>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer-links">
+      <a href="index.html">Привязать карту</a>
+      <a href="cards.html">Мои карты</a>
+      <a href="#">Помощь</a>
+    </div>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script>
+    // Функция оплаты услуги
+    async function payForService(serviceName, amount) {
+      const auth = window.auth?.getAuth() || {};
+      const token = auth.token;
+      
+      if (!token) {
+        alert('Сначала войдите в аккаунт');
+        window.location.href = 'auth.html';
+        return;
+      }
+
+      const email = prompt('Введите email для чека:');
+      if (!email) return;
+
+      try {
+        const res = await fetch(`${API_BASE}/payments/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            provider: 'yookassa',
+            amount: amount,
+            email: email,
+            description: `Оплата услуги: ${serviceName}`,
+            save_payment_method: true
+          })
+        });
+
+        const data = await res.json();
+        
+        if (!res.ok) {
+          throw new Error(data.error || 'Ошибка создания платежа');
+        }
+
+        if (data.confirmation_url) {
+          window.location.href = data.confirmation_url;
+        }
+
+      } catch (err) {
+        alert('❌ ' + err.message);
+      }
+    }
+  </script>
+</body>
+</html>
