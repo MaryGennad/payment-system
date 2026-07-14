@@ -7,45 +7,77 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="icon" href="data:,">
   <style>
-  .auth-tabs {
-    display: flex;
-    gap: 0;
-    margin-bottom: 32px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    overflow: hidden;
-  }
-  .tab-btn {
-    flex: 1;
-    padding: 14px;
-    border: none;
-    background: transparent;
-    color: var(--text-secondary);
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: 500;
-    transition: all 0.3s var(--ease-premium);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  .tab-btn:hover {
-    color: var(--text-primary);
-  }
-  .tab-btn.active {
-    background: var(--text-primary);
-    color: white;
-  }
-  .form-container { display: none; }
-  .form-container.active { display: block; }
-</style>
+    /* Специфичные стили только для страницы авторизации */
+    .auth-wrapper {
+      max-width: 440px;
+      margin: 80px auto;
+      animation: fadeInUp 0.8s var(--ease-premium) forwards;
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .auth-header h2 {
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+    }
+    
+    .auth-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 400;
+    }
+    
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      margin-bottom: 32px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    
+    .tab-btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.3s var(--ease-premium);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
+    
+    .tab-btn.active {
+      background: var(--text-primary);
+      color: white;
+    }
+    
+    .form-container { display: none; }
+    .form-container.active { display: block; }
+  </style>
 </head>
 <body>
   <div class="container">
-    <div class="card" style="max-width: 400px; margin: 50px auto; padding: 30px;">
-      <div class="card-header" style="text-align: center; margin-bottom: 30px; border: none; padding: 0;">
-        <h2 style="color: white; margin: 0;">Добро пожаловать</h2>
-        <p style="color: #94a3b8; font-size: 13px; margin-top: 5px;">Войдите или создайте аккаунт</p>
+    <div class="auth-wrapper">
+      
+      <!-- Заголовок -->
+      <div class="auth-header">
+        <h2>Добро пожаловать</h2>
+        <p>Войдите или создайте аккаунт</p>
       </div>
 
       <!-- Вкладки -->
@@ -54,54 +86,36 @@
         <button class="tab-btn" data-tab="register">Регистрация</button>
       </div>
 
-      <!-- Форма ВХОДА (теперь это настоящий тег <form>) -->
+      <!-- Форма ВХОДА -->
       <form id="loginForm" class="form-container active">
         <div class="form-group">
-          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Email</label>
-          <input type="email" id="loginEmail" placeholder="example@mail.ru" required
-                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
-                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+          <label for="loginEmail">Email</label>
+          <input type="email" id="loginEmail" placeholder="name@example.com" required autocomplete="email">
         </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Пароль</label>
-          <input type="password" id="loginPassword" placeholder="••••••" required
-                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
-                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        <div class="form-group">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required autocomplete="current-password">
         </div>
-        <!-- ВАЖНО: type="submit" и НИКАКОГО onclick -->
-        <button type="submit" id="loginBtn"
-                style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
-                       border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
-                       cursor: pointer; transition: background 0.3s;">
+        <button type="submit" id="loginBtn" class="btn btn-primary">
           Войти
         </button>
       </form>
 
-      <!-- Форма РЕГИСТРАЦИИ (теперь это настоящий тег <form>) -->
+      <!-- Форма РЕГИСТРАЦИИ -->
       <form id="registerForm" class="form-container">
         <div class="form-group">
-          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Имя</label>
-          <input type="text" id="registerName" placeholder="Ваше имя" required
-                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
-                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+          <label for="registerName">Имя</label>
+          <input type="text" id="registerName" placeholder="Ваше имя" required autocomplete="name">
         </div>
         <div class="form-group">
-          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Email</label>
-          <input type="email" id="registerEmail" placeholder="example@mail.ru" required
-                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
-                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+          <label for="registerEmail">Email</label>
+          <input type="email" id="registerEmail" placeholder="name@example.com" required autocomplete="email">
         </div>
-        <div class="form-group" style="margin-bottom: 20px;">
-          <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Пароль (мин. 6 символов)</label>
-          <input type="password" id="registerPassword" placeholder="••••••" required
-                 style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
-                        border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
+        <div class="form-group">
+          <label for="registerPassword">Пароль</label>
+          <input type="password" id="registerPassword" placeholder="Минимум 6 символов" required autocomplete="new-password">
         </div>
-        <!-- ВАЖНО: type="submit" и НИКАКОГО onclick -->
-        <button type="submit" id="registerBtn"
-                style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
-                       border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
-                       cursor: pointer; transition: background 0.3s;">
+        <button type="submit" id="registerBtn" class="btn btn-primary">
           Зарегистрироваться
         </button>
       </form>
@@ -109,7 +123,6 @@
     </div>
   </div>
 
-  <!-- Подключаем ВНЕШНИЙ скрипт, который содержит всю логику (без встроенных скриптов!) -->
   <script src="/js/auth.js"></script>
 </body>
 </html>

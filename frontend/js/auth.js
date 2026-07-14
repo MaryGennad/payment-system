@@ -23,7 +23,7 @@ window.auth = {
 };
 
 // ============================================
-// АВТОРЕДИРЕКТ: Если уже авторизован, кидаем в КАТАЛОГ УСЛУГ
+// АВТОРЕДИРЕКТ: Если уже авторизован, переходим в КАТАЛОГ УСЛУГ
 // ============================================
 if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
   window.location.href = 'services.html';
@@ -64,7 +64,7 @@ if (loginForm) {
     const submitBtn = loginForm.querySelector('button[type="submit"]');
 
     try {
-      // Блокируем кнопку, чтобы избежать двойной отправки
+      // Блокируем кнопку для предотвращения двойной отправки
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Вход...';
@@ -77,15 +77,16 @@ if (loginForm) {
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Ошибка входа');
+      if (!res.ok) throw new Error(data.error || 'Неверный email или пароль');
       
       window.auth.saveAuth(data.token, data.user);
       
-      // 🎯 РЕДИРЕКТ НА КАТАЛОГ УСЛУГ
+      // Перенаправление в каталог
       window.location.href = 'services.html';
       
     } catch (err) {
-      alert('❌ ' + err.message);
+      // Строгое сообщение без эмодзи
+      alert('Ошибка: ' + err.message);
     } finally {
       // Возвращаем кнопку в исходное состояние
       if (submitBtn) {
@@ -110,7 +111,7 @@ if (registerForm) {
     const submitBtn = registerForm.querySelector('button[type="submit"]');
 
     try {
-      // Блокируем кнопку, чтобы избежать двойной отправки
+      // Блокируем кнопку для предотвращения двойной отправки
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Регистрация...';
@@ -123,15 +124,16 @@ if (registerForm) {
       });
       
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Ошибка регистрации');
+      if (!res.ok) throw new Error(data.error || 'Ошибка при создании аккаунта');
       
       window.auth.saveAuth(data.token, data.user);
       
-      // 🎯 РЕДИРЕКТ НА КАТАЛОГ УСЛУГ
+      // Перенаправление в каталог
       window.location.href = 'services.html';
       
     } catch (err) {
-      alert('❌ ' + err.message);
+      // Строгое сообщение без эмодзи
+      alert('Ошибка: ' + err.message);
     } finally {
       // Возвращаем кнопку в исходное состояние
       if (submitBtn) {
@@ -146,7 +148,8 @@ if (registerForm) {
 // ФУНКЦИЯ ВЫХОДА (доступна на всех страницах)
 // ============================================
 window.logout = function() {
-  if (confirm('Выйти из аккаунта?')) {
+  // Формальный текст подтверждения без эмодзи
+  if (confirm('Вы действительно хотите выйти из аккаунта?')) {
     window.auth.clearAuth();
     window.location.href = 'auth.html';
   }
