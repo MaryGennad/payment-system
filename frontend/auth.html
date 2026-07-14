@@ -3,10 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Авторизация</title>
+  <title>Авторизация | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
-  <!-- Заглушка для фавикона, чтобы браузер не искал файл -->
-<link rel="icon" href="data:,">
+  <link rel="icon" href="data:,">
   <style>
     /* Стили для вкладок */
     .auth-tabs {
@@ -29,25 +28,19 @@
       font-weight: 500;
       transition: all 0.3s;
     }
-    .tab-btn:hover {
-      color: white;
-    }
+    .tab-btn:hover { color: white; }
     .tab-btn.active {
       background: #8b5cf6;
       color: white;
     }
-    .form-container {
-      display: none;
-    }
-    .form-container.active {
-      display: block;
-    }
+    .form-container { display: none; }
+    .form-container.active { display: block; }
   </style>
 </head>
 <body>
   <div class="container">
     <div class="card" style="max-width: 400px; margin: 50px auto; padding: 30px;">
-      <div class="card-header" style="text-align: center; margin-bottom: 30px;">
+      <div class="card-header" style="text-align: center; margin-bottom: 30px; border: none; padding: 0;">
         <h2 style="color: white; margin: 0;">Добро пожаловать</h2>
         <p style="color: #94a3b8; font-size: 13px; margin-top: 5px;">Войдите или создайте аккаунт</p>
       </div>
@@ -72,7 +65,7 @@
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
-        <button type="button" onclick="handleLogin()" 
+        <button type="button" id="loginBtn" onclick="handleLogin()" 
                 style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
                        border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
                        cursor: pointer; transition: background 0.3s;">
@@ -100,7 +93,7 @@
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
-        <button type="button" onclick="handleRegister()" 
+        <button type="button" id="registerBtn" onclick="handleRegister()" 
                 style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
                        border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
                        cursor: pointer; transition: background 0.3s;">
@@ -113,26 +106,30 @@
 
   <script>
     const API_BASE = '/api';
-    // Переключение вкладок
+
+    // 1. ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ЗАГРУЗКЕ
+    // Если уже есть токен, сразу кидаем в КАТАЛОГ УСЛУГ
+    if (localStorage.getItem('token')) {
+      window.location.href = 'services.html';
+    }
+
+    // 2. Переключение вкладок
     document.querySelectorAll('.tab-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        // Убираем active у всех кнопок и форм
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
         
-        // Добавляем active нажатой кнопке
         btn.classList.add('active');
-        
-        // Показываем нужную форму
         const tab = btn.dataset.tab;
         document.getElementById(tab + 'Form').classList.add('active');
       });
     });
 
-    // Вход
+    // 3. Функция ВХОДА
     async function handleLogin() {
-      const email = document.getElementById('loginEmail').value;
+      const email = document.getElementById('loginEmail').value.trim();
       const password = document.getElementById('loginPassword').value;
+      const btn = document.getElementById('loginBtn');
       
       if (!email || !password) {
         alert('Введите email и пароль');
@@ -140,6 +137,9 @@
       }
 
       try {
+        btn.disabled = true;
+        btn.textContent = 'Вход...';
+
         const res = await fetch(`${API_BASE}/auth/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -149,25 +149,28 @@
         
         if (!res.ok) throw new Error(data.error || 'Ошибка входа');
         
-        // Сохраняем токен
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Переходим на страницу карт
-        window.location.href = 'cards.html';
+        // 🎯 ИЗМЕНЕНО: Переходим в каталог услуг
+        window.location.href = 'services.html';
+        
       } catch (err) {
-        alert(err.message);
+        alert('❌ ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Войти';
       }
     }
 
-    // Регистрация
+    // 4. Функция РЕГИСТРАЦИИ
     async function handleRegister() {
-      const name = document.getElementById('registerName').value;
-      const email = document.getElementById('registerEmail').value;
+      const name = document.getElementById('registerName').value.trim();
+      const email = document.getElementById('registerEmail').value.trim();
       const password = document.getElementById('registerPassword').value;
+      const btn = document.getElementById('registerBtn');
       
-      if (!email || !password) {
-        alert('Email и пароль обязательны');
+      if (!name || !email || !password) {
+        alert('Заполните все поля');
         return;
       }
       if (password.length < 6) {
@@ -176,6 +179,9 @@
       }
 
       try {
+        btn.disabled = true;
+        btn.textContent = 'Регистрация...';
+
         const res = await fetch(`${API_BASE}/auth/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -185,20 +191,17 @@
         
         if (!res.ok) throw new Error(data.error || 'Ошибка регистрации');
         
-        // Сохраняем токен
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         
-        // Переходим на страницу карт
-        window.location.href = 'cards.html';
+        // 🎯 ИЗМЕНЕНО: Переходим в каталог услуг
+        window.location.href = 'services.html';
+        
       } catch (err) {
-        alert(err.message);
+        alert('❌ ' + err.message);
+        btn.disabled = false;
+        btn.textContent = 'Зарегистрироваться';
       }
-    }
-
-    // Если уже авторизован — сразу на карты
-    if (localStorage.getItem('token')) {
-      window.location.href = 'cards.html';
     }
   </script>
 </body>
