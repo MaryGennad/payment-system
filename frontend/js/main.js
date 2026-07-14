@@ -159,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (status === 'success') {
     setTimeout(() => {
-      alert('✅ Оплата прошла успешно! Карта привязана.');
+      alert(' Оплата прошла успешно! Карта привязана.');
       localStorage.removeItem('pending_payment');
       window.location.href = 'cards.html';
     }, 500);

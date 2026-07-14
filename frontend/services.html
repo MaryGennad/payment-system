@@ -1,170 +1,151 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Каталог услуг | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-
 <body>
-  <div class="container">
+  <div class="container animate-in">
+    
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <!-- Кнопка назад ведет в личный кабинет (Мои карты) -->
         <button class="back-btn" onclick="window.location.href='cards.html'" title="Мои карты">←</button>
-        <h1>Каталог услуг</h1>
-        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">
-          🚪 <span>Выйти</span>
-        </button>
+        <button class="logout-btn" onclick="window.logout()">Выйти</button>
       </div>
-      <p class="header-subtitle">Выберите услугу для безопасной оплаты</p>
+      <h1>Каталог услуг</h1>
+      <p class="header-subtitle">Выберите подходящий тариф для подключения</p>
     </header>
 
-    <!-- Каталог услуг -->
+    <!-- Services Catalog -->
     <div class="services-catalog">
-
-      <!-- Услуга 1: Разовая привязка карты -->
-      <div class="service-card">
+      
+      <!-- Услуга 1 -->
+      <div class="service-card animate-in" style="animation-delay: 0.1s;">
         <div class="service-header">
-          <div class="service-icon">💳</div>
+          <span class="service-icon">💳</span>
           <h2>Привязка карты</h2>
           <div class="service-price">1 ₽</div>
         </div>
-        <div class="service-body">
-          <ul class="service-features">
-            <li>✅ Быстрая привязка карты</li>
-            <li>✅ Безопасное хранение данных</li>
-            <li>✅ Для будущих платежей</li>
-            <li>✅ Поддержка МИР, Visa, MC</li>
-          </ul>
-          <!-- Перенаправляем на форму оплаты с нужными параметрами -->
-          <a href="index.html?amount=1&description=Привязка%20карты&save=true" class="btn btn-primary">
-            Оплатить 1 ₽
-          </a>
-        </div>
+        <ul class="service-features">
+          <li>Безопасное сохранение токена</li>
+          <li>Поддержка всех типов карт</li>
+          <li>Мгновенная активация</li>
+        </ul>
+        <a href="index.html?amount=1&description=Привязка%20карты&save=true" class="btn btn-primary">
+          Выбрать
+        </a>
       </div>
 
-      <!-- Услуга 2: Пакет рекуррентных платежей -->
-      <div class="service-card featured">
-        <div class="service-badge">Популярное</div>
+      <!-- Услуга 2 (Featured) -->
+      <div class="service-card featured animate-in" style="animation-delay: 0.2s;">
+        <div class="service-badge">Рекомендуем</div>
         <div class="service-header">
-          <div class="service-icon">🔄</div>
+          <span class="service-icon">🔄</span>
           <h2>Пакет автоплатежей</h2>
           <div class="service-price">5 ₽</div>
-          <div class="service-subprice">5 платежей по 1 ₽</div>
+          <div class="service-subprice">5 списаний по 1 ₽</div>
         </div>
-        <div class="service-body">
-          <ul class="service-features">
-            <li>✅ 5 автоматических списаний</li>
-            <li>✅ По 1 ₽ каждое</li>
-            <li>✅ Без повторного подтверждения</li>
-            <li>✅ Экономия времени</li>
-            <li>✅ Идеально для подписок</li>
-          </ul>
-          <a href="index.html?amount=5&description=Пакет%20автоплатежей%20(5%20шт)&save=true" class="btn btn-primary">
-            Оплатить 5 ₽
-          </a>
-        </div>
+        <ul class="service-features">
+          <li>Автоматическое списание</li>
+          <li>Без повторного подтверждения</li>
+          <li>Идеально для подписок</li>
+          <li>Экономия времени</li>
+        </ul>
+        <a href="index.html?amount=5&description=Пакет%20автоплатежей&save=true" class="btn btn-primary">
+          Выбрать
+        </a>
       </div>
 
-      <!-- Услуга 3: Консультация -->
-      <div class="service-card">
+      <!-- Услуга 3 -->
+      <div class="service-card animate-in" style="animation-delay: 0.3s;">
         <div class="service-header">
-          <div class="service-icon">💬</div>
+          <span class="service-icon">💬</span>
           <h2>Консультация</h2>
           <div class="service-price">10 ₽</div>
         </div>
-        <div class="service-body">
-          <ul class="service-features">
-            <li>✅ Помощь в настройке</li>
-            <li>✅ Ответы на технические вопросы</li>
-            <li>✅ Индивидуальная поддержка</li>
-          </ul>
-          <a href="index.html?amount=10&description=Техническая%20консультация&save=false" class="btn btn-primary">
-            Оплатить 10 ₽
-          </a>
-        </div>
+        <ul class="service-features">
+          <li>Техническая поддержка</li>
+          <li>Помощь в настройке</li>
+          <li>Ответы на вопросы</li>
+        </ul>
+        <a href="index.html?amount=10&description=Техническая%20консультация&save=false" class="btn btn-primary">
+          Выбрать
+        </a>
       </div>
 
     </div>
 
-    <!-- Описание для модерации ЮKassa (КРИТИЧНО ВАЖНО) -->
-    <div class="services-description">
-      <h2>📋 Подробное описание услуг</h2>
+    <!-- Description Block -->
+    <div class="services-description animate-in" style="animation-delay: 0.4s;">
+      <h2>Описание услуг</h2>
       <div class="description-block">
-        <h3>Что вы можете оплатить на этом сайте:</h3>
+        <h3>Что вы оплачиваете:</h3>
         <ul>
-          <li><strong>Привязка карты (1 ₽)</strong> — одноразовая услуга по безопасному сохранению токена банковской
-            карты в системе для совершения будущих платежей без повторного ввода данных.</li>
-          <li><strong>Пакет автоплатежей (5 ₽)</strong> — пакетная услуга, включающая 5 рекуррентных (автоматических)
-            списаний по 1 ₽ каждое. Используется для тестирования или оплаты подписок без необходимости подтверждения
-            каждой операции.</li>
-          <li><strong>Техническая консультация (10 ₽)</strong> — разовая услуга по оказанию технической поддержки и
-            помощи в настройке платежных инструментов.</li>
+          <li><strong>Привязка карты (1 ₽)</strong> — одноразовая услуга по безопасному сохранению платежных данных для будущих транзакций.</li>
+          <li><strong>Пакет автоплатежей (5 ₽)</strong> — пакет из 5 рекуррентных списаний по 1 ₽ для тестирования или оплаты регулярных сервисов без подтверждения.</li>
+          <li><strong>Консультация (10 ₽)</strong> — разовая услуга по оказанию технической поддержки.</li>
         </ul>
       </div>
       <div class="description-block">
-        <h3>Как происходит оплата:</h3>
+        <h3>Процесс оплаты:</h3>
         <ol>
-          <li>Выберите нужную услугу в каталоге выше.</li>
-          <li>На странице оплаты введите ваш Email для получения электронного чека (в соответствии с 54-ФЗ).</li>
-          <li>Нажмите "Продолжить" и перейдите на защищенную страницу платежной системы (ЮKassa).</li>
-          <li>Введите данные карты и подтвердите платеж. После успешной оплаты услуга активируется автоматически.</li>
+          <li>Выберите услугу и нажмите «Выбрать».</li>
+          <li>Укажите email для получения электронного чека (54-ФЗ).</li>
+          <li>Перейдите на защищенную страницу ЮKassa для ввода данных карты.</li>
+          <li>После успешной оплаты услуга активируется автоматически.</li>
         </ol>
       </div>
     </div>
 
-    <!-- Реквизиты получателя (для доверия и модерации) -->
-    <div class="recipient-info">
-      <div class="recipient-title">🏢 Реквизиты получателя платежей</div>
+    <!-- Recipient Info (Footer area) -->
+    <div class="recipient-info animate-in" style="animation-delay: 0.5s;">
+      <div class="recipient-title">Юридическая информация</div>
       <div class="recipient-row">
-        <span class="r-label">Статус:</span>
+        <span class="r-label">Статус плательщика</span>
         <span class="r-value">Самозанятый (НПД)</span>
       </div>
       <div class="recipient-row">
-        <span class="r-label">ИНН:</span>
-        <!-- ЗАМЕНИТЕ ЦИФРЫ НА ВАШ РЕАЛЬНЫЙ ИНН -->
+        <span class="r-label">ИНН</span>
+       
         <span class="r-value inn-number" id="recipientInn">123-456-789-012</span>
       </div>
       <div class="recipient-row">
-        <span class="r-label">Обработка платежей:</span>
-        <span class="r-value">АО "ЮKassa" (НКО ООО "ЮМани")</span>
+        <span class="r-label">Обработка платежей</span>
+        <span class="r-value">АО «ЮKassa» (НКО ООО «ЮМани»)</span>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="footer-links">
+    <footer class="footer-links">
       <a href="cards.html">Мои карты</a>
       <a href="#">Пользовательское соглашение</a>
       <a href="#">Политика конфиденциальности</a>
-    </div>
+    </footer>
   </div>
 
   <script src="/js/auth.js"></script>
   <script>
-    // Проверка авторизации при загрузке этой страницы
-    (function () {
+    // Проверка авторизации
+    (function() {
       const auth = window.auth?.getAuth() || {};
       if (!auth.token) {
-        // Если не авторизован, кидаем на вход, а оттуда вернемся сюда
         window.location.href = 'auth.html';
       }
     })();
 
-    // Форматирование ИНН при загрузке (если он прописан жестко выше, это для красоты)
+    // Форматирование ИНН при загрузке
     document.addEventListener('DOMContentLoaded', () => {
-      const innElement = document.getElementById('recipientInn');
-      if (innElement) {
-        let inn = innElement.textContent.replace(/\D/g, ''); // Убираем все не-цифры
+      const innElements = document.querySelectorAll('.inn-number');
+      innElements.forEach(el => {
+        let inn = el.textContent.replace(/\D/g, '');
         if (inn.length === 12) {
-          innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
+          el.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
         }
-      }
+      });
     });
   </script>
 </body>
-
 </html>

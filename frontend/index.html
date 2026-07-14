@@ -1,58 +1,31 @@
 <!DOCTYPE html>
 <html lang="ru">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Привязка карты | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
 </head>
-
 <body>
-  <!-- ПУБЛИЧНЫЕ РЕКВИЗИТЫ (видны всем) -->
-  <div style="
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 12px 20px;
-    text-align: center;
-    font-size: 13px;
-    z-index: 9999;
-    box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
-  ">
-    <!-- ⚠️ ВАЖНО: ЗАМЕНИТЕ 123-456-789-012 НА ВАШ РЕАЛЬНЫЙ ИНН! -->
-    <strong>ИНН:</strong> <span style="font-family: monospace; margin: 0 10px;">123-456-789-012</span> |
-    <strong>Самозанятый</strong> |
-    Платежи через ЮKassa
-  </div>
-
-  <div class="container">
+  <div class="container animate-in">
+    
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <!-- ✅ ИСПРАВЛЕНО: теперь ведет обратно в каталог услуг -->
         <button class="back-btn" onclick="window.location.href='services.html'" title="Вернуться к услугам">←</button>
-        <h1>Привязка карты</h1>
-        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">
-          🚪 Выйти
-        </button>
+        <button class="logout-btn" onclick="window.logout()">Выйти</button>
       </div>
-      <p class="header-subtitle">Безопасно для будущих платежей</p>
+      <h1>Привязка карты</h1>
+      <p class="header-subtitle">Безопасная оплата для будущих сервисов</p>
     </header>
-
-    <!-- Alerts -->
-    <div id="alertContainer"></div>
 
     <!-- Main Card -->
     <div class="card">
       <div class="card-header">
-        <h2>Способ оплаты</h2>
+        <h2>Детали платежа</h2>
         <div class="secure-badge">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           </svg>
           Защищено
         </div>
@@ -70,33 +43,34 @@
             <span>0 ₽</span>
           </div>
           <div class="summary-row total">
-            <span>ИТОГО</span>
+            <span>ИТОГО К ОПЛАТЕ</span>
             <span id="totalAmount">1.00 ₽</span>
           </div>
         </div>
 
-        <!-- Реквизиты получателя -->
-        <div class="recipient-info">
-          <div class="recipient-title">🏢 Реквизиты получателя</div>
+        <!-- Реквизиты получателя (интегрированы в дизайн) -->
+        <div class="recipient-info" style="margin-top: 0; margin-bottom: 32px; padding-top: 0; border-top: none;">
+          <div class="recipient-title">Реквизиты получателя</div>
           <div class="recipient-row">
-            <span class="r-label">Статус:</span>
+            <span class="r-label">Статус</span>
             <span class="r-value">Самозанятый (НПД)</span>
           </div>
           <div class="recipient-row">
-            <span class="r-label">ИНН:</span>
-            <span class="r-value inn-number" id="recipientInn">Загрузка...</span>
+            <span class="r-label">ИНН</span>
+         
+            <span class="r-value inn-number" id="recipientInn">123-456-789-012</span>
           </div>
           <div class="recipient-row">
-            <span class="r-label">Обработка платежей:</span>
+            <span class="r-label">Платежная система</span>
             <span class="r-value">ЮKassa</span>
           </div>
         </div>
 
-        <!-- Email -->
+        <!-- Email Form -->
         <div class="form-group">
-          <label for="email">📧 Email для чека</label>
-          <input type="email" id="email" placeholder="example@mail.ru" required autocomplete="email">
-          <div class="error-text">Введите корректный email</div>
+          <label for="email">Email для отправки чека</label>
+          <input type="email" id="email" placeholder="name@example.com" required autocomplete="email">
+          <div class="error-text">Введите корректный email адрес</div>
         </div>
 
         <!-- Payment Methods -->
@@ -104,14 +78,14 @@
           <div class="payment-method active" data-provider="yookassa">
             <div class="pm-icon"><span class="pm-logo">ЮKassa</span></div>
             <div class="pm-info">
-              <div class="pm-name">ЮKassa</div>
-              <div class="pm-desc">Карта, СБП, кошельки</div>
+              <div class="pm-name">Банковская карта</div>
+              <div class="pm-desc">Visa, Mastercard, МИР, СБП</div>
             </div>
             <div class="pm-check"></div>
           </div>
         </div>
 
-        <!-- Consents (152-ФЗ) -->
+        <!-- Consents -->
         <div class="consent-group">
           <label class="consent-item">
             <input type="checkbox" id="consent152" required checked>
@@ -119,44 +93,37 @@
           </label>
           <label class="consent-item">
             <input type="checkbox" id="consentOffer" required checked>
-            <span>Согласен с <a href="#" target="_blank">офертой</a></span>
+            <span>Согласен с <a href="#" target="_blank">пользовательским соглашением</a></span>
           </label>
           <label class="consent-item">
             <input type="checkbox" id="consentSave" required checked>
-            <span>Разрешаю сохранить карту для будущих платежей</span>
+            <span>Разрешаю сохранить данные карты для будущих автоматических платежей</span>
           </label>
         </div>
 
         <!-- Submit Button -->
         <button class="btn btn-primary" id="btnSubmit" disabled>
-          Продолжить
+          Перейти к оплате
         </button>
 
         <!-- Card Logos -->
         <div class="card-logos">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logotipo_Mir_%282021%29.svg/100px-Logotipo_Mir_%282021%29.svg.png"
-            alt="MIR">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/100px-Mastercard-logo.svg.png"
-            alt="Mastercard">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/100px-Visa_Inc._logo.svg.png"
-            alt="Visa">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logotipo_Mir_%282021%29.svg/100px-Logotipo_Mir_%282021%29.svg.png" alt="MIR">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/100px-Mastercard-logo.svg.png" alt="Mastercard">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/100px-Visa_Inc._logo.svg.png" alt="Visa">
         </div>
       </div>
     </div>
 
     <!-- Footer -->
-    <div class="footer-links">
+    <footer class="footer-links">
       <a href="services.html">Каталог услуг</a>
       <a href="cards.html">Мои карты</a>
-      <a href="#">Помощь</a>
-    </div>
+      <a href="#">Поддержка</a>
+    </footer>
   </div>
 
   <script src="/js/auth.js"></script>
   <script src="/js/main.js"></script>
 </body>
-
 </html>
