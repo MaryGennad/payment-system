@@ -146,7 +146,7 @@ if (registerForm) {
 // ФУНКЦИЯ ВЫХОДА (доступна на всех страницах)
 // ============================================
 window.logout = function() {
-  if (confirm('🚪 Выйти из аккаунта?')) {
+  if (confirm('Выйти из аккаунта?')) {
     window.auth.clearAuth();
     window.location.href = 'auth.html';
   }

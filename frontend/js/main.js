@@ -111,7 +111,7 @@ if (btnSubmit) {
     
     const originalText = btnSubmit.textContent;
     btnSubmit.disabled = true;
-    btnSubmit.textContent = '⏳ Подготовка платежа...';
+    btnSubmit.textContent = 'Подготовка платежа...';
     
     try {
       const res = await fetch(`${API_BASE}/payments/create`, {

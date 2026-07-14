@@ -18,43 +18,62 @@
   // ============================================
   
   // Защита от XSS
-  const escape = s => String(s ?? '')
-    .replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const escape = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  // Единый fetch с обработкой 401 (истёкший токен)
+  // Единый fetch с обработкой истекшего токена
   async function apiFetch(url, options = {}) {
     const res = await fetch(url, { ...options, headers });
     if (res.status === 401) {
       window.location.href = 'auth.html';
-      throw new Error('Сессия истекла');
+      throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
     }
     return res;
   }
 
-  // Красивые уведомления (вместо alert)
+  // Премиальные Toast-уведомления (без эмодзи)
   function showToast(message, type = 'success') {
     const toast = document.createElement('div');
+    const isSuccess = type === 'success';
+    
+    const iconSvg = isSuccess 
+      ? `<svg class="icon" style="color:var(--text-primary)" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+      : `<svg class="icon" style="color:var(--error)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+
+    const borderColor = isSuccess ? 'var(--text-primary)' : 'var(--error)';
+    const bgColor = isSuccess ? 'var(--bg)' : 'var(--error-bg)';
+
     toast.style.cssText = `
-      position:fixed; top:20px; right:20px;
-      background:${type === 'success' ? '#10b981' : '#ef4444'};
-      color:white; padding:15px 25px; border-radius:8px;
-      box-shadow:0 4px 12px rgba(0,0,0,0.3); z-index:10000;
-      opacity:0; transform:translateX(20px); transition:all 0.3s ease;
+      position:fixed; top:24px; right:24px; 
+      background:${bgColor}; 
+      border: 1px solid var(--border);
+      border-left: 3px solid ${borderColor};
+      color:var(--text-primary); 
+      padding:16px 20px; 
+      border-radius:8px; 
+      box-shadow:var(--shadow-lg); 
+      z-index:10000;
+      display:flex; align-items:center; gap:12px;
+      font-size:14px; font-weight:500;
+      opacity:0; transform:translateY(-10px); 
+      transition:all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     `;
-    toast.textContent = message;
+    
+    toast.innerHTML = `${iconSvg}<span>${message}</span>`;
     document.body.appendChild(toast);
+    
     requestAnimationFrame(() => {
       toast.style.opacity = '1';
-      toast.style.transform = 'translateX(0)';
+      toast.style.transform = 'translateY(0)';
     });
+    
     setTimeout(() => {
       toast.style.opacity = '0';
-      toast.style.transform = 'translateX(20px)';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+      toast.style.transform = 'translateY(-10px)';
+      setTimeout(() => toast.remove(), 400);
+    }, 3500);
   }
 
-  // Кэш для истории платежей (чтобы не делать лишние запросы)
+  // Кэш для истории платежей
   let historyCache = null;
   async function getPaymentHistory() {
     if (historyCache) return historyCache;
@@ -91,36 +110,45 @@
         const month = String(c.expiryMonth ?? '').padStart(2, '0');
         const isDefault = c.isDefault 
           ? '<span class="badge">Основная</span>'
-          : `<button class="btn-small" data-action="setDefault" data-id="${escape(c._id)}">Основная</button>`;
+          : `<button class="btn-small" data-action="setDefault" data-id="${escape(c._id)}">Сделать основной</button>`;
         
-        // ИСПРАВЛЕНО: 1 рубль, 3 раза (итого 3₽)
         return `
-          <div class="card-item">
+          <div class="card-item animate-in">
             <div class="card-info">
-              💳 •••• ${escape(c.last4)} | ${escape(c.cardType)} ${escape(month)}/${escape(c.expiryYear)}
+              <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                <span style="font-weight:600; letter-spacing:-0.02em;">•••• ${escape(c.last4)}</span>
+              </div>
+              <div style="font-size:13px; color:var(--text-secondary); font-weight:400; margin-left: 28px;">
+                ${escape(c.cardType)} • ${escape(month)}/${escape(c.expiryYear)}
+              </div>
             </div>
             <div class="card-actions">
               ${isDefault}
-              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}">Списать 3₽</button>
-              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}">🗑️ Удалить</button>
+              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}">Списать 3 ₽</button>
+              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}">
+                <svg class="icon icon-sm" style="margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                Удалить
+              </button>
             </div>
           </div>`;
       }).join('');
     } catch (err) {
       console.error('Load cards error:', err);
-      showToast('❌ ' + err.message, 'error');
+      showToast(err.message, 'error');
     }
   }
 
-  // Делегирование событий (вместо onclick в HTML)
+  // Делегирование событий для кнопок
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
+    
     const id = btn.dataset.id;
     const action = btn.dataset.action;
 
     if (action === 'setDefault') window.setDefault(id);
-    if (action === 'charge') window.chargeSavedCard(id, 1, 3); // 1₽, 3 раза
+    if (action === 'charge') window.chargeSavedCard(id, 1, 3); // 1 рубль, 3 раза
     if (action === 'delete') window.deleteCard(id);
   });
 
@@ -139,16 +167,16 @@
 
       const statsDiv = document.createElement('div');
       statsDiv.id = 'paymentStats';
-      statsDiv.style.cssText = 'background:linear-gradient(135deg,#667eea 0%,#764ba2 100%);padding:20px;border-radius:12px;margin-bottom:20px;text-align:center;';
+      statsDiv.style.cssText = 'background:var(--surface); border:1px solid var(--border); padding:24px 32px; border-radius:8px; margin-bottom:24px; text-align:center;';
       statsDiv.innerHTML = `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:15px;">
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
           <div>
-            <div style="font-size:32px;font-weight:bold;color:white;">${successCount}</div>
-            <div style="color:#e0e7ff;font-size:14px;">✅ Успешных платежей</div>
+            <div style="font-size:32px; font-weight:600; color:var(--text-primary); letter-spacing:-0.04em;">${successCount}</div>
+            <div style="color:var(--text-secondary); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; margin-top:4px;">Успешных платежей</div>
           </div>
           <div>
-            <div style="font-size:32px;font-weight:bold;color:white;">${totalAmount} ₽</div>
-            <div style="color:#e0e7ff;font-size:14px;">💰 Всего списано</div>
+            <div style="font-size:32px; font-weight:600; color:var(--text-primary); letter-spacing:-0.04em;">${totalAmount} ₽</div>
+            <div style="color:var(--text-secondary); font-size:13px; text-transform:uppercase; letter-spacing:0.05em; margin-top:4px;">Всего списано</div>
           </div>
         </div>`;
 
@@ -160,7 +188,7 @@
   }
 
   // ============================================
-  // ИСТОРИЯ ПЛАТЕЖЕЙ (с кнопкой возврата)
+  // ИСТОРИЯ ПЛАТЕЖЕЙ
   // ============================================
   async function loadPaymentHistory() {
     try {
@@ -169,42 +197,46 @@
       if (!historyDiv) return;
 
       if (!payments.length) {
-        historyDiv.innerHTML = '<p style="text-align:center;color:#888;">Нет платежей</p>';
+        historyDiv.innerHTML = '<p style="text-align:center; color:var(--text-muted); padding: 40px 0; font-size:14px;">История операций пуста</p>';
         return;
       }
 
       historyDiv.innerHTML = `
-        <h3 style="margin-bottom:15px;">📊 История платежей</h3>
-        <div style="max-height:400px;overflow-y:auto;">
+        <h3 style="margin-bottom:20px; font-size:15px; font-weight:600; text-transform:uppercase; letter-spacing:0.05em; color:var(--text-muted);">История операций</h3>
+        <div style="display:flex; flex-direction:column; gap:12px;">
           ${payments.map(p => {
             const isSucceeded = p.status === 'succeeded';
             const isRefunded = p.status === 'refunded';
             
-            let statusColor = '#f59e0b';
-            let statusText = '⏳ В обработке';
+            let statusColor = 'var(--text-muted)';
+            let statusText = 'В обработке';
             
-            if (isSucceeded) { statusColor = '#10b981'; statusText = '✅ Успешно'; }
-            if (isRefunded) { statusColor = '#6b7280'; statusText = '🔄 Возвращено'; }
-            if (p.status === 'failed' || p.status === 'canceled') { statusColor = '#ef4444'; statusText = '❌ Отменено'; }
+            if (isSucceeded) { statusColor = 'var(--text-primary)'; statusText = 'Успешно'; }
+            if (isRefunded) { statusColor = 'var(--text-muted)'; statusText = 'Возвращено'; }
+            if (p.status === 'failed' || p.status === 'canceled') { statusColor = 'var(--error)'; statusText = 'Отменено'; }
 
             const refundButton = isSucceeded ? `
-              <button class="btn-small" style="margin-top:8px; background:#f3f4f6; color:#374151; border:1px solid #d1d5db; width:100%;" 
+              <button class="btn-small" style="margin-top:16px; width:100%;" 
                 onclick="window.requestRefund('${escape(p._id)}', ${p.amount})">
-                🔄 Вернуть средства
+                Оформить возврат
               </button>
             ` : '';
 
             return `
-              <div style="background:#1e293b;padding:12px;margin-bottom:10px;border-radius:8px;border-left:4px solid ${statusColor}">
-                <div style="display:flex;justify-content:space-between;align-items:center;">
-                  <span style="font-weight:600;">💰 ${escape(p.amount)} ₽</span>
-                  <span style="color:${statusColor}; font-size:13px; font-weight:600;">${statusText}</span>
+              <div style="background:var(--bg); border:1px solid var(--border); padding:20px; border-radius:8px; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--border-hover)'" onmouseout="this.style.borderColor='var(--border)'">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                  <span style="font-weight:600; font-size:16px; letter-spacing:-0.02em; color:var(--text-primary);">${escape(p.amount)} ₽</span>
+                  <span style="color:${statusColor}; font-size:13px; font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">${statusText}</span>
                 </div>
-                <div style="font-size:12px;color:#888;margin-top:5px;">
-                  📅 ${new Date(p.createdAt).toLocaleString('ru-RU')}
-                </div>
-                <div style="font-size:12px;color:#888;">
-                  🏦 ${escape(p.provider)} | ${escape(p.description || 'Платеж')}
+                <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; color:var(--text-secondary);">
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    ${new Date(p.createdAt).toLocaleDateString('ru-RU')} в ${new Date(p.createdAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
+                  </div>
+                  <div style="display:flex; align-items:center; gap:8px;">
+                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    ${escape(p.provider)} • ${escape(p.description || 'Платеж')}
+                  </div>
                 </div>
                 ${refundButton}
               </div>`;
@@ -226,38 +258,38 @@
         body: JSON.stringify({ cardId }),
       });
       if (!res.ok) throw new Error('Ошибка установки основной карты');
-      showToast('✅ Карта установлена как основная!');
+      showToast('Карта успешно назначена основной');
       await loadCards();
     } catch (err) {
-      showToast('❌ ' + err.message, 'error');
+      showToast(err.message, 'error');
     }
   };
 
   window.deleteCard = async (cardId) => {
-    if (!confirm('🗑️ Удалить эту карту? Это действие нельзя отменить.')) return;
+    if (!confirm('Вы уверены, что хотите удалить эту карту? Это действие нельзя отменить.')) return;
     try {
       const res = await apiFetch(`${API_BASE}/cards/${cardId}`, { method: 'DELETE' });
       const data = res.ok ? await res.json().catch(() => ({})) : {};
       if (!res.ok) throw new Error(data.error || 'Ошибка удаления');
-      showToast('✅ Карта удалена!');
+      showToast('Карта успешно удалена');
       await loadCards();
     } catch (err) {
-      showToast('❌ ' + err.message, 'error');
+      showToast(err.message, 'error');
     }
   };
 
   window.chargeSavedCard = async (cardId, amount = 1, count = 10) => {
-    if (!confirm(`💳 Списать ${amount}₽ × ${count} раз (всего ${amount * count}₽)?`)) return;
+    if (!confirm(`Подтвердите рекуррентное списание: ${amount} ₽ × ${count} раз (Итого: ${amount * count} ₽).`)) return;
 
     try {
       const progressDiv = document.createElement('div');
       progressDiv.id = 'chargeProgress';
-      progressDiv.style.cssText = `position:fixed; top:80px; right:20px; background:#1e293b; color:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.5); z-index:10000; min-width:250px;`;
+      progressDiv.style.cssText = `position:fixed; top:24px; right:24px; background:var(--bg); border:1px solid var(--border); color:var(--text-primary); padding:20px; border-radius:8px; box-shadow:var(--shadow-lg); z-index:10000; min-width:260px; font-size:14px;`;
       progressDiv.innerHTML = `
-        <div style="font-weight:bold; margin-bottom:10px;">⚡ Рекуррентные списания</div>
-        <div id="chargeStatus">Подготовка...</div>
-        <div style="margin-top:10px; background:#334155; height:8px; border-radius:4px; overflow:hidden;">
-          <div id="chargeProgressBar" style="background:#10b981; height:100%; width:0%; transition:width 0.3s;"></div>
+        <div style="font-weight:600; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em; font-size:12px; color:var(--text-muted);">Выполнение списаний</div>
+        <div id="chargeStatus" style="margin-bottom:12px;">Подготовка...</div>
+        <div style="background:var(--border); height:4px; border-radius:2px; overflow:hidden;">
+          <div id="chargeProgressBar" style="background:var(--text-primary); height:100%; width:0%; transition:width 0.3s ease;"></div>
         </div>`;
       document.body.appendChild(progressDiv);
 
@@ -267,82 +299,10 @@
       let failCount = 0;
 
       for (let i = 1; i <= count; i++) {
-        statusDiv.textContent = `Списание ${i}/${count}...`;
+        statusDiv.textContent = `Обработка ${i} из ${count}...`;
         progressBar.style.width = `${((i - 1) / count) * 100}%`;
 
         try {
           const res = await apiFetch(`${API_BASE}/payments/charge-saved`, {
             method: 'POST',
-            body: JSON.stringify({ cardId, amount, email: 'user@example.com', description: `Рекуррентный платёж ${i}/${count}` })
-          });
-          const data = await res.json();
-          if (!res.ok) throw new Error(data.error || 'Ошибка списания');
-
-          successCount++;
-          await new Promise(resolve => setTimeout(resolve, 500));
-        } catch (err) {
-          failCount++;
-          if (err.message.includes('Сессия истекла')) throw err;
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-
-      progressBar.style.width = '100%';
-      statusDiv.innerHTML = `<div style="margin-top:10px;">✅ Успешно: ${successCount}<br>❌ Ошибок: ${failCount}<br>💰 Всего: ${successCount * amount}₽</div>`;
-      
-      setTimeout(() => {
-        progressDiv.remove();
-        historyCache = null;
-        window.location.reload();
-      }, 3000);
-
-    } catch (err) {
-      showToast('❌ ' + err.message, 'error');
-      const progressDiv = document.getElementById('chargeProgress');
-      if (progressDiv) progressDiv.remove();
-    }
-  };
-
-  window.requestRefund = async (paymentId, amount) => {
-    if (!confirm(`Вы уверены, что хотите оформить возврат ${amount}₽?\n\nДеньги вернутся на карту в течение 1-3 рабочих дней.`)) return;
-
-    try {
-      const res = await apiFetch(`${API_BASE}/payments/refund`, {
-        method: 'POST',
-        body: JSON.stringify({ paymentId })
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Ошибка оформления возврата');
-
-      showToast(`✅ Возврат ${amount}₽ успешно инициирован!`);
-      historyCache = null;
-      setTimeout(() => loadPaymentHistory(), 1000);
-    } catch (err) {
-      showToast('❌ ' + err.message, 'error');
-    }
-  };
-
-  // ============================================
-  // ЕДИНАЯ ТОЧКА ВХОДА (DOMContentLoaded)
-  // ============================================
-  window.addEventListener('DOMContentLoaded', async () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
-    
-    if (status === 'success') {
-      showToast('✅ Оплата прошла успешно! Карта привязана.');
-      localStorage.removeItem('pending_payment');
-    } else if (status === 'fail' || status === 'canceled') {
-      showToast('❌ Оплата не прошла. Попробуйте ещё раз.', 'error');
-      localStorage.removeItem('pending_payment');
-    }
-    
-    // Запускаем все загрузки параллельно для скорости
-    await Promise.all([
-      loadCards(),
-      updateStats(),
-      loadPaymentHistory()
-    ]);
-  });
-
-})();
+            body: JSON.stringify({ cardId, amount, email: 'user@example.com', description

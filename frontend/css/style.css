@@ -615,3 +615,22 @@ h1 {
   h1 { font-size: 24px; }
   .service-price { font-size: 32px; }
 }
+/* ============================================
+   ===== PREMIUM SVG ICONS =====
+   ============================================ */
+.icon {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  flex-shrink: 0;
+}
+.icon-sm { width: 14px; height: 14px; }
+.icon-lg { width: 24px; height: 24px; }
+.icon-xl { width: 32px; height: 32px; }
+
+/* Убираем фильтры с эмодзи, если они где-то остались, но лучше их удалить */
+.no-emoji { font-family: sans-serif; }

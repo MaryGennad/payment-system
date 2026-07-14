@@ -12,7 +12,9 @@
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <button class="back-btn" onclick="window.location.href='cards.html'" title="Мои карты">←</button>
+        <button class="back-btn" onclick="window.location.href='cards.html'" title="Мои карты">
+          <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
         <button class="logout-btn" onclick="window.logout()">Выйти</button>
       </div>
       <h1>Каталог услуг</h1>
@@ -22,10 +24,13 @@
     <!-- Services Catalog -->
     <div class="services-catalog">
       
-      <!-- Услуга 1 -->
+      <!-- Услуга 1: Привязка карты -->
       <div class="service-card animate-in" style="animation-delay: 0.1s;">
         <div class="service-header">
-          <span class="service-icon">💳</span>
+          <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
+            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+            <line x1="1" y1="10" x2="23" y2="10"></line>
+          </svg>
           <h2>Привязка карты</h2>
           <div class="service-price">1 ₽</div>
         </div>
@@ -39,11 +44,14 @@
         </a>
       </div>
 
-      <!-- Услуга 2 (Featured) -->
+      <!-- Услуга 2: Пакет автоплатежей (Featured) -->
       <div class="service-card featured animate-in" style="animation-delay: 0.2s;">
         <div class="service-badge">Рекомендуем</div>
         <div class="service-header">
-          <span class="service-icon">🔄</span>
+          <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+          </svg>
           <h2>Пакет автоплатежей</h2>
           <div class="service-price">5 ₽</div>
           <div class="service-subprice">5 списаний по 1 ₽</div>
@@ -59,10 +67,12 @@
         </a>
       </div>
 
-      <!-- Услуга 3 -->
+      <!-- Услуга 3: Консультация -->
       <div class="service-card animate-in" style="animation-delay: 0.3s;">
         <div class="service-header">
-          <span class="service-icon">💬</span>
+          <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
           <h2>Консультация</h2>
           <div class="service-price">10 ₽</div>
         </div>
@@ -78,7 +88,7 @@
 
     </div>
 
-    <!-- Description Block -->
+    <!-- Описание для модерации ЮKassa -->
     <div class="services-description animate-in" style="animation-delay: 0.4s;">
       <h2>Описание услуг</h2>
       <div class="description-block">
@@ -100,7 +110,7 @@
       </div>
     </div>
 
-    <!-- Recipient Info (Footer area) -->
+    <!-- Юридическая информация -->
     <div class="recipient-info animate-in" style="animation-delay: 0.5s;">
       <div class="recipient-title">Юридическая информация</div>
       <div class="recipient-row">
@@ -109,8 +119,8 @@
       </div>
       <div class="recipient-row">
         <span class="r-label">ИНН</span>
-       
-        <span class="r-value inn-number" id="recipientInn">123-456-789-012</span>
+        <!-- ⚠️ ВАЖНО: ЗАМЕНИТЕ 123456789012 НА ВАШ РЕАЛЬНЫЙ ИНН (12 цифр) -->
+        <span class="r-value inn-number" id="recipientInn">123456789012</span>
       </div>
       <div class="recipient-row">
         <span class="r-label">Обработка платежей</span>
@@ -128,7 +138,7 @@
 
   <script src="/js/auth.js"></script>
   <script>
-    // Проверка авторизации
+    // 1. Проверка авторизации
     (function() {
       const auth = window.auth?.getAuth() || {};
       if (!auth.token) {
@@ -136,15 +146,15 @@
       }
     })();
 
-    // Форматирование ИНН при загрузке
+    // 2. Форматирование ИНН при загрузке (добавляет дефисы для красоты)
     document.addEventListener('DOMContentLoaded', () => {
-      const innElements = document.querySelectorAll('.inn-number');
-      innElements.forEach(el => {
-        let inn = el.textContent.replace(/\D/g, '');
+      const innElement = document.getElementById('recipientInn');
+      if (innElement) {
+        let inn = innElement.textContent.replace(/\D/g, ''); // Оставляем только цифры
         if (inn.length === 12) {
-          el.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
+          innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
         }
-      });
+      }
     });
   </script>
 </body>
