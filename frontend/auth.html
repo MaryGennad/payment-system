@@ -51,158 +51,62 @@
         <button class="tab-btn" data-tab="register">Регистрация</button>
       </div>
 
-      <!-- Форма ВХОДА -->
-      <div id="loginForm" class="form-container active">
+      <!-- Форма ВХОДА (теперь это настоящий тег <form>) -->
+      <form id="loginForm" class="form-container active">
         <div class="form-group">
           <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Email</label>
-          <input type="email" id="loginEmail" placeholder="example@mail.ru" 
+          <input type="email" id="loginEmail" placeholder="example@mail.ru" required
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Пароль</label>
-          <input type="password" id="loginPassword" placeholder="••••••" 
+          <input type="password" id="loginPassword" placeholder="••••••" required
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
-        <button type="button" id="loginBtn" onclick="handleLogin()" 
+        <!-- ВАЖНО: type="submit" и НИКАКОГО onclick -->
+        <button type="submit" id="loginBtn"
                 style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
                        border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
                        cursor: pointer; transition: background 0.3s;">
           Войти
         </button>
-      </div>
+      </form>
 
-      <!-- Форма РЕГИСТРАЦИИ -->
-      <div id="registerForm" class="form-container">
+      <!-- Форма РЕГИСТРАЦИИ (теперь это настоящий тег <form>) -->
+      <form id="registerForm" class="form-container">
         <div class="form-group">
           <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Имя</label>
-          <input type="text" id="registerName" placeholder="Ваше имя" 
+          <input type="text" id="registerName" placeholder="Ваше имя" required
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
         <div class="form-group">
           <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Email</label>
-          <input type="email" id="registerEmail" placeholder="example@mail.ru" 
+          <input type="email" id="registerEmail" placeholder="example@mail.ru" required
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
         <div class="form-group" style="margin-bottom: 20px;">
           <label style="color: #94a3b8; font-size: 13px; margin-bottom: 8px; display: block;">Пароль (мин. 6 символов)</label>
-          <input type="password" id="registerPassword" placeholder="••••••" 
+          <input type="password" id="registerPassword" placeholder="••••••" required
                  style="width: 100%; padding: 12px; background: #1e293b; border: 1px solid #334155; 
                         border-radius: 8px; color: white; font-size: 14px; box-sizing: border-box;">
         </div>
-        <button type="button" id="registerBtn" onclick="handleRegister()" 
+        <!-- ВАЖНО: type="submit" и НИКАКОГО onclick -->
+        <button type="submit" id="registerBtn"
                 style="width: 100%; padding: 12px; background: #8b5cf6; border: none; 
                        border-radius: 8px; color: white; font-size: 14px; font-weight: 600; 
                        cursor: pointer; transition: background 0.3s;">
           Зарегистрироваться
         </button>
-      </div>
+      </form>
 
     </div>
   </div>
 
-  <script>
-    const API_BASE = '/api';
-
-    // 1. ПРОВЕРКА АВТОРИЗАЦИИ ПРИ ЗАГРУЗКЕ
-    // Если уже есть токен, сразу кидаем в КАТАЛОГ УСЛУГ
-    if (localStorage.getItem('token')) {
-      window.location.href = 'services.html';
-    }
-
-    // 2. Переключение вкладок
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.form-container').forEach(f => f.classList.remove('active'));
-        
-        btn.classList.add('active');
-        const tab = btn.dataset.tab;
-        document.getElementById(tab + 'Form').classList.add('active');
-      });
-    });
-
-    // 3. Функция ВХОДА
-    async function handleLogin() {
-      const email = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      const btn = document.getElementById('loginBtn');
-      
-      if (!email || !password) {
-        alert('Введите email и пароль');
-        return;
-      }
-
-      try {
-        btn.disabled = true;
-        btn.textContent = 'Вход...';
-
-        const res = await fetch(`${API_BASE}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        
-        if (!res.ok) throw new Error(data.error || 'Ошибка входа');
-        
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // 🎯 ИЗМЕНЕНО: Переходим в каталог услуг
-        window.location.href = 'services.html';
-        
-      } catch (err) {
-        alert('❌ ' + err.message);
-        btn.disabled = false;
-        btn.textContent = 'Войти';
-      }
-    }
-
-    // 4. Функция РЕГИСТРАЦИИ
-    async function handleRegister() {
-      const name = document.getElementById('registerName').value.trim();
-      const email = document.getElementById('registerEmail').value.trim();
-      const password = document.getElementById('registerPassword').value;
-      const btn = document.getElementById('registerBtn');
-      
-      if (!name || !email || !password) {
-        alert('Заполните все поля');
-        return;
-      }
-      if (password.length < 6) {
-        alert('Пароль должен быть не менее 6 символов');
-        return;
-      }
-
-      try {
-        btn.disabled = true;
-        btn.textContent = 'Регистрация...';
-
-        const res = await fetch(`${API_BASE}/auth/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password })
-        });
-        const data = await res.json();
-        
-        if (!res.ok) throw new Error(data.error || 'Ошибка регистрации');
-        
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        
-        // 🎯 ИЗМЕНЕНО: Переходим в каталог услуг
-        window.location.href = 'services.html';
-        
-      } catch (err) {
-        alert('❌ ' + err.message);
-        btn.disabled = false;
-        btn.textContent = 'Зарегистрироваться';
-      }
-    }
-  </script>
+  <!-- Подключаем ВНЕШНИЙ скрипт, который содержит всю логику (без встроенных скриптов!) -->
+  <script src="/js/auth.js"></script>
 </body>
 </html>

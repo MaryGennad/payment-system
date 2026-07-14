@@ -23,6 +23,7 @@
     z-index: 9999;
     box-shadow: 0 -2px 10px rgba(0,0,0,0.2);
   ">
+    <!-- ⚠️ ВАЖНО: ЗАМЕНИТЕ 123-456-789-012 НА ВАШ РЕАЛЬНЫЙ ИНН! -->
     <strong>ИНН:</strong> <span style="font-family: monospace; margin: 0 10px;">123-456-789-012</span> |
     <strong>Самозанятый</strong> |
     Платежи через ЮKassa
@@ -32,7 +33,8 @@
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <button class="back-btn" onclick="window.location.href='cards.html'" title="Мои карты">←</button>
+        <!-- ✅ ИСПРАВЛЕНО: теперь ведет обратно в каталог услуг -->
+        <button class="back-btn" onclick="window.location.href='services.html'" title="Вернуться к услугам">←</button>
         <h1>Привязка карты</h1>
         <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">
           🚪 Выйти
@@ -61,7 +63,7 @@
         <div class="summary">
           <div class="summary-row">
             <span>Услуга</span>
-            <span>Привязка карты</span>
+            <span id="serviceName">Привязка карты</span>
           </div>
           <div class="summary-row">
             <span>Комиссия</span>
@@ -69,11 +71,11 @@
           </div>
           <div class="summary-row total">
             <span>ИТОГО</span>
-            <span>1.00 ₽</span>
+            <span id="totalAmount">1.00 ₽</span>
           </div>
         </div>
 
-        <!-- НОВЫЙ БЛОК: Реквизиты получателя -->
+        <!-- Реквизиты получателя -->
         <div class="recipient-info">
           <div class="recipient-title">🏢 Реквизиты получателя</div>
           <div class="recipient-row">
@@ -86,7 +88,7 @@
           </div>
           <div class="recipient-row">
             <span class="r-label">Обработка платежей:</span>
-            <span class="r-value">ЮKassa / Robokassa</span>
+            <span class="r-value">ЮKassa</span>
           </div>
         </div>
 
@@ -104,14 +106,6 @@
             <div class="pm-info">
               <div class="pm-name">ЮKassa</div>
               <div class="pm-desc">Карта, СБП, кошельки</div>
-            </div>
-            <div class="pm-check"></div>
-          </div>
-          <div class="payment-method" data-provider="robokassa">
-            <div class="pm-icon"><span class="pm-logo">Robokassa</span></div>
-            <div class="pm-info">
-              <div class="pm-name">Robokassa</div>
-              <div class="pm-desc">Карта, СБП, Альфа Pay</div>
             </div>
             <div class="pm-check"></div>
           </div>
@@ -140,15 +134,9 @@
 
         <!-- Card Logos -->
         <div class="card-logos">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logotipo_Mir_%282021%29.svg/100px-Logotipo_Mir_%282021%29.svg.png"
-            alt="MIR">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/100px-Mastercard-logo.svg.png"
-            alt="Mastercard">
-          <img
-            src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/100px-Visa_Inc._logo.svg.png"
-            alt="Visa">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a2/Logotipo_Mir_%282021%29.svg/100px-Logotipo_Mir_%282021%29.svg.png" alt="MIR">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Mastercard-logo.svg/100px-Mastercard-logo.svg.png" alt="Mastercard">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Visa_Inc._logo.svg/100px-Visa_Inc._logo.svg.png" alt="Visa">
         </div>
       </div>
     </div>
@@ -161,9 +149,7 @@
     </div>
   </div>
 
-
   <script src="/js/auth.js"></script>
   <script src="/js/main.js"></script>
 </body>
-
 </html>
