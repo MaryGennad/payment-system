@@ -6,7 +6,6 @@ const API_BASE = window.API_BASE || '/api';
 const authData = window.auth?.getAuth() || {};
 const token = authData.token;
 
-// Если нет токена, отправляем на страницу входа
 if (!token) {
   window.location.href = 'auth.html';
 }
@@ -16,7 +15,6 @@ const headers = {
   'Authorization': `Bearer ${token}`
 };
 
-// Элементы формы
 const emailInput = document.getElementById('email');
 const btnSubmit = document.getElementById('btnSubmit');
 const paymentMethods = document.querySelectorAll('.payment-method');
@@ -33,16 +31,26 @@ const urlDesc = urlParams.get('description');
 const urlSave = urlParams.get('save');
 
 // ============================================
-// 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОД ВЫБРАННУЮ УСЛУГУ
+// 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОД ВЫБРАННУЮ УСЛУГУ (ИСПРАВЛЕНО)
 // ============================================
 if (urlAmount) {
-  // Обновляем итоговую сумму в блоке summary, если он есть
-  const totalElement = document.querySelector('.summary-row.total span:last-child');
+  const amountNum = parseFloat(urlAmount);
+  
+  // 1. Обновляем сумму (ищем по ID, а если нет - по классу)
+  const totalElement = document.getElementById('totalAmount') || document.querySelector('.summary-row.total span:last-child');
   if (totalElement) {
-    totalElement.textContent = `${parseFloat(urlAmount).toFixed(2)} ₽`;
+    totalElement.textContent = `${amountNum.toFixed(2)} ₽`;
   }
   
-  // Если есть чекбокс "Сохранить карту", проставляем его по умолчанию из URL
+  // 2. Обновляем название услуги, если оно передано в URL
+  if (urlDesc) {
+    const serviceElement = document.getElementById('serviceName') || document.querySelector('.summary-row:first-child span:last-child');
+    if (serviceElement) {
+      serviceElement.textContent = decodeURIComponent(urlDesc);
+    }
+  }
+  
+  // 3. Чекбокс сохранения карты
   if (urlSave === 'true' && consentSave) {
     consentSave.checked = true;
   }
@@ -59,17 +67,14 @@ function checkForm() {
   if (!emailInput || !btnSubmit) return;
   
   const isEmailValid = isValidEmail(emailInput.value.trim());
-  
   const isConsent152 = consent152 ? consent152.checked : true;
   const isConsentOffer = consentOffer ? consentOffer.checked : true;
   const isConsentSave = consentSave ? consentSave.checked : true;
   
   const isConsentValid = isConsent152 && isConsentOffer && isConsentSave;
   
-  // Активируем кнопку только если email валиден и все согласия получены
   btnSubmit.disabled = !(isEmailValid && isConsentValid);
   
-  // Визуальная подсветка ошибки в поле email
   if (emailInput.value && !isEmailValid) {
     emailInput.classList.add('error');
   } else {
@@ -116,8 +121,8 @@ if (btnSubmit) {
           provider: selectedProvider,
           amount: parseFloat(urlAmount || 1.00), // Берем из URL или 1₽ по умолчанию
           email: emailInput.value.trim(),
-          description: urlDesc || 'Привязка карты', // Берем из URL или по умолчанию
-          save_payment_method: urlSave === 'true' // Берем из URL
+          description: urlDesc || 'Привязка карты',
+          save_payment_method: urlSave === 'true'
         })
       });
       
@@ -147,17 +152,12 @@ if (btnSubmit) {
 // 6. ОБРАБОТКА ВОЗВРАТА ОТ ЮKASSA
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
-  // Инициализация валидации при загрузке
   checkForm();
-  
-  // Загрузка ИНН для модерации (если элемент существует на странице)
   loadRecipientInfo();
   
-  // Проверка статуса возврата
   const status = urlParams.get('status');
   
   if (status === 'success') {
-    // Небольшая задержка, чтобы пользователь успел заметить сообщение
     setTimeout(() => {
       alert('✅ Оплата прошла успешно! Карта привязана.');
       localStorage.removeItem('pending_payment');
@@ -177,16 +177,14 @@ async function loadRecipientInfo() {
   if (!innElement) return;
   
   try {
-    // ЗАМЕНИТЕ НА ВАШ РЕАЛЬНЫЙ ИНН
-    const inn = '123456789012'; 
+      const inn = '123456789012'; 
     
     if (inn && inn.length === 12) {
       innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
     } else {
       innElement.textContent = inn;
     }
-    
-    innElement.style.color = '#059669'; // Зеленый цвет для доверия
+    innElement.style.color = '#059669';
   } catch (err) {
     console.error('Error loading INN:', err);
     innElement.textContent = 'Не указан';
