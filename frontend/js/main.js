@@ -119,9 +119,9 @@ if (btnSubmit) {
         headers,
         body: JSON.stringify({
           provider: selectedProvider,
-          amount: parseFloat(urlAmount || 5.00),
+          amount: parseFloat(urlAmount || 100.00),
           email: emailInput.value.trim(),
-          description: urlDesc || 'Разовый доступ к сервису',
+          description: urlDesc || 'Базовый доступ к сервису',
           save_payment_method: urlSave === 'true'
         })
       });

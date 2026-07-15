@@ -23,17 +23,17 @@
     </header>
 
     <!-- Services Catalog -->
-    <div class="services-catalog">
+      <div class="services-catalog">
       
-      <!-- Услуга 1: Разовый платеж -->
+      <!-- Услуга 1: Базовый -->
       <div class="service-card animate-in" style="animation-delay: 0.1s;">
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
             <line x1="1" y1="10" x2="23" y2="10"></line>
           </svg>
-          <h2>Разовый доступ</h2>
-          <div class="service-price">5 ₽</div>
+          <h2>Базовый доступ</h2>
+          <div class="service-price">100 ₽</div>
           <div class="service-subprice">единоразовая оплата</div>
         </div>
         <ul class="service-features">
@@ -41,7 +41,7 @@
           <li>Проверка работы сервиса</li>
           <li>Электронный чек</li>
         </ul>
-        <a href="index.html?amount=5&description=Разовый%20доступ%20к%20сервису&save=false" class="btn btn-primary">
+        <a href="index.html?amount=100&description=Базовый%20доступ%20к%20сервису&save=false" class="btn btn-primary">
           Оплатить
         </a>
       </div>
@@ -55,7 +55,7 @@
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
           </svg>
           <h2>Ежемесячная подписка</h2>
-          <div class="service-price">10 ₽</div>
+          <div class="service-price">100 ₽</div>
           <div class="service-subprice">в месяц</div>
         </div>
         <ul class="service-features">
@@ -64,19 +64,19 @@
           <li>Приоритетная поддержка</li>
           <li>Отмена в любой момент</li>
         </ul>
-        <a href="index.html?amount=10&description=Ежемесячная%20подписка&save=true" class="btn btn-primary">
+        <a href="index.html?amount=100&description=Ежемесячная%20подписка&save=true" class="btn btn-primary">
           Оформить подписку
         </a>
       </div>
 
-      <!-- Услуга 3: Расширенный доступ -->
+      <!-- Услуга 3: Расширенный -->
       <div class="service-card animate-in" style="animation-delay: 0.3s;">
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
           <h2>Расширенный доступ</h2>
-          <div class="service-price">25 ₽</div>
+          <div class="service-price">100 ₽</div>
           <div class="service-subprice">единоразовая оплата</div>
         </div>
         <ul class="service-features">
@@ -84,7 +84,7 @@
           <li>Расширенная поддержка</li>
           <li>Дополнительные возможности</li>
         </ul>
-        <a href="index.html?amount=25&description=Расширенный%20доступ%20к%20сервису&save=false" class="btn btn-primary">
+        <a href="index.html?amount=100&description=Расширенный%20доступ%20к%20сервису&save=false" class="btn btn-primary">
           Оплатить
         </a>
       </div>
@@ -92,38 +92,27 @@
     </div>
 
        <!-- Описание услуг -->
-    <div class="services-description animate-in" style="animation-delay: 0.4s;">
+      <div class="services-description animate-in" style="animation-delay: 0.4s;">
       <h2>Описание услуг</h2>
       
       <div class="description-block">
         <h3>Что вы получаете:</h3>
         <ul>
-          <li><strong>Разовый доступ (5 ₽)</strong> — единоразовая оплата для ознакомления с сервисом и проверки его функционала. Включает доступ к базовым возможностям и электронный чек.</li>
-          <li><strong>Ежемесячная подписка (10 ₽/мес)</strong> — регулярный доступ ко всем функциям сервиса с автоматическим продлением. Вы можете отменить подписку в любой момент в личном кабинете.</li>
-          <li><strong>Расширенный доступ (25 ₽)</strong> — единоразовая оплата за полный доступ ко всем возможностям сервиса, включая приоритетную поддержку и расширенные функции.</li>
+          <li><strong>Базовый доступ (100 ₽)</strong> — единоразовая оплата для ознакомления с сервисом. Включает доступ к базовым функциям и электронный чек.</li>
+          <li><strong>Ежемесячная подписка (100 ₽/мес)</strong> — регулярный доступ ко всем функциям сервиса с автоматическим продлением. Отмена в любой момент.</li>
+          <li><strong>Расширенный доступ (100 ₽)</strong> — единоразовая оплата за полный доступ ко всем возможностям сервиса.</li>
         </ul>
       </div>
       
       <div class="description-block">
         <h3>Как это работает:</h3>
         <ol>
-          <li>Выберите подходящий тариф и нажмите «Оплатить» или «Оформить подписку».</li>
-          <li>Укажите email для получения чека (в соответствии с 54-ФЗ).</li>
-          <li>Перейдите на защищенную страницу платежной системы ЮKassa.</li>
+          <li>Выберите подходящий тариф и нажмите «Оплатить».</li>
+          <li>Укажите email для получения чека (54-ФЗ).</li>
+          <li>Перейдите на защищенную страницу платежной системы.</li>
           <li>Введите данные карты — все платежи обрабатываются безопасно.</li>
           <li>После оплаты доступ активируется автоматически.</li>
         </ol>
-      </div>
-      
-      <div class="description-block">
-        <h3>Важная информация:</h3>
-        <ul>
-          <li>Все платежи обрабатываются через защищенное соединение (SSL)</li>
-          <li>Мы не храним данные ваших карт на своих серверах</li>
-          <li>При оформлении подписки вы можете отменить её в любой момент</li>
-          <li>Электронные чеки отправляются на указанный email автоматически</li>
-          <li>По всем вопросам обращайтесь в поддержку: maria-gennadievna@mail.ru</li>
-        </ul>
       </div>
     </div>
 
