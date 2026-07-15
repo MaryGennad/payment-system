@@ -25,88 +25,105 @@
     <!-- Services Catalog -->
     <div class="services-catalog">
       
-      <!-- Услуга 1: Пробный доступ -->
+      <!-- Услуга 1: Разовый платеж -->
       <div class="service-card animate-in" style="animation-delay: 0.1s;">
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
             <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
             <line x1="1" y1="10" x2="23" y2="10"></line>
           </svg>
-          <h2>Пробный доступ к сервису</h2>
-          <div class="service-price">1 ₽</div>
+          <h2>Разовый доступ</h2>
+          <div class="service-price">5 ₽</div>
+          <div class="service-subprice">единоразовая оплата</div>
         </div>
         <ul class="service-features">
-          <li>Активация базового функционала</li>
-          <li>Проверка корректности платежных данных</li>
-          <li>Безопасная обработка через ЮKassa</li>
+          <li>Доступ к базовому функционалу</li>
+          <li>Проверка работы сервиса</li>
+          <li>Электронный чек</li>
         </ul>
-        <a href="index.html?amount=1&description=Пробный%20доступ%20к%20сервису&save=true" class="btn btn-primary">
-          Оформить доступ
+        <a href="index.html?amount=5&description=Разовый%20доступ%20к%20сервису&save=false" class="btn btn-primary">
+          Оплатить
         </a>
       </div>
 
-      <!-- Услуга 2: Тест рекуррентных платежей -->
+      <!-- Услуга 2: Подписка (Featured) -->
       <div class="service-card featured animate-in" style="animation-delay: 0.2s;">
-        <div class="service-badge">Для разработчиков</div>
+        <div class="service-badge">Выбор пользователей</div>
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
             <polyline points="23 4 23 10 17 10"></polyline>
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
           </svg>
-          <h2>Тест рекуррентных платежей</h2>
-          <div class="service-price">5 ₽</div>
-          <div class="service-subprice">5 списаний по 1 ₽</div>
+          <h2>Ежемесячная подписка</h2>
+          <div class="service-price">10 ₽</div>
+          <div class="service-subprice">в месяц</div>
         </div>
         <ul class="service-features">
-          <li>Демонстрация работы автоплатежей</li>
-          <li>Проверка интеграции перед запуском</li>
-          <li>Подготовка к основным тарифам</li>
+          <li>Неограниченный доступ</li>
+          <li>Автоматическое продление</li>
+          <li>Приоритетная поддержка</li>
+          <li>Отмена в любой момент</li>
         </ul>
-        <a href="index.html?amount=5&description=Тест%20рекуррентных%20платежей&save=true" class="btn btn-primary">
-          Запустить тест
+        <a href="index.html?amount=10&description=Ежемесячная%20подписка&save=true" class="btn btn-primary">
+          Оформить подписку
         </a>
       </div>
 
-      <!-- Услуга 3: Консультация -->
+      <!-- Услуга 3: Расширенный доступ -->
       <div class="service-card animate-in" style="animation-delay: 0.3s;">
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
-          <h2>Техническая консультация</h2>
-          <div class="service-price">10 ₽</div>
+          <h2>Расширенный доступ</h2>
+          <div class="service-price">25 ₽</div>
+          <div class="service-subprice">единоразовая оплата</div>
         </div>
         <ul class="service-features">
-          <li>Помощь в настройке интеграции</li>
-          <li>Ответы на вопросы по API</li>
-          <li>Разовая услуга поддержки</li>
+          <li>Все функции подписки</li>
+          <li>Расширенная поддержка</li>
+          <li>Дополнительные возможности</li>
         </ul>
-        <a href="index.html?amount=10&description=Техническая%20консультация&save=false" class="btn btn-primary">
-          Заказать консультацию
+        <a href="index.html?amount=25&description=Расширенный%20доступ%20к%20сервису&save=false" class="btn btn-primary">
+          Оплатить
         </a>
       </div>
 
     </div>
 
-    <!-- Описание для модерации ЮKassa -->
+       <!-- Описание услуг -->
     <div class="services-description animate-in" style="animation-delay: 0.4s;">
       <h2>Описание услуг</h2>
+      
       <div class="description-block">
-        <h3>Что вы оплачиваете:</h3>
+        <h3>Что вы получаете:</h3>
         <ul>
-          <li><strong>Пробный доступ(1 ₽)</strong> — Одноразовая оплата для активации тестового периода доступа к базовому функционалу нашего цифрового сервиса и проверки корректности работы платежного шлюза.</li>
-          <li><strong>Тест рекуррентных платежей (5 ₽)</strong> — Демонстрационный пакет из 5 автоматических списаний по 1 ₽ для проверки работы механизма подписок перед подключением основных коммерческих тарифов.</li>
-          <li><strong>Техническая консультация (10 ₽)</strong> — Разовая услуга по оказанию технической поддержки и помощи в настройке.</li>
+          <li><strong>Разовый доступ (5 ₽)</strong> — единоразовая оплата для ознакомления с сервисом и проверки его функционала. Включает доступ к базовым возможностям и электронный чек.</li>
+          <li><strong>Ежемесячная подписка (10 ₽/мес)</strong> — регулярный доступ ко всем функциям сервиса с автоматическим продлением. Вы можете отменить подписку в любой момент в личном кабинете.</li>
+          <li><strong>Расширенный доступ (25 ₽)</strong> — единоразовая оплата за полный доступ ко всем возможностям сервиса, включая приоритетную поддержку и расширенные функции.</li>
         </ul>
       </div>
+      
       <div class="description-block">
-        <h3>Процесс оплаты:</h3>
+        <h3>Как это работает:</h3>
         <ol>
-          <li>Выберите услугу и нажмите «Выбрать».</li>
-          <li>Укажите email для получения электронного чека (54-ФЗ).</li>
-          <li>Перейдите на защищенную страницу ЮKassa для ввода данных карты.</li>
-          <li>После успешной оплаты услуга активируется автоматически.</li>
+          <li>Выберите подходящий тариф и нажмите «Оплатить» или «Оформить подписку».</li>
+          <li>Укажите email для получения чека (в соответствии с 54-ФЗ).</li>
+          <li>Перейдите на защищенную страницу платежной системы ЮKassa.</li>
+          <li>Введите данные карты — все платежи обрабатываются безопасно.</li>
+          <li>После оплаты доступ активируется автоматически.</li>
         </ol>
+      </div>
+      
+      <div class="description-block">
+        <h3>Важная информация:</h3>
+        <ul>
+          <li>Все платежи обрабатываются через защищенное соединение (SSL)</li>
+          <li>Мы не храним данные ваших карт на своих серверах</li>
+          <li>При оформлении подписки вы можете отменить её в любой момент</li>
+          <li>Электронные чеки отправляются на указанный email автоматически</li>
+          <li>По всем вопросам обращайтесь в поддержку: support@example.com</li>
+        </ul>
       </div>
     </div>
 
