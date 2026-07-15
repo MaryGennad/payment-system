@@ -177,7 +177,7 @@ async function loadRecipientInfo() {
   if (!innElement) return;
   
   try {
-      const inn = '123456789012'; 
+      const inn = '532113934079'; 
     
     if (inn && inn.length === 12) {
       innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
