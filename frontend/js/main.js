@@ -31,18 +31,18 @@ const urlDesc = urlParams.get('description');
 const urlSave = urlParams.get('save');
 
 // ============================================
-// 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОД ВЫБРАННУЮ УСЛУГУ (ИСПРАВЛЕНО)
+// 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОД ВЫБРАННУЮ УСЛУГУ
 // ============================================
 if (urlAmount) {
   const amountNum = parseFloat(urlAmount);
   
-  // 1. Обновляем сумму (ищем по ID, а если нет - по классу)
+  // 1. Обновляем сумму
   const totalElement = document.getElementById('totalAmount') || document.querySelector('.summary-row.total span:last-child');
   if (totalElement) {
     totalElement.textContent = `${amountNum.toFixed(2)} ₽`;
   }
   
-  // 2. Обновляем название услуги, если оно передано в URL
+  // 2. Обновляем название услуги
   if (urlDesc) {
     const serviceElement = document.getElementById('serviceName') || document.querySelector('.summary-row:first-child span:last-child');
     if (serviceElement) {
@@ -119,9 +119,9 @@ if (btnSubmit) {
         headers,
         body: JSON.stringify({
           provider: selectedProvider,
-          amount: parseFloat(urlAmount || 1.00), // Берем из URL или 1₽ по умолчанию
+          amount: parseFloat(urlAmount || 1.00),
           email: emailInput.value.trim(),
-          description: urlDesc || 'Привязка карты',
+          description: urlDesc || 'Пробный доступ к сервису',
           save_payment_method: urlSave === 'true'
         })
       });
@@ -141,7 +141,8 @@ if (btnSubmit) {
       
     } catch (err) {
       console.error('Payment error:', err);
-      alert('❌ ' + err.message);
+      // УБРАН ЭМОДЗИ для строгого стиля
+      alert('Ошибка: ' + err.message);
       btnSubmit.disabled = false;
       btnSubmit.textContent = originalText;
     }
@@ -159,12 +160,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (status === 'success') {
     setTimeout(() => {
-      alert(' Оплата прошла успешно! Карта привязана.');
+      // УБРАН ЭМОДЗИ и лишний пробел
+      alert('Оплата прошла успешно. Карта привязана.');
       localStorage.removeItem('pending_payment');
       window.location.href = 'cards.html';
     }, 500);
   } else if (status === 'fail' || status === 'canceled') {
-    alert('❌ Оплата не прошла или была отменена. Попробуйте ещё раз.');
+    // УБРАН ЭМОДЗИ
+    alert('Оплата не прошла или была отменена. Попробуйте ещё раз.');
     localStorage.removeItem('pending_payment');
   }
 });
@@ -177,14 +180,15 @@ async function loadRecipientInfo() {
   if (!innElement) return;
   
   try {
-      const inn = '532113934079'; 
+    // ✅ ВАШ РЕАЛЬНЫЙ ИНН
+    const inn = '532113934079'; 
     
     if (inn && inn.length === 12) {
       innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
     } else {
       innElement.textContent = inn;
     }
-    innElement.style.color = '#059669';
+    innElement.style.color = '#059669'; // Зеленый цвет для доверия
   } catch (err) {
     console.error('Error loading INN:', err);
     innElement.textContent = 'Не указан';
