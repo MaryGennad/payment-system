@@ -27,7 +27,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Неверный токен' });
     }
 
-    // Создание платежа в ЮKassa
+    // Создание платежа в Robokassa
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
       {

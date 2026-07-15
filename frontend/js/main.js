@@ -150,7 +150,7 @@ if (btnSubmit) {
 }
 
 // ============================================
-// 6. ОБРАБОТКА ВОЗВРАТА ОТ ЮKASSA
+// 6. ОБРАБОТКА ВОЗВРАТА ОТ Robokassa
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
   checkForm();
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
-// 7. ЗАГРУЗКА ИНН (ДЛЯ МОДЕРАЦИИ ЮKASSA)
+// 7. ЗАГРУЗКА ИНН (ДЛЯ МОДЕРАЦИИ Robokassa)
 // ============================================
 async function loadRecipientInfo() {
   const innElement = document.getElementById('recipientInn');

@@ -35,11 +35,11 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Вернуть можно только успешный платеж' });
     }
 
-    // 3. Отправляем запрос на возврат в ЮKassa
+    // 3. Отправляем запрос на возврат в Robokassa
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/refunds',
       {
-        payment_id: payment.paymentId, // ID платежа в ЮKassa
+        payment_id: payment.paymentId, // ID платежа в Robokassa
         amount: {
           value: payment.amount.toFixed(2),
           currency: 'RUB'

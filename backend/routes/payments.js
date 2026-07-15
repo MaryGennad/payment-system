@@ -42,7 +42,7 @@ router.post('/create', auth, async (req, res) => {
   try {
     const { provider, amount, email, description, save_payment_method } = req.body;
 
-    // Создание платежа в ЮKassa
+    // Создание платежа в Robokassa
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
       {
@@ -142,7 +142,7 @@ router.post('/create', auth, async (req, res) => {
 });
 
 // ============================================
-// WEBHOOK ОТ ЮKASSA
+// WEBHOOK ОТ Robokassa
 // ============================================
 router.post('/webhook', async (req, res) => {
   try {
