@@ -125,7 +125,7 @@
             </div>
             <div class="card-actions">
               ${isDefault}
-              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}">Списать 3 ₽</button>
+              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}">Списать 5 ₽</button>
               <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}">
                 <svg class="icon icon-sm" style="margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Удалить
@@ -148,7 +148,7 @@
     const action = btn.dataset.action;
 
     if (action === 'setDefault') window.setDefault(id);
-    if (action === 'charge') window.chargeSavedCard(id, 1, 3); // 1 рубль, 3 раза
+    if (action === 'charge') window.chargeSavedCard(id, 5, 3); // 5 рублей, 3 раза
     if (action === 'delete') window.deleteCard(id);
   });
 
