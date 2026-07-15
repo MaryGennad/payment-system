@@ -11,9 +11,8 @@
 }
 
 :root {
-  /* Монохромная премиальная палитра */
-  --bg: #fafafa; /* БЫЛО #ffffff, СТАЛО светло-серый */
-  --surface: #ffffff; /* Карточки теперь белые на сером фоне */
+  --bg: #fafafa;
+  --surface: #ffffff;
   --border: #e4e4e7;
   --border-hover: #a1a1aa;
   
@@ -46,24 +45,30 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Уменьшаем ширину для премиального "журнального" вида */
 .container { 
-  max-width: 900px; /* БЫЛО 800px, СТАЛО шире для воздуха */
+  max-width: 900px;
   width: 90%; 
   margin: 0 auto; 
-  padding: 60px 20px; /* БЫЛО 40px, СТАЛО больше */
+  padding: 60px 20px;
 }
 
 /* ============================================
    ===== АНИМАЦИИ =====
    ============================================ */
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(12px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(20px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
 .animate-in {
   animation: fadeInUp 0.8s var(--ease-premium) forwards;
+  opacity: 0;
 }
 
 /* ============================================
@@ -104,7 +109,7 @@ body {
 
 h1 { 
   font-size: 28px; 
-  font-weight: 500; /* Не жирный, а элегантный */
+  font-weight: 500;
   letter-spacing: -0.03em;
   color: var(--text-primary);
 }
@@ -140,7 +145,7 @@ h1 {
 .card {
   background: var(--bg);
   border: 1px solid var(--border);
-  border-radius: 8px; /* Небольшое скругление для строгости */
+  border-radius: 8px;
   overflow: hidden;
   margin-bottom: 24px;
   transition: border-color 0.3s var(--ease-premium);
@@ -494,7 +499,6 @@ h1 {
   margin-bottom: 24px;
 }
 
-/* Делаем эмодзи черно-белыми для премиум вида */
 .service-icon { 
   font-size: 32px;
   margin-bottom: 16px;
@@ -545,8 +549,13 @@ h1 {
   border-bottom: none;
 }
 
+/* Задержки для каскадного эффекта */
+.service-card:nth-child(1) { animation-delay: 0.1s; }
+.service-card:nth-child(2) { animation-delay: 0.2s; }
+.service-card:nth-child(3) { animation-delay: 0.3s; }
+
 /* ============================================
-   ===== РЕКВИЗИТЫ (Строгий футер) =====
+   ===== РЕКВИЗИТЫ =====
    ============================================ */
 .recipient-info {
   margin-top: 48px;
@@ -579,44 +588,7 @@ h1 {
 }
 
 /* ============================================
-   ===== FOOTER & UTILS =====
-   ============================================ */
-.footer-links { 
-  display: flex;
-  justify-content: center;
-  gap: 32px;
-  margin-top: 48px;
-  padding-top: 32px;
-  border-top: 1px solid var(--border);
-}
-
-.footer-links a { 
-  color: var(--text-muted);
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  transition: color 0.3s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap; /* Запрещает перенос текста */
-}
-
-.footer-links a:hover { 
-  color: var(--text-primary);
-}
-
-/* ============================================
-   ===== RESPONSIVE =====
-   ============================================ */
-@media (max-width: 768px) {
-  .container { width: 92%; padding: 24px 16px; }
-  .services-catalog { grid-template-columns: 1fr; gap: 16px; }
-  .card-body { padding: 24px; }
-  h1 { font-size: 24px; }
-  .service-price { font-size: 32px; }
-}
-/* ============================================
-   ===== PREMIUM SVG ICONS =====
+   ===== SVG ICONS =====
    ============================================ */
 .icon {
   width: 18px;
@@ -632,31 +604,9 @@ h1 {
 .icon-lg { width: 24px; height: 24px; }
 .icon-xl { width: 32px; height: 32px; }
 
-/* Убираем фильтры с эмодзи, если они где-то остались, но лучше их удалить */
-.no-emoji { font-family: sans-serif; }
-
-/* Плавное появление элементов при скролле */
-@keyframes fadeInUp {
-  from { 
-    opacity: 0; 
-    transform: translateY(20px); 
-  }
-  to { 
-    opacity: 1; 
-    transform: translateY(0); 
-  }
-}
-
-.animate-in {
-  animation: fadeInUp 0.8s var(--ease-premium) forwards;
-  opacity: 0;
-}
-
-/* Задержки для каскадного эффекта */
-.service-card:nth-child(1) { animation-delay: 0.1s; }
-.service-card:nth-child(2) { animation-delay: 0.2s; }
-.service-card:nth-child(3) { animation-delay: 0.3s; }
-
+/* ============================================
+   ===== PAYMENT LOGOS =====
+   ============================================ */
 .payment-logo {
   display: inline-flex;
   align-items: center;
@@ -681,103 +631,7 @@ h1 {
   padding-top: 24px;
   border-top: 1px solid var(--border);
 }
-/* ============================================
-   ===== FOOTER =====
-   ============================================ */
-.site-footer {
-  background: var(--surface);
-  border-top: 1px solid var(--border);
-  margin-top: 60px;
-  padding: 40px 0 20px;
-}
 
-.footer-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
-
-.footer-columns {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
-  margin-bottom: 40px;
-}
-
-.footer-column h3 {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.footer-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.footer-links li {
-  margin-bottom: 10px;
-}
-
-.footer-links a {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 14px;
-  transition: color 0.2s ease;
-}
-
-.footer-links a:hover {
-  color: var(--text-primary);
-}
-
-.footer-bottom {
-  border-top: 1px solid var(--border);
-  padding-top: 24px;
-}
-
-.footer-legal {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-  font-size: 13px;
-}
-
-.legal-row {
-  display: flex;
-  gap: 8px;
-}
-
-.legal-label {
-  color: var(--text-muted);
-}
-
-.legal-value {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.footer-copyright {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 12px;
-}
-
-/* Адаптивность */
-@media (max-width: 768px) {
-  .footer-columns {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
-  
-  .footer-legal {
-    flex-direction: column;
-    gap: 8px;
-  }
-}
 /* ============================================
    ===== FOOTER =====
    ============================================ */
@@ -836,7 +690,16 @@ h1 {
   color: var(--text-muted);
 }
 
+/* ============================================
+   ===== RESPONSIVE =====
+   ============================================ */
 @media (max-width: 768px) {
+  .container { width: 92%; padding: 24px 16px; }
+  .services-catalog { grid-template-columns: 1fr; gap: 16px; }
+  .card-body { padding: 24px; }
+  h1 { font-size: 24px; }
+  .service-price { font-size: 32px; }
+  
   .footer-top {
     flex-direction: column;
     align-items: center;
