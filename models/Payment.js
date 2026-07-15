@@ -1,5 +1,4 @@
-// models/Payment.js
-import mongoose from 'mongoose'; // <-- Используйте import
+import mongoose from 'mongoose'; 
 
 const PaymentSchema = new mongoose.Schema({
   userId: {
@@ -40,5 +39,5 @@ const PaymentSchema = new mongoose.Schema({
   timestamps: true 
 });
 
-// ВАЖНО: Здесь должно быть PaymentSchema, а НЕ UserSchema!
+
 export default mongoose.model('Payment', PaymentSchema); 

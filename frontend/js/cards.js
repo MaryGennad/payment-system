@@ -1,4 +1,3 @@
-// frontend/js/cards.js
 (function () {
   const auth = window.auth?.getAuth() || {};
   const token = auth.token;

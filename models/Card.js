@@ -1,4 +1,3 @@
-// backend/models/Card.js
 import mongoose from 'mongoose';
 
 const CardSchema = new mongoose.Schema({

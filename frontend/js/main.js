@@ -160,13 +160,11 @@ document.addEventListener('DOMContentLoaded', () => {
   
   if (status === 'success') {
     setTimeout(() => {
-      // УБРАН ЭМОДЗИ и лишний пробел
       alert('Оплата прошла успешно. Карта привязана.');
       localStorage.removeItem('pending_payment');
       window.location.href = 'cards.html';
     }, 500);
   } else if (status === 'fail' || status === 'canceled') {
-    // УБРАН ЭМОДЗИ
     alert('Оплата не прошла или была отменена. Попробуйте ещё раз.');
     localStorage.removeItem('pending_payment');
   }

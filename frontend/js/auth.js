@@ -85,7 +85,7 @@ if (loginForm) {
       window.location.href = 'services.html';
       
     } catch (err) {
-      // Строгое сообщение без эмодзи
+      // Строгое сообщение
       alert('Ошибка: ' + err.message);
     } finally {
       // Возвращаем кнопку в исходное состояние
@@ -132,7 +132,7 @@ if (registerForm) {
       window.location.href = 'services.html';
       
     } catch (err) {
-      // Строгое сообщение без эмодзи
+      // Строгое сообщение
       alert('Ошибка: ' + err.message);
     } finally {
       // Возвращаем кнопку в исходное состояние
@@ -148,7 +148,7 @@ if (registerForm) {
 // ФУНКЦИЯ ВЫХОДА (доступна на всех страницах)
 // ============================================
 window.logout = function() {
-  // Формальный текст подтверждения без эмодзи
+  // Формальный текст подтверждения
   if (confirm('Вы действительно хотите выйти из аккаунта?')) {
     window.auth.clearAuth();
     window.location.href = 'auth.html';
