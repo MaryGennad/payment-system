@@ -681,3 +681,100 @@ h1 {
   padding-top: 24px;
   border-top: 1px solid var(--border);
 }
+/* ============================================
+   ===== FOOTER =====
+   ============================================ */
+.site-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  margin-top: 60px;
+  padding: 40px 0 20px;
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.footer-columns {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  margin-bottom: 40px;
+}
+
+.footer-column h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-links li {
+  margin-bottom: 10px;
+}
+
+.footer-links a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+  color: var(--text-primary);
+}
+
+.footer-bottom {
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+}
+
+.footer-legal {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.legal-row {
+  display: flex;
+  gap: 8px;
+}
+
+.legal-label {
+  color: var(--text-muted);
+}
+
+.legal-value {
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.footer-copyright {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .footer-columns {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  
+  .footer-legal {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
