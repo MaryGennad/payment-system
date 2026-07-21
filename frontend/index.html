@@ -13,12 +13,11 @@
     <!-- Header -->
     <header class="header">
       <div class="header-top">
-        <!-- <button class="back-btn" onclick="window.location.href='cards.html'" title="Мои карты"> -->
-          <!-- <svg class="icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button> -->
-        <button class="logout-btn" id="authBtn">Войти</button>
+        <div style="width: 40px;"></div>
+        <h1>Каталог услуг</h1>
+    <button class="logout-btn" id="authBtn">Войти</button>
       </div>
-      <h1>Каталог услуг</h1>
+      <!-- <h1>Каталог услуг</h1> -->
       <p class="header-subtitle">Выберите подходящий тариф для подключения</p>
     </header>
 
@@ -156,9 +155,6 @@
     <a href="user-agreement.html">Пользовательское соглашение</a>
     <a href="privacy-policy.html">Политика конфиденциальности</a>
     <a href="refund-policy.html">Условия возврата</a>
-    <span id="footerAuthBtn">
-      <!-- Здесь JavaScript вставит "Войти" или "Мои карты + Выйти" -->
-    </span>
   </div>
   <div class="footer-bottom">
     <div class="footer-legal">
@@ -171,25 +167,21 @@
 </footer>
   </div>
 
-  <script src="/js/auth.js"></script>
+ <script src="/js/auth.js"></script>
 <script>
-  // Умный футер: показываем "Мои карты" если авторизован, "Войти" если нет
+  // Умная кнопка в шапке: "Войти" или "Выйти"
   document.addEventListener('DOMContentLoaded', () => {
     const authData = window.auth?.getAuth() || {};
     const token = authData.token;
+    const authBtn = document.getElementById('authBtn');
     
-    const authLink = document.getElementById('footerAuthBtn');
-    
-    if (authLink) {
+    if (authBtn) {
       if (token) {
-        // Авторизован — показываем "Мои карты" и "Выйти"
-        authLink.innerHTML = `
-          <a href="cards.html" style="margin-right: 16px;">Мои карты</a>
-          <a href="#" onclick="window.logout(); return false;">Выйти</a>
-        `;
+        authBtn.textContent = 'Выйти';
+        authBtn.onclick = () => window.logout();
       } else {
-        // Не авторизован — показываем "Войти"
-        authLink.innerHTML = `<a href="auth.html">Войти</a>`;
+        authBtn.textContent = 'Войти';
+        authBtn.onclick = () => window.location.href = 'auth.html';
       }
     }
   });
