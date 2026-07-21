@@ -26,7 +26,7 @@ window.auth = {
 // АВТОРЕДИРЕКТ: Если уже авторизован, переходим в КАТАЛОГ УСЛУГ
 // ============================================
 if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
-  window.location.href = 'services.html';
+  window.location.href = 'index.html';
 }
 
 // ============================================
@@ -82,7 +82,7 @@ if (loginForm) {
       window.auth.saveAuth(data.token, data.user);
       
       // Перенаправление в каталог
-      window.location.href = 'services.html';
+      window.location.href = 'index.html';
       
     } catch (err) {
       // Строгое сообщение
@@ -129,7 +129,7 @@ if (registerForm) {
       window.auth.saveAuth(data.token, data.user);
       
       // Перенаправление в каталог
-      window.location.href = 'services.html';
+      window.location.href = 'index.html';
       
     } catch (err) {
       // Строгое сообщение
