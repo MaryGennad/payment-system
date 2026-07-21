@@ -1,32 +1,26 @@
 const API_BASE = '/api';
 
 // ============================================
-// ГЛОБАЛЬНЫЙ ОБЪЕКТ АВТОРИЗАЦИИ
+// ГЛОБАЛЬНЫЙ ОБЪЕКТ АВТОРИЗАЦИИ (Единый и правильный)
 // ============================================
 window.auth = {
-  saveAuth: (token, user) => {
-    localStorage.setItem('token', token);
-    localStorage.setItem('user', JSON.stringify(user));
+  setAuth: (token, user) => {
+    localStorage.setItem('auth', JSON.stringify({ token, user }));
   },
   getAuth: () => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    return { 
-      token, 
-      user: userStr ? JSON.parse(userStr) : null 
-    };
+    const data = localStorage.getItem('auth');
+    return data ? JSON.parse(data) : { token: null, user: null };
   },
   clearAuth: () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    localStorage.removeItem('auth');
   }
 };
 
 // ============================================
-// АВТОРЕДИРЕКТ: Если уже авторизован, переходим в КАТАЛОГ УСЛУГ
+// АВТОРЕДИРЕКТ: Если уже авторизован и зашел на auth.html, кидаем в ЛК
 // ============================================
 if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
-  window.location.href = 'index.html';
+  window.location.href = 'cards.html';
 }
 
 // ============================================
@@ -64,7 +58,6 @@ if (loginForm) {
     const submitBtn = loginForm.querySelector('button[type="submit"]');
 
     try {
-      // Блокируем кнопку для предотвращения двойной отправки
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Вход...';
@@ -79,16 +72,13 @@ if (loginForm) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Неверный email или пароль');
       
-      window.auth.saveAuth(data.token, data.user);
-      
-      // Перенаправление в каталог
-      window.location.href = 'index.html';
+      // ✅ Сохраняем и сразу редиректим в ЛИЧНЫЙ КАБИНЕТ
+      window.auth.setAuth(data.token, data.user);
+      window.location.href = 'cards.html';
       
     } catch (err) {
-      // Строгое сообщение
       alert('Ошибка: ' + err.message);
     } finally {
-      // Возвращаем кнопку в исходное состояние
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Войти';
@@ -111,7 +101,6 @@ if (registerForm) {
     const submitBtn = registerForm.querySelector('button[type="submit"]');
 
     try {
-      // Блокируем кнопку для предотвращения двойной отправки
       if (submitBtn) {
         submitBtn.disabled = true;
         submitBtn.textContent = 'Регистрация...';
@@ -126,16 +115,13 @@ if (registerForm) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Ошибка при создании аккаунта');
       
-      window.auth.saveAuth(data.token, data.user);
-      
-      // Перенаправление в каталог
-      window.location.href = 'index.html';
+      // ✅ Сохраняем и сразу редиректим в ЛИЧНЫЙ КАБИНЕТ
+      window.auth.setAuth(data.token, data.user);
+      window.location.href = 'cards.html';
       
     } catch (err) {
-      // Строгое сообщение
       alert('Ошибка: ' + err.message);
     } finally {
-      // Возвращаем кнопку в исходное состояние
       if (submitBtn) {
         submitBtn.disabled = false;
         submitBtn.textContent = 'Зарегистрироваться';
@@ -145,12 +131,12 @@ if (registerForm) {
 }
 
 // ============================================
-// ФУНКЦИЯ ВЫХОДА (доступна на всех страницах)
+// ФУНКЦИЯ ВЫХОДА
 // ============================================
 window.logout = function() {
-  // Формальный текст подтверждения
   if (confirm('Вы действительно хотите выйти из аккаунта?')) {
     window.auth.clearAuth();
-    window.location.href = 'auth.html';
+    // ✅ После выхода кидаем на главную (каталог), а не на страницу входа
+    window.location.href = 'index.html';
   }
 };
