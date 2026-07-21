@@ -6,9 +6,9 @@ const API_BASE = window.API_BASE || '/api';
 const authData = window.auth?.getAuth() || {};
 const token = authData.token;
 
-if (!token) {
-  window.location.href = 'auth.html';
-}
+// if (!token) {
+//   window.location.href = 'auth.html';
+// }
 
 const headers = {
   'Content-Type': 'application/json',
