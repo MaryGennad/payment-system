@@ -151,11 +151,12 @@
 <footer class="site-footer">
   <div class="footer-top">
     <a href="index.html">Каталог услуг</a>
-     <a href="cards.html" id="footerMyCards" style="display: none;">Мои карты</a>
-    <a href="auth.html" id="footerAuth">Войти</a>
     <a href="user-agreement.html">Пользовательское соглашение</a>
     <a href="privacy-policy.html">Политика конфиденциальности</a>
     <a href="refund-policy.html">Условия возврата</a>
+    <span id="footerAuthBtn">
+      <!-- Здесь JavaScript вставит "Войти" или "Мои карты + Выйти" -->
+    </span>
   </div>
   <div class="footer-bottom">
     <div class="footer-legal">
@@ -169,38 +170,27 @@
   </div>
 
   <script src="/js/auth.js"></script>
-  <script>
-    // 1. Проверка авторизации
-    (function() {
-      // const auth = window.auth?.getAuth() || {};
-      // if (!auth.token) {
-      //   window.location.href = 'auth.html';
-      // }
-    })();
-
-    // 2. Форматирование ИНН при загрузке (добавляет дефисы для красоты)
-    document.addEventListener('DOMContentLoaded', () => {
-      const innElement = document.getElementById('recipientInn');
-      if (innElement) {
-        let inn = innElement.textContent.replace(/\D/g, ''); // Оставляем только цифры
-        if (inn.length === 12) {
-          innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
-        }
+<script>
+  // Умный футер: показываем "Мои карты" если авторизован, "Войти" если нет
+  document.addEventListener('DOMContentLoaded', () => {
+    const authData = window.auth?.getAuth() || {};
+    const token = authData.token;
+    
+    const authLink = document.getElementById('footerAuthBtn');
+    
+    if (authLink) {
+      if (token) {
+        // Авторизован — показываем "Мои карты" и "Выйти"
+        authLink.innerHTML = `
+          <a href="cards.html" style="margin-right: 16px;">Мои карты</a>
+          <a href="#" onclick="window.logout(); return false;">Выйти</a>
+        `;
+      } else {
+        // Не авторизован — показываем "Войти"
+        authLink.innerHTML = `<a href="auth.html">Войти</a>`;
       }
-    });
-
-    // Проверяем авторизацию и меняем кнопку
-const authData = window.auth?.getAuth() || {};
-const token = authData.token;
-const authBtn = document.getElementById('authBtn');
-
-if (token) {
-  authBtn.textContent = 'Выйти';
-  authBtn.onclick = () => window.logout();
-} else {
-  authBtn.textContent = 'Войти';
-  authBtn.onclick = () => window.location.href = 'auth.html';
-}
-  </script>
+    }
+  });
+</script>
 </body>
 </html>
