@@ -1,3 +1,14 @@
+// ============================================
+// ПРОВЕРКА АВТОРИЗАЦИИ
+// ============================================
+const authData = window.auth?.getAuth() || {};
+const token = authData.token;
+
+if (!token) {
+  // Если нет токена — редирект на авторизацию
+  window.location.href = 'auth.html';
+}
+
 (function () {
   const auth = window.auth?.getAuth() || {};
   const token = auth.token;

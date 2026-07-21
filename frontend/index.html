@@ -22,70 +22,73 @@
       <p class="header-subtitle">Выберите подходящий тариф для подключения</p>
     </header>
 
-    <!-- Services Catalog -->
-      <div class="services-catalog">
+      <!-- Services Catalog -->
+    <div class="services-catalog">
       
-      <!-- Услуга 1: Базовый -->
+      <!-- Услуга 1: Разовая консультация -->
       <div class="service-card animate-in" style="animation-delay: 0.1s;">
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
-            <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-            <line x1="1" y1="10" x2="23" y2="10"></line>
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
-          <h2>Базовый доступ</h2>
+          <h2>Разовая консультация</h2>
           <div class="service-price">100 ₽</div>
-          <div class="service-subprice">единоразовая оплата</div>
+          <div class="service-subprice">за 1 час работы</div>
         </div>
         <ul class="service-features">
-          <li>Доступ к базовому функционалу</li>
-          <li>Проверка работы сервиса</li>
-          <li>Электронный чек</li>
+          <li>Экспресс-ответы по «1С:Отель»</li>
+          <li>Разбор конкретного вопроса</li>
+          <li>Устные рекомендации</li>
+          <li>Разовый платеж</li>
         </ul>
-        <a href="index.html?amount=100&description=Базовый%20доступ%20к%20сервису&save=false" class="btn btn-primary">
-          Оплатить
+        <a href="payment.html?amount=100&description=Разовая%20консультация%201С%20Отель%20(1%20час)&save=false" class="btn btn-primary">
+          Заказать
         </a>
       </div>
 
-      <!-- Услуга 2: Подписка (Featured) -->
+      <!-- Услуга 2: Комплексная настройка (Рекуррент) -->
       <div class="service-card featured animate-in" style="animation-delay: 0.2s;">
-        <div class="service-badge">Выбор пользователей</div>
+        <div class="service-badge">Популярное</div>
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
             <polyline points="23 4 23 10 17 10"></polyline>
             <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
           </svg>
-          <h2>Ежемесячная подписка</h2>
-          <div class="service-price">100 ₽</div>
-          <div class="service-subprice">в месяц</div>
+          <h2>Комплексная настройка</h2>
+          <div class="service-price">100 ₽ × 3</div>
+          <div class="service-subprice">итого 300 ₽ за 3 часа</div>
         </div>
         <ul class="service-features">
-          <li>Неограниченный доступ</li>
-          <li>Автоматическое продление</li>
-          <li>Приоритетная поддержка</li>
-          <li>Отмена в любой момент</li>
+          <li>Поэтапная настройка «1С:Отель»</li>
+          <li>Обучение персонала</li>
+          <li>3 этапа по 1 часу</li>
+          <li>Автосписание 3 раза по 100 ₽</li>
         </ul>
-        <a href="index.html?amount=100&description=Ежемесячная%20подписка&save=true" class="btn btn-primary">
-          Оформить подписку
+        <a href="payment.html?amount=100&description=Комплексная%20настройка%201С%20Отель%20(этап%201%20из%203)&save=true" class="btn btn-primary">
+          Оформить курс
         </a>
       </div>
 
-      <!-- Услуга 3: Расширенный -->
+      <!-- Услуга 3: Полный пакет -->
       <div class="service-card animate-in" style="animation-delay: 0.3s;">
         <div class="service-header">
           <svg class="icon icon-xl" style="margin-bottom: 16px; opacity: 0.7;" viewBox="0 0 24 24">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
           </svg>
-          <h2>Расширенный доступ</h2>
+          <h2>Полный пакет услуг</h2>
           <div class="service-price">200 ₽</div>
-          <div class="service-subprice">единоразовая оплата</div>
+          <div class="service-subprice">за 2 часа работы</div>
         </div>
         <ul class="service-features">
-          <li>Все функции подписки</li>
-          <li>Расширенная поддержка</li>
-          <li>Дополнительные возможности</li>
+          <li>Анализ текущей базы</li>
+          <li>Первичная настройка</li>
+          <li>Корректировка ошибок</li>
+          <li>Разовый платеж</li>
         </ul>
-        <a href="index.html?amount=100&description=Расширенный%20доступ%20к%20сервису&save=false" class="btn btn-primary">
-          Оплатить
+        <a href="payment.html?amount=200&description=Полный%20пакет%20услуг%201С%20Отель%20(2%20часа)&save=false" class="btn btn-primary">
+          Заказать пакет
         </a>
       </div>
 
@@ -109,36 +112,47 @@
     </div>
   </div>
 </div>
-       <!-- Описание услуг -->
-      <div class="services-description animate-in" style="animation-delay: 0.4s;">
-      <h2>Описание услуг</h2>
-      
-      <div class="description-block">
-        <h3>Что вы получаете:</h3>
-        <ul>
-          <li><strong>Базовый доступ (100 ₽)</strong> — единоразовая оплата для ознакомления с сервисом. Включает доступ к базовым функциям и электронный чек.</li>
-          <li><strong>Ежемесячная подписка (100 ₽/мес)</strong> — регулярный доступ ко всем функциям сервиса с автоматическим продлением. Отмена в любой момент.</li>
-          <li><strong>Расширенный доступ (200 ₽)</strong> — единоразовая оплата за полный доступ ко всем возможностям сервиса.</li>
-        </ul>
-      </div>
-      
-      <div class="description-block">
-        <h3>Как это работает:</h3>
-        <ol>
-          <li>Выберите подходящий тариф и нажмите «Оплатить».</li>
-          <li>Укажите email для получения чека (54-ФЗ).</li>
-          <li>Перейдите на защищенную страницу платежной системы.</li>
-          <li>Введите данные карты — все платежи обрабатываются безопасно.</li>
-          <li>После оплаты доступ активируется автоматически.</li>
-        </ol>
-      </div>
-    </div>
+      <!-- Детальное описание услуг -->
+<div class="services-description animate-in" style="animation-delay: 0.4s;">
+  <h2>Описание услуг</h2>
+  
+  <div class="description-block">
+    <h3>Что вы получаете:</h3>
+    <ul>
+      <li><strong>Базовый доступ (100 ₽)</strong> — единоразовая оплата для ознакомления с сервисом. Включает доступ к базовым функциям и электронный чек. Подходит для тестирования работы сервиса.</li>
+      <li><strong>Ежемесячная подписка (100 ₽/мес)</strong> — регулярный доступ ко всем функциям сервиса с автоматическим продлением. Подходит для активного использования сервиса.</li>
+      <li><strong>Расширенный доступ (200 ₽)</strong> — единоразовая оплата за полный доступ ко всем возможностям сервиса. Подходит для профессионального использования.</li>
+    </ul>
+  </div>
+  
+  <div class="description-block">
+    <h3>Как это работает:</h3>
+    <ol>
+      <li>Выберите подходящий тариф и нажмите «Оплатить».</li>
+      <li>Укажите email для получения чека (54-ФЗ).</li>
+      <li>Перейдите на защищенную страницу платежной системы.</li>
+      <li>Введите данные карты — все платежи обрабатываются безопасно через Robokassa.</li>
+      <li>После оплаты доступ к выбранному тарифу активируется автоматически.</li>
+    </ol>
+  </div>
+  
+  <div class="description-block">
+    <h3>Важная информация:</h3>
+    <ul>
+      <li>Сервис предоставляет услуги по управлению автоматическими платежами и подписками</li>
+      <li>Данные карт не хранятся на наших серверах (обрабатываются через Robokassa)</li>
+      <li>При оформлении подписки вы можете отменить её в любой момент</li>
+      <li>Электронные чеки отправляются на указанный email автоматически</li>
+    </ul>
+  </div>
+</div>
 
     <!-- Footer -->
 <footer class="site-footer">
   <div class="footer-top">
     <a href="index.html">Каталог услуг</a>
-    <a href="cards.html">Мои карты</a>
+     <a href="cards.html" id="footerMyCards" style="display: none;">Мои карты</a>
+    <a href="auth.html" id="footerAuth">Войти</a>
     <a href="user-agreement.html">Пользовательское соглашение</a>
     <a href="privacy-policy.html">Политика конфиденциальности</a>
     <a href="refund-policy.html">Условия возврата</a>
