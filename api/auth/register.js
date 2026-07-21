@@ -4,6 +4,11 @@ import jwt from 'jsonwebtoken';
 import connectDB from '../../lib/db.js';
 import User from '../../models/User.js';
 
+// Простая, но эффективная проверка email
+const isValidEmail = (email) => {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -14,20 +19,35 @@ export default async function handler(req, res) {
   try {
     const { name, email, password } = req.body;
 
-    // Проверка пользователя
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ error: 'Пользователь уже существует' });
+    // 🔒 ЗАЩИТА: Валидация входных данных
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email и пароль обязательны' });
     }
 
-    // Хэширование пароля
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = name ? name.trim() : 'Пользователь';
+
+    if (!isValidEmail(cleanEmail)) {
+      return res.status(400).json({ error: 'Некорректный формат email' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ error: 'Пароль должен содержать минимум 8 символов' });
+    }
+
+    // Проверка существующего пользователя (по очищенному email)
+    const existingUser = await User.findOne({ email: cleanEmail });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
+    }
+
+    // Хэширование пароля (bcrypt.hash сам генерирует salt, 10 раундов - оптимально)
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     // Создание пользователя
     const user = await User.create({
-      name: name || 'Пользователь',
-      email,
+      name: cleanName,
+      email: cleanEmail,
       password: hashedPassword
     });
 

@@ -14,8 +14,17 @@ export default async function handler(req, res) {
   try {
     const { email, password } = req.body;
 
+    //ЗАЩИТА: Очистка и приведение к нижнему регистру
+    const cleanEmail = email ? email.trim().toLowerCase() : '';
+
+    if (!cleanEmail || !password) {
+      return res.status(400).json({ error: 'Email и пароль обязательны' });
+    }
+
     // Поиск пользователя
-    const user = await User.findOne({ email }).select('+password'); // +password нужен, если в схеме стоит select: false
+    const user = await User.findOne({ email: cleanEmail }).select('+password');
+    
+    // ЗАЩИТА:Generic ошибка (не раскрывает, существует ли email)
     if (!user) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }
