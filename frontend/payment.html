@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Привязка карты | Оплата</title>
+  <title>Оплата услуги | ИП Антоненко М.Г.</title>
   <link rel="stylesheet" href="/css/style.css">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
@@ -16,8 +16,8 @@
         <button class="back-btn" onclick="window.location.href='index.html'" title="Вернуться к услугам">←</button>
         <button class="logout-btn" onclick="window.location.href='cards.html'">Мои карты</button>
       </div>
-      <h1>Привязка карты</h1>
-      <p class="header-subtitle">Безопасная оплата для будущих сервисов</p>
+      <h1>Оплата услуги</h1>
+      <p class="header-subtitle">Безопасная оплата услуг по 1С:Отель</p>
     </header>
 
     <!-- Main Card -->
@@ -37,7 +37,7 @@
         <div class="summary">
           <div class="summary-row">
             <span>Услуга</span>
-            <span id="serviceName">Базовый доступ к сервису</span>
+            <span id="serviceName">Загрузка...</span>
           </div>
           <div class="summary-row">
             <span>Комиссия</span>
@@ -45,11 +45,11 @@
           </div>
           <div class="summary-row total">
             <span>ИТОГО К ОПЛАТЕ</span>
-            <span id="totalAmount">100.00 ₽</span>
+            <span id="totalAmount">0.00 ₽</span>
           </div>
         </div>
 
-        <!-- Реквизиты получателя (интегрированы в дизайн) -->
+        <!-- Реквизиты получателя -->
         <div class="recipient-info" style="margin-top: 0; margin-bottom: 32px; padding-top: 0; border-top: none;">
           <div class="recipient-title">Реквизиты получателя</div>
           <div class="recipient-row">
@@ -58,8 +58,7 @@
           </div>
           <div class="recipient-row">
             <span class="r-label">ИНН</span>
-         
-            <span class="r-value inn-number" id="recipientInn">532-113-934-079</span>
+            <span class="r-value inn-number">532-113-934-079</span>
           </div>
           <div class="recipient-row">
             <span class="r-label">Платежная система</span>
@@ -69,17 +68,17 @@
 
         <!-- Email Form -->
         <div class="form-group">
-          <label for="email">Email для отправки чека</label>
+          <label for="email">Email для отправки чека (54-ФЗ)</label>
           <input type="email" id="email" placeholder="name@example.com" required autocomplete="email">
           <div class="error-text">Введите корректный email адрес</div>
         </div>
 
         <!-- Payment Methods -->
         <div class="payment-methods">
-          <div class="payment-method active" data-provider="yookassa">
+          <div class="payment-method active" data-provider="robokassa">
             <div class="pm-icon"><span class="pm-logo">Robokassa</span></div>
             <div class="pm-info">
-              <div class="pm-name">Банковская карта</div>
+              <div class="pm-name">Банковская карта / СБП</div>
               <div class="pm-desc">Visa, Mastercard, МИР, СБП</div>
             </div>
             <div class="pm-check"></div>
@@ -98,7 +97,7 @@
           </label>
           <label class="consent-item">
             <input type="checkbox" id="consentSave" required checked>
-            <span>Разрешаю сохранить данные карты для будущих автоматических платежей</span>
+            <span>Разрешаю сохранить данные для будущих автоматических платежей</span>
           </label>
         </div>
 
@@ -107,61 +106,57 @@
           Перейти к оплате
         </button>
 
-      <div class="card-logos" style="display: flex; gap: 16px; justify-content: center; font-size: 13px; font-weight: 500; color: var(--text-secondary);">
-  <span>MIR</span>
-  <span>Mastercard</span>
-  <span>Visa</span>
-</div>
+        <div class="card-logos" style="display: flex; gap: 16px; justify-content: center; font-size: 13px; font-weight: 500; color: var(--text-secondary); margin-top: 24px;">
+          <span>MIR</span>
+          <span>Mastercard</span>
+          <span>Visa</span>
+        </div>
       </div>
     </div>
 
     <!-- Footer -->
-<footer class="site-footer">
-  <div class="footer-top">
-    <a href="index.html">Каталог услуг</a>
-    <a href="user-agreement.html">Пользовательское соглашение</a>
-    <a href="privacy-policy.html">Политика конфиденциальности</a>
-    <a href="refund-policy.html">Условия возврата</a>
-    <span id="footerAuthBtn">
-      <!-- Здесь JavaScript вставит "Войти" или "Мои карты + Выйти" -->
-    </span>
-  </div>
-  <div class="footer-bottom">
-    <div class="footer-legal">
-      <span>ИП Антоненко Мария Геннадьевна</span>
-      <span>ИНН: 532-113-934-079</span>
-      <span>Платежи: Robokassa</span>
-    </div>
-    <div class="footer-copy">© 2026 Все права защищены</div>
-  </div>
-</footer>
+    <footer class="site-footer">
+      <div class="footer-top">
+        <a href="index.html">Каталог услуг</a>
+        <a href="user-agreement.html">Пользовательское соглашение</a>
+        <a href="privacy-policy.html">Политика конфиденциальности</a>
+        <a href="refund-policy.html">Условия возврата</a>
+        <span id="footerAuthBtn">
+          <!-- Сюда JS вставит кнопку -->
+        </span>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-legal">
+          <span>ИП Антоненко Мария Геннадьевна</span>
+          <span>ИНН: 532-113-934-079</span>
+          <span>Платежи: Robokassa</span>
+        </div>
+        <div class="footer-copy">© 2026 Все права защищены</div>
+      </div>
+    </footer>
   </div>
 
- <script src="/js/auth.js"></script>
-<script>
-  // Умный футер: показываем "Мои карты" если авторизован, "Войти" если нет
-  document.addEventListener('DOMContentLoaded', () => {
-    const authData = window.auth?.getAuth() || {};
-    const token = authData.token;
-    
-    const authLink = document.getElementById('footerAuthBtn');
-    
-    if (authLink) {
-      if (token) {
-        // Авторизован — показываем "Мои карты" и "Выйти"
-        authLink.innerHTML = `
-          <a href="cards.html" style="margin-right: 16px;">Мои карты</a>
-          <a href="#" onclick="window.logout(); return false;">Выйти</a>
-        `;
-      } else {
-        // Не авторизован — показываем "Войти"
-        authLink.innerHTML = `<a href="auth.html">Войти</a>`;
+  <!-- Скрипты в правильном порядке -->
+  <script src="/js/auth.js"></script>
+  <script>
+    // Умный футер специально для этой страницы
+    document.addEventListener('DOMContentLoaded', () => {
+      const authData = window.auth?.getAuth() || {};
+      const token = authData.token;
+      const authLink = document.getElementById('footerAuthBtn');
+      
+      if (authLink) {
+        if (token) {
+          authLink.innerHTML = `
+            <a href="cards.html" style="margin-right: 16px;">Мои карты</a>
+            <a href="#" onclick="window.logout(); return false;">Выйти</a>
+          `;
+        } else {
+          authLink.innerHTML = `<a href="auth.html">Войти</a>`;
+        }
       }
-    }
-  });
-</script>
-<script src="/js/footer.js"></script>
-<script src="/js/main.js"></script>
-<script src="/js/cards.js"></script>
+    });
+  </script>
+  <script src="/js/main.js"></script>
 </body>
 </html>
