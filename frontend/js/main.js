@@ -118,6 +118,17 @@ if (btnSubmit) {
     e.preventDefault();
     if (btnSubmit.disabled) return;
     
+    // ✅ ПРОВЕРКА АВТОРИЗАЦИИ ПЕРЕД СОЗДАНИЕМ ПЛАТЕЖА
+    const currentAuthData = window.auth?.getAuth() || {};
+    const currentToken = currentAuthData.token;
+    
+    if (!currentToken) {
+      // Если пользователь не вошел, сохраняем ссылку и отправляем на вход
+      const currentUrl = window.location.pathname + window.location.search;
+      window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
+      return; // Прерываем выполнение, не отправляем запрос на сервер
+    }
+
     const originalText = btnSubmit.textContent;
     btnSubmit.disabled = true;
     btnSubmit.textContent = 'Подготовка платежа...';
@@ -125,7 +136,10 @@ if (btnSubmit) {
     try {
       const res = await fetch(`${API_BASE}/payments/create`, {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${currentToken}` // Используем актуальный токен
+        },
         body: JSON.stringify({
           provider: selectedProvider,
           amount: parseFloat(urlAmount || 100.00),
