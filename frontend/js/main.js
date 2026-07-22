@@ -6,9 +6,10 @@ const API_BASE = window.API_BASE || '/api';
 const authData = window.auth?.getAuth() || {};
 const token = authData.token;
 
-// if (!token) {
-//   window.location.href = 'auth.html';
-// }
+// 🔒 ЗАЩИТА: Если нет токена, сразу редирект на авторизацию
+if (!token) {
+  window.location.href = 'auth.html';
+}
 
 const headers = {
   'Content-Type': 'application/json',
@@ -22,13 +23,16 @@ const consent152 = document.getElementById('consent152');
 const consentOffer = document.getElementById('consentOffer');
 const consentSave = document.getElementById('consentSave');
 
-let selectedProvider = 'yookassa';
+let selectedProvider = 'robokassa'; // Исправлено с yookassa на robokassa
 
 // Чтение параметров из URL (при переходе из каталога услуг)
 const urlParams = new URLSearchParams(window.location.search);
 const urlAmount = urlParams.get('amount');
 const urlDesc = urlParams.get('description');
 const urlSave = urlParams.get('save');
+
+// 🔍 ОТЛАДКА: Смотрим в консоль браузера (F12), что пришло из URL
+console.log('URL Параметры:', { urlAmount, urlDesc, urlSave });
 
 // ============================================
 // 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА ПОД ВЫБРАННУЮ УСЛУГУ
@@ -37,16 +41,18 @@ if (urlAmount) {
   const amountNum = parseFloat(urlAmount);
   
   // 1. Обновляем сумму
-  const totalElement = document.getElementById('totalAmount') || document.querySelector('.summary-row.total span:last-child');
+  const totalElement = document.getElementById('totalAmount');
   if (totalElement) {
     totalElement.textContent = `${amountNum.toFixed(2)} ₽`;
+    console.log('Сумма обновлена:', totalElement.textContent);
   }
   
   // 2. Обновляем название услуги
   if (urlDesc) {
-    const serviceElement = document.getElementById('serviceName') || document.querySelector('.summary-row:first-child span:last-child');
+    const serviceElement = document.getElementById('serviceName');
     if (serviceElement) {
       serviceElement.textContent = decodeURIComponent(urlDesc);
+      console.log('Услуга обновлена:', serviceElement.textContent);
     }
   }
   
@@ -54,6 +60,8 @@ if (urlAmount) {
   if (urlSave === 'true' && consentSave) {
     consentSave.checked = true;
   }
+} else {
+  console.warn('Параметр amount не найден в URL. Показываем значения по умолчанию.');
 }
 
 // ============================================
@@ -69,9 +77,9 @@ function checkForm() {
   const isEmailValid = isValidEmail(emailInput.value.trim());
   const isConsent152 = consent152 ? consent152.checked : true;
   const isConsentOffer = consentOffer ? consentOffer.checked : true;
-  const isConsentSave = consentSave ? consentSave.checked : true;
+  // consentSave не обязателен для валидации, но если он есть, проверяем
   
-  const isConsentValid = isConsent152 && isConsentOffer && isConsentSave;
+  const isConsentValid = isConsent152 && isConsentOffer;
   
   btnSubmit.disabled = !(isEmailValid && isConsentValid);
   
@@ -121,7 +129,7 @@ if (btnSubmit) {
           provider: selectedProvider,
           amount: parseFloat(urlAmount || 100.00),
           email: emailInput.value.trim(),
-          description: urlDesc || 'Базовый доступ к сервису',
+          description: urlDesc || 'Оплата услуги 1С:Отель',
           save_payment_method: urlSave === 'true'
         })
       });
@@ -132,16 +140,15 @@ if (btnSubmit) {
         throw new Error(data.error || 'Ошибка создания платежа');
       }
       
-      if (data.confirmation_url) {
+      if (data.confirmation_url || data.paymentUrl) {
         localStorage.setItem('pending_payment', 'true');
-        window.location.href = data.confirmation_url;
+        window.location.href = data.confirmation_url || data.paymentUrl;
       } else {
         throw new Error('Платежная система не вернула ссылку для оплаты');
       }
       
     } catch (err) {
       console.error('Payment error:', err);
-      // УБРАН ЭМОДЗИ для строгого стиля
       alert('Ошибка: ' + err.message);
       btnSubmit.disabled = false;
       btnSubmit.textContent = originalText;
@@ -150,17 +157,16 @@ if (btnSubmit) {
 }
 
 // ============================================
-// 6. ОБРАБОТКА ВОЗВРАТА ОТ Robokassa
+// 6. ОБРАБОТКА ВОЗВРАТА И ИНИЦИАЛИЗАЦИЯ
 // ============================================
 document.addEventListener('DOMContentLoaded', () => {
   checkForm();
   loadRecipientInfo();
   
   const status = urlParams.get('status');
-  
   if (status === 'success') {
     setTimeout(() => {
-      alert('Оплата прошла успешно. Карта привязана.');
+      alert('Оплата прошла успешно. Доступ предоставлен.');
       localStorage.removeItem('pending_payment');
       window.location.href = 'cards.html';
     }, 500);
@@ -171,23 +177,16 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
-// 7. ЗАГРУЗКА ИНН (ДЛЯ МОДЕРАЦИИ Robokassa)
+// 7. ЗАГРУЗКА ИНН
 // ============================================
-async function loadRecipientInfo() {
+function loadRecipientInfo() {
   const innElement = document.getElementById('recipientInn');
   if (!innElement) return;
   
-  try {
-      const inn = '532113934079'; 
-    
-    if (inn && inn.length === 12) {
-      innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
-    } else {
-      innElement.textContent = inn;
-    }
-    innElement.style.color = '#059669'; // Зеленый цвет для доверия
-  } catch (err) {
-    console.error('Error loading INN:', err);
-    innElement.textContent = 'Не указан';
+  const inn = '532113934079'; 
+  if (inn && inn.length === 12) {
+    innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
+  } else {
+    innElement.textContent = inn;
   }
 }
