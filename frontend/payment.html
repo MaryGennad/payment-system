@@ -141,29 +141,29 @@
   <!-- Скрипты в правильном порядке -->
   <script src="/js/auth.js"></script>
   <script>
-    // 1. ПРОВЕРКА АВТОРИЗАЦИИ (С сохранением ссылки для возврата!)
-    // const authData = window.auth?.getAuth() || {};
-    // const token = authData.token;
-
-    // if (!token) {
-    //   const currentUrl = window.location.pathname + window.location.search;
-    //   window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
-    // }
-
-    // 2. УМНАЯ КНОПКА В ШАПКЕ (теперь переменная token точно существует)
-    const headerAuthBtn = document.getElementById('headerAuthBtn');
-    if (headerAuthBtn) {
-      if (token) {
-        headerAuthBtn.textContent = 'Мои карты';
-        headerAuthBtn.onclick = () => window.location.href = 'cards.html';
-      } else {
-        headerAuthBtn.textContent = 'Войти';
-        headerAuthBtn.onclick = () => window.location.href = 'auth.html';
+    // Ждем полной загрузки DOM
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('✅ DOM загружен в payment.html');
+      
+      // Получаем токен
+      const authData = window.auth?.getAuth() || {};
+      const token = authData.token;
+      console.log(' Токен:', token ? 'ЕСТЬ' : 'НЕТ');
+      
+      // Умная кнопка в шапке
+      const headerAuthBtn = document.getElementById('headerAuthBtn');
+      if (headerAuthBtn) {
+        if (token) {
+          headerAuthBtn.textContent = 'Мои карты';
+          headerAuthBtn.onclick = () => window.location.href = 'cards.html';
+        } else {
+          headerAuthBtn.textContent = 'Войти';
+          headerAuthBtn.onclick = () => window.location.href = 'auth.html';
+        }
+        console.log('✅ Кнопка в шапке настроена');
       }
-    }
-
-    // 3. УМНЫЙ ФУТЕР
-    document.addEventListener('DOMContentLoaded', () => {
+      
+      // Умный футер
       const authLink = document.getElementById('footerAuthBtn');
       if (authLink) {
         if (token) {
