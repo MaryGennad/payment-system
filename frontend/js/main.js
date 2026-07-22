@@ -6,9 +6,10 @@ const API_BASE = window.API_BASE || '/api';
 const authData = window.auth?.getAuth() || {};
 const token = authData.token;
 
-// 🔒 ЗАЩИТА: Если нет токена, сразу редирект на авторизацию
+// ЗАЩИТА: Если нет токена, редирект на вход, НО с сохранением текущей ссылки
 if (!token) {
-  window.location.href = 'auth.html';
+  const currentUrl = window.location.pathname + window.location.search;
+  window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
 }
 
 const headers = {

@@ -1,7 +1,7 @@
 const API_BASE = '/api';
 
 // ============================================
-// ГЛОБАЛЬНЫЙ ОБЪЕКТ АВТОРИЗАЦИИ (Единый и правильный)
+// ГЛОБАЛЬНЫЙ ОБЪЕКТ АВТОРИЗАЦИИ
 // ============================================
 window.auth = {
   setAuth: (token, user) => {
@@ -17,10 +17,17 @@ window.auth = {
 };
 
 // ============================================
-// АВТОРЕДИРЕКТ: Если уже авторизован и зашел на auth.html, кидаем в ЛК
+// АВТОРЕДИРЕКТ: Если уже авторизован и зашел на auth.html
 // ============================================
 if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
-  window.location.href = 'cards.html';
+  const urlParams = new URLSearchParams(window.location.search);
+  const returnTo = urlParams.get('returnTo');
+  
+  if (returnTo) {
+    window.location.href = decodeURIComponent(returnTo);
+  } else {
+    window.location.href = 'cards.html';
+  }
 }
 
 // ============================================
@@ -46,7 +53,7 @@ if (tabBtns.length > 0) {
 }
 
 // ============================================
-// ВХОД В АККАУНТ
+// ВХОД В АККАУНТ (ИСПРАВЛЕНО: добавлена проверка returnTo)
 // ============================================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
@@ -72,9 +79,18 @@ if (loginForm) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Неверный email или пароль');
       
-      // ✅ Сохраняем и сразу редиректим в ЛИЧНЫЙ КАБИНЕТ
       window.auth.setAuth(data.token, data.user);
-      window.location.href = 'cards.html';
+      
+      // ПРОВЕРЯЕМ, КУДА НУЖНО ВЕРНУТЬ ПОЛЬЗОВАТЕЛЯ
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnTo = urlParams.get('returnTo');
+      
+      if (returnTo) {
+        console.log('🔄 Возврат на страницу оплаты с параметрами:', decodeURIComponent(returnTo));
+        window.location.href = decodeURIComponent(returnTo);
+      } else {
+        window.location.href = 'cards.html';
+      }
       
     } catch (err) {
       alert('Ошибка: ' + err.message);
@@ -88,7 +104,7 @@ if (loginForm) {
 }
 
 // ============================================
-// РЕГИСТРАЦИЯ
+// РЕГИСТРАЦИЯ (ИСПРАВЛЕНО: добавлена проверка returnTo)
 // ============================================
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
@@ -115,9 +131,18 @@ if (registerForm) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Ошибка при создании аккаунта');
       
-      // ✅ Сохраняем и сразу редиректим в ЛИЧНЫЙ КАБИНЕТ
       window.auth.setAuth(data.token, data.user);
-      window.location.href = 'cards.html';
+      
+      // ПРОВЕРЯЕМ, КУДА НУЖНО ВЕРНУТЬ ПОЛЬЗОВАТЕЛЯ
+      const urlParams = new URLSearchParams(window.location.search);
+      const returnTo = urlParams.get('returnTo');
+      
+      if (returnTo) {
+        console.log('🔄 Возврат на страницу оплаты с параметрами:', decodeURIComponent(returnTo));
+        window.location.href = decodeURIComponent(returnTo);
+      } else {
+        window.location.href = 'cards.html';
+      }
       
     } catch (err) {
       alert('Ошибка: ' + err.message);
@@ -136,7 +161,6 @@ if (registerForm) {
 window.logout = function() {
   if (confirm('Вы действительно хотите выйти из аккаунта?')) {
     window.auth.clearAuth();
-    // ✅ После выхода кидаем на главную (каталог), а не на страницу входа
     window.location.href = 'index.html';
   }
 };
