@@ -14,7 +14,9 @@
     <header class="header">
       <div class="header-top">
         <button class="back-btn" onclick="window.location.href='index.html'" title="Вернуться к услугам">←</button>
-        <button class="logout-btn" onclick="window.location.href='cards.html'">Мои карты</button>
+        <!-- <button class="logout-btn" onclick="window.location.href='cards.html'">Мои карты</button> -->
+            <!-- Умная кнопка: покажет "Мои карты" или "Войти" -->
+        <button class="logout-btn" id="headerAuthBtn">Загрузка...</button>
       </div>
       <h1>Оплата услуги</h1>
       <p class="header-subtitle">Безопасная оплата услуг по 1С:Отель</p>
@@ -137,17 +139,31 @@
   </div>
 
   <!-- Скрипты в правильном порядке -->
-  <script src="/js/auth.js"></script>
-<!-- <script>
-  // ПРОВЕРКА АВТОРИЗАЦИИ
-  const authData = window.auth?.getAuth() || {};
-  const token = authData.token;
-  
-  if (!token) {
-    // Если нет токена — сразу редирект на авторизацию
-    window.location.href = 'auth.html';
-  }
-</script> -->
+   <script src="/js/auth.js"></script>
+  <script>
+    // 🔒 ПРОВЕРКА АВТОРИЗАЦИИ
+    const authData = window.auth?.getAuth() || {};
+    const token = authData.token;
+    
+    if (!token) {
+      // Если нет токена — сразу редирект на авторизацию
+      window.location.href = 'auth.html';
+    }
+    
+    //  УМНАЯ КНОПКА В ШАПКЕ
+    const headerAuthBtn = document.getElementById('headerAuthBtn');
+    if (headerAuthBtn) {
+      if (token) {
+        // Авторизован — показываем "Мои карты"
+        headerAuthBtn.textContent = 'Мои карты';
+        headerAuthBtn.onclick = () => window.location.href = 'cards.html';
+      } else {
+        // Не авторизован — показываем "Войти" (но сюда он не попадет из-за редиректа выше)
+        headerAuthBtn.textContent = 'Войти';
+        headerAuthBtn.onclick = () => window.location.href = 'auth.html';
+      }
+    }
+  </script>
   <script>
     // Умный футер специально для этой страницы
     document.addEventListener('DOMContentLoaded', () => {
