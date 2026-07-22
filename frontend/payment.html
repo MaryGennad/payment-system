@@ -141,14 +141,14 @@
   <!-- Скрипты в правильном порядке -->
    <script src="/js/auth.js"></script>
   <script>
-    // 🔒 ПРОВЕРКА АВТОРИЗАЦИИ
-    const authData = window.auth?.getAuth() || {};
-    const token = authData.token;
+    // //  ПРОВЕРКА АВТОРИЗАЦИИ
+    // const authData = window.auth?.getAuth() || {};
+    // const token = authData.token;
     
-    if (!token) {
-      // Если нет токена — сразу редирект на авторизацию
-      window.location.href = 'auth.html';
-    }
+    // if (!token) {
+    //   // Если нет токена — сразу редирект на авторизацию
+    //   window.location.href = 'auth.html';
+    // }
     
     //  УМНАЯ КНОПКА В ШАПКЕ
     const headerAuthBtn = document.getElementById('headerAuthBtn');
