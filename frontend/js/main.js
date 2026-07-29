@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', function() {
           },
           body: JSON.stringify({
             provider: 'robokassa',
-            amount: parseFloat(urlAmount || 100.00),
+            amount: parseFloat(urlAmount || 1000.00),
             email: emailInput.value.trim(),
             description: urlDesc ? decodeURIComponent(urlDesc) : 'Оплата услуги 1С:Отель',
             save_payment_method: urlSave === 'true'
