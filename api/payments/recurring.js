@@ -1,4 +1,4 @@
-import YooKassa from 'yookassa';
+import { YooKassa }  from 'yookassa';
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 import User from '../../models/User.js';
