@@ -2,13 +2,13 @@
 // 1. ИНИЦИАЛИЗАЦИЯ
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 main.js запущен (DOMContentLoaded)');
+  console.log('main.js запущен (DOMContentLoaded)');
   
   const API_BASE = window.API_BASE || '/api';
   const authData = window.auth?.getAuth() || {};
   const token = authData.token;
   
-  console.log('🔑 Токен:', token ? 'ЕСТЬ' : 'НЕТ (гость)');
+  console.log('Токен:', token ? 'ЕСТЬ' : 'НЕТ (гость)');
   
   // Чтение параметров из URL
   const urlParams = new URLSearchParams(window.location.search);
@@ -27,16 +27,16 @@ document.addEventListener('DOMContentLoaded', function() {
   if (urlAmount && totalElement) {
     const amountNum = parseFloat(urlAmount);
     totalElement.textContent = `${amountNum.toFixed(2)} ₽`;
-    console.log('✅ Сумма обновлена:', totalElement.textContent);
+    console.log(' Сумма обновлена:', totalElement.textContent);
   } else {
-    console.warn('❌ Не удалось обновить сумму. urlAmount:', urlAmount, 'totalElement:', totalElement);
+    console.warn(' Не удалось обновить сумму. urlAmount:', urlAmount, 'totalElement:', totalElement);
   }
   
   if (urlDesc && serviceElement) {
     serviceElement.textContent = decodeURIComponent(urlDesc);
-    console.log('✅ Услуга обновлена:', serviceElement.textContent);
+    console.log(' Услуга обновлена:', serviceElement.textContent);
   } else {
-    console.warn('❌ Не удалось обновить услугу. urlDesc:', urlDesc, 'serviceElement:', serviceElement);
+    console.warn(' Не удалось обновить услугу. urlDesc:', urlDesc, 'serviceElement:', serviceElement);
   }
   
   // Чекбокс сохранения
@@ -104,7 +104,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'Authorization': `Bearer ${currentToken}`
           },
           body: JSON.stringify({
-            provider: 'robokassa',
+            provider: 'ЮKassa',
             amount: parseFloat(urlAmount || 1000.00),
             email: emailInput.value.trim(),
             description: urlDesc ? decodeURIComponent(urlDesc) : 'Оплата услуги 1С:Отель',

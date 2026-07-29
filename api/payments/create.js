@@ -1,7 +1,12 @@
-import axios from 'axios';
+import YooKassa from 'yookassa';
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
-import Card from '../../models/Card.js';
+
+// Инициализация ЮKassa (данные берем из .env)
+const yooKassa = new YooKassa({
+  shopId: process.env.YOOKASSA_SHOP_ID,
+  secretKey: process.env.YOOKASSA_SECRET_KEY
+});
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -11,13 +16,12 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    const { provider, amount, email, description, save_payment_method } = req.body;
+    const { amount, email, description, save_payment_method } = req.body;
     const authHeader = req.headers.authorization;
     
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Нет токена авторизации' });
-    }
+    if (!authHeader) return res.status(401).json({ error: 'Нет токена авторизации' });
 
+    // Проверка JWT (как у вас было)
     const token = authHeader.split(' ')[1];
     let userId;
     try {
@@ -27,74 +31,63 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Неверный токен' });
     }
 
-    // Создание платежа в Robokassa
-    const yookassaResponse = await axios.post(
-      'https://api.yookassa.ru/v3/payments',
-      {
-        amount: {
-          value: amount.toFixed(2),
-          currency: 'RUB'
-        },
-        confirmation: {
-          type: 'redirect',
-          return_url: process.env.YOOKASSA_RETURN_URL || 'https://payment-system-coral.vercel.app/cards.html?status=success'
-        },
-        capture: true,
-        description: description || 'Привязка карты',
-        save_payment_method: save_payment_method || false,
-        payment_method_data: {
-          type: 'bank_card'
-        },
-        recipient: {
-          account_id: process.env.YOOKASSA_SHOP_ID,
-          gateway_id: process.env.YOOKASSA_GATEWAY_ID
-        }
+    const outSum = parseFloat(amount).toFixed(2);
+    const idempotenceKey = Date.now().toString(); // Уникальный ключ для идемпотентности
+
+    // 1. Создаем платеж через SDK ЮKassa
+    const payment = await yooKassa.createPayment({
+      amount: {
+        value: outSum,
+        currency: 'RUB'
       },
-      {
-        auth: {
-          username: process.env.YOOKASSA_SHOP_ID,
-          password: process.env.YOOKASSA_SECRET_KEY
+      confirmation: {
+        type: 'redirect',
+        // Куда вернуть пользователя после оплаты
+        return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cards.html?status=success`
+      },
+      capture: true, // Сразу списывать деньги (не холдировать)
+      save_payment_method: save_payment_method || false, // 🔥 ТО САМОЕ СОХРАНЕНИЕ КАРТЫ ДЛЯ РЕКУРРЕНТА!
+      description: description || 'Оплата услуг',
+      // 🧾 Данные для чека (54-ФЗ) - обязательно для ИП/ООО
+      receipt: {
+        customer: {
+          email: email
         },
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotence-Key': Date.now().toString()
-        }
+        items: [
+          {
+            description: description || 'Услуга',
+            quantity: '1.00',
+            amount: {
+              value: outSum,
+              currency: 'RUB'
+            },
+            vat_code: 1 // НДС 20% (или 2 для "без НДС", уточните вашу систему)
+          }
+        ]
       }
-    );
+    }, idempotenceKey);
 
-    const paymentData = yookassaResponse.data;
-
-    // Сохранение платежа в БД
-    const payment = await Payment.create({
+    // 2. Сохраняем платеж в нашу БД
+    const dbPayment = await Payment.create({
       userId,
-      amount,
-      provider,
-      status: paymentData.status,
-      yookassaPaymentId: paymentData.id,
-      email
+      amount: outSum,
+      provider: 'yookassa',
+      status: payment.status, // обычно 'pending'
+      yookassaPaymentId: payment.id, // Сохраняем ID платежа из ЮKassa
+      email,
+      description
     });
 
-    // Если нужно сохранить карту
-    if (save_payment_method && paymentData.payment_method) {
-      await Card.create({
-        userId,
-        last4: paymentData.payment_method.card.last4,
-        cardType: paymentData.payment_method.card.card_type,
-        expiryMonth: paymentData.payment_method.card.expiry_month,
-        expiryYear: paymentData.payment_method.card.expiry_year,
-        isDefault: false
-      });
-    }
-
+    // 3. Возвращаем ссылку на оплату фронтенду
     res.status(200).json({
-      confirmation_url: paymentData.confirmation.confirmation_url,
-      paymentId: payment._id
+      confirmation_url: payment.confirmation.confirmation_url,
+      paymentId: dbPayment._id
     });
 
   } catch (err) {
-    console.error('Payment creation error:', err);
+    console.error('YooKassa create error:', err);
     res.status(500).json({ 
-      error: err.response?.data?.error_description || 'Ошибка создания платежа' 
+      error: err.message || 'Ошибка создания платежа' 
     });
   }
 }

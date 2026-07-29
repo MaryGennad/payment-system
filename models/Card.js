@@ -8,7 +8,7 @@ const CardSchema = new mongoose.Schema({
   },
   provider: {
     type: String,
-    enum: ['yookassa', 'robokassa'],
+    enum: ['yookassa', 'ЮKassa'],
     required: true
   },
   cardToken: {
