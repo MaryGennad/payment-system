@@ -23,23 +23,23 @@ export default async function handler(req, res) {
       .toUpperCase();
 
     if (SignatureValue.toUpperCase() !== correctSignature) {
-      console.error('❌ Ошибка подписи ResultURL! Ожидалось:', correctSignature, 'Получено:', SignatureValue);
+      console.error(' Ошибка подписи ResultURL! Ожидалось:', correctSignature, 'Получено:', SignatureValue);
       return res.status(403).send('Bad signature');
     }
 
-    console.log('✅ Подпись верна! Обработка платежа InvId:', InvId);
+    console.log('Подпись верна! Обработка платежа InvId:', InvId);
 
     // 2. Находим платеж в нашей базе данных
     const payment = await Payment.findOne({ ЮKassaInvId: InvId });
     
     if (!payment) {
-      console.error('❌ Платеж с InvId', InvId, 'не найден в БД');
+      console.error(' Платеж с InvId', InvId, 'не найден в БД');
       return res.status(404).send(`NOT_FOUND${InvId}`);
     }
 
     // Если платеж уже обработан, просто возвращаем OK (защита от повторных уведомлений)
     if (payment.status === 'succeeded') {
-      console.log('⚠️ Платеж уже обработан ранее. Возвращаем OK');
+      console.log('Платеж уже обработан ранее. Возвращаем OK');
       return res.status(200).send(`OK${InvId}`);
     }
 
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
     return res.status(200).send(`OK${InvId}`);
 
   } catch (err) {
-    console.error('❌ Ошибка обработки ResultURL:', err);
+    console.error(' Ошибка обработки ResultURL:', err);
     // Даже при ошибке лучше вернуть что-то, чтобы ЮKassa не спамила, 
     // но в данном случае вернем ошибку, чтобы увидеть её в логах ЮKassa
     return res.status(500).send('ERROR');
