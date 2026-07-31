@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
             'Authorization': `Bearer ${currentToken}`
           },
           body: JSON.stringify({
-            provider: 'ЮKassa',
+            provider: 'yookassa',
             amount: parseFloat(urlAmount || 1000.00),
             email: emailInput.value.trim(),
             description: urlDesc ? decodeURIComponent(urlDesc) : 'Оплата услуги 1С:Отель',
@@ -214,5 +214,5 @@ if (!currentToken) {
   
   const currentUrl = window.location.pathname + window.location.search;
   window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
-  return;
+  
 }
