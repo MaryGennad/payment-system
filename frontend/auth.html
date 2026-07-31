@@ -159,7 +159,7 @@
       </div>
     </div>
 
-    <!-- Настоящий футер для работы footer.js -->
+   
     <footer class="site-footer" style="margin-top: 40px;">
       <div class="footer-top">
         <a href="index.html">Каталог услуг</a>
@@ -180,10 +180,23 @@
       </div>
     </footer>
 
-  </div> <!-- Конец container -->
+  </div> 
 
   <!-- Только нужные скрипты -->
   <script src="/js/auth.js"></script>
   <script src="/js/footer.js"></script>
+   <!--  АВТОПОДСТАНОВКА EMAIL ПРИ ВОЗВРАТЕ С ОПЛАТЫ -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Проверяем, сохранили ли мы email перед редиректом на вход
+      const savedEmail = localStorage.getItem('pending_payment_email');
+      const loginEmailInput = document.getElementById('loginEmail');
+      
+      if (savedEmail && loginEmailInput) {
+        loginEmailInput.value = savedEmail; // Подставляем значение
+        console.log('✅ Email автоматически подставлен:', savedEmail);
+      }
+    });
+  </script>
 </body>
 </html>

@@ -81,6 +81,9 @@ if (loginForm) {
       
       window.auth.setAuth(data.token, data.user);
       
+      // очищаем сразу после успешного входа, чтобы email не "прилипал" к форме входа навсегда, когда пользователь просто захочет войти в аккаунт в другой раз
+      localStorage.removeItem('pending_payment_email');
+
       // ПРОВЕРЯЕМ, КУДА НУЖНО ВЕРНУТЬ ПОЛЬЗОВАТЕЛЯ
       const urlParams = new URLSearchParams(window.location.search);
       const returnTo = urlParams.get('returnTo');
@@ -133,6 +136,7 @@ if (registerForm) {
       
       window.auth.setAuth(data.token, data.user);
       
+      localStorage.removeItem('pending_payment_email');
       // ПРОВЕРЯЕМ, КУДА НУЖНО ВЕРНУТЬ ПОЛЬЗОВАТЕЛЯ
       const urlParams = new URLSearchParams(window.location.search);
       const returnTo = urlParams.get('returnTo');

@@ -87,6 +87,13 @@ document.addEventListener('DOMContentLoaded', function() {
       
       if (!currentToken) {
         console.log('⚠️ Нет токена, редирект на вход');
+
+  const emailInput = document.getElementById('email'); // Это поле на странице payment.html
+  if (emailInput && emailInput.value) {
+    localStorage.setItem('pending_payment_email', emailInput.value.trim());
+  }
+  
+
         const currentUrl = window.location.pathname + window.location.search;
         window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
         return;
@@ -163,4 +170,21 @@ function loadRecipientInfo() {
   if (inn && inn.length === 12) {
     innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
   }
+}
+// ============================================
+// 6. СОХРАНЯЕМ EMAIL ПЕРЕД РЕДИРЕКТОМ
+// ============================================
+// В main.js, внутри проверки токена
+if (!currentToken) {
+  console.log('⚠️ Нет токена, редирект на вход');
+  
+  //  СОХРАНЯЕМ
+  const emailInput = document.getElementById('email');
+  if (emailInput && emailInput.value) {
+    localStorage.setItem('pending_payment_email', emailInput.value.trim());
+  }
+  
+  const currentUrl = window.location.pathname + window.location.search;
+  window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
+  return;
 }
