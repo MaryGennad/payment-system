@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       confirmation: {
         type: 'redirect',
         // Куда вернуть пользователя после оплаты
-        return_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/cards.html?status=success`
+        return_url: `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
       },
       capture: true, // Сразу списывать деньги (не холдировать)
       save_payment_method: save_payment_method || false, // 🔥 ТО САМОЕ СОХРАНЕНИЕ КАРТЫ ДЛЯ РЕКУРРЕНТА!
