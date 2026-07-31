@@ -199,20 +199,3 @@ function loadRecipientInfo() {
     innElement.textContent = inn.replace(/(\d{3})(\d{3})(\d{3})(\d{3})/, '$1-$2-$3-$4');
   }
 }
-// ============================================
-// 6. СОХРАНЯЕМ EMAIL ПЕРЕД РЕДИРЕКТОМ
-// ============================================
-// В main.js, внутри проверки токена
-if (!currentToken) {
-  console.log('⚠️ Нет токена, редирект на вход');
-  
-  //  СОХРАНЯЕМ
-  const emailInput = document.getElementById('email');
-  if (emailInput && emailInput.value) {
-    localStorage.setItem('pending_payment_email', emailInput.value.trim());
-  }
-  
-  const currentUrl = window.location.pathname + window.location.search;
-  window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
-  
-}
