@@ -4,6 +4,27 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log('main.js запущен (DOMContentLoaded)');
   
+//  ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
+  const savedAmount = localStorage.getItem('pending_payment_amount');
+  const savedDesc = localStorage.getItem('pending_payment_desc');
+  const savedSave = localStorage.getItem('pending_payment_save');
+  
+  // Если параметры были сохранены, используем их
+  if (savedAmount) {
+    console.log('Восстановлены параметры платежа из localStorage');
+    // Обновляем URL, чтобы всё работало как обычно
+    const newUrl = new URL(window.location);
+    newUrl.searchParams.set('amount', savedAmount);
+    if (savedDesc) newUrl.searchParams.set('description', savedDesc);
+    if (savedSave) newUrl.searchParams.set('save', savedSave);
+    window.history.replaceState({}, '', newUrl);
+    
+    // Очищаем сохраненные параметры
+    localStorage.removeItem('pending_payment_amount');
+    localStorage.removeItem('pending_payment_desc');
+    localStorage.removeItem('pending_payment_save');
+  }
+
   const API_BASE = window.API_BASE || '/api';
   const authData = window.auth?.getAuth() || {};
   const token = authData.token;
@@ -88,10 +109,17 @@ document.addEventListener('DOMContentLoaded', function() {
       if (!currentToken) {
         console.log('⚠️ Нет токена, редирект на вход');
 
+        // 🔥 СОХРАНЯЕМ ПАРАМЕТРЫ ПЛАТЕЖА
+  if (urlAmount) localStorage.setItem('pending_payment_amount', urlAmount);
+  if (urlDesc) localStorage.setItem('pending_payment_desc', urlDesc);
+  if (urlSave) localStorage.setItem('pending_payment_save', urlSave);
+  
+  // Сохраняем email, если введен
   const emailInput = document.getElementById('email'); // Это поле на странице payment.html
   if (emailInput && emailInput.value) {
     localStorage.setItem('pending_payment_email', emailInput.value.trim());
   }
+
   
 
         const currentUrl = window.location.pathname + window.location.search;
