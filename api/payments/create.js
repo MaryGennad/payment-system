@@ -2,7 +2,7 @@ import { YooKassa } from 'yookassa';
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 
-// Инициализация ЮKassa (данные берем из .env)
+// Инициализация ЮKassa
 const yooKassa = new YooKassa({
   shopId: process.env.YOOKASSA_SHOP_ID,
   secretKey: process.env.YOOKASSA_SECRET_KEY
@@ -21,7 +21,7 @@ export default async function handler(req, res) {
     
     if (!authHeader) return res.status(401).json({ error: 'Нет токена авторизации' });
 
-    // Проверка JWT (как у вас было)
+    // Проверка JWT
     const token = authHeader.split(' ')[1];
     let userId;
     try {
@@ -46,9 +46,9 @@ export default async function handler(req, res) {
         return_url: `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
       },
       capture: true, // Сразу списывать деньги (не холдировать)
-      save_payment_method: save_payment_method || false, // 🔥 ТО САМОЕ СОХРАНЕНИЕ КАРТЫ ДЛЯ РЕКУРРЕНТА!
+      save_payment_method: save_payment_method || false, // СОХРАНЕНИЕ КАРТЫ ДЛЯ РЕКУРРЕНТА!
       description: description || 'Оплата услуг',
-      // 🧾 Данные для чека (54-ФЗ) - обязательно для ИП/ООО
+      // Данные для чека (54-ФЗ) - обязательно для ИП/ООО
       receipt: {
         customer: {
           email: email

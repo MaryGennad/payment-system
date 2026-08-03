@@ -107,7 +107,7 @@ if (loginForm) {
 }
 
 // ============================================
-// РЕГИСТРАЦИЯ (ИСПРАВЛЕНО: добавлена проверка returnTo)
+// РЕГИСТРАЦИЯ (добавлена проверка returnTo)
 // ============================================
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
