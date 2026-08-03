@@ -4,16 +4,18 @@ const PaymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    default: null // 🔥 ИЗМЕНЕНО: Теперь может быть null для гостевых оплат (убрали required: true)
   },
-  paymentId: {
+  yookassaPaymentId: { 
     type: String,
     unique: true,
-    required: true
+    required: true,
+    index: true // Добавили индекс для быстрого поиска платежа при обработке Webhook
   },
   provider: {
     type: String,
-    required: true
+    required: true,
+    default: 'yookassa'
   },
   amount: {
     type: Number,
@@ -23,21 +25,21 @@ const PaymentSchema = new mongoose.Schema({
     type: String,
     default: 'RUB'
   },
-    status: {
+  status: {
     type: String,
     enum: ['pending', 'succeeded', 'canceled', 'failed', 'refunded'], 
     default: 'pending'
   },
   email: {
     type: String,
-    required: true
+    required: true // Email обязателен всегда (и для гостей, и для авторизованных) для отправки чека 54-ФЗ
   },
   description: {
-    type: String
+    type: String,
+    default: 'Оплата услуги'
   }
 }, { 
   timestamps: true 
 });
 
-
-export default mongoose.model('Payment', PaymentSchema); 
+export default mongoose.model('Payment', PaymentSchema);

@@ -1,4 +1,4 @@
-import { YooKassa }  from 'yookassa';
+import { YooKassa } from 'yookassa';
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 import User from '../../models/User.js';
@@ -16,30 +16,34 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    const { userId, amount, description } = req.body;
+    // 🔥 Безопасный парсинг body для Vercel Functions
+    const body = req.body || (await req.json());
+    const { userId, amount, description } = body;
 
     if (!userId || !amount) {
       return res.status(400).json({ error: 'Не указаны userId или amount' });
     }
 
-    // 1. Находим пользователя и его сохраненный метод оплаты
+    // 1. Находим пользователя и его токен сохраненной карты
     const user = await User.findById(userId);
     if (!user || !user.yookassaPaymentMethodId) {
       return res.status(400).json({ error: 'У пользователя нет сохраненной карты для списания' });
     }
 
     const outSum = parseFloat(amount).toFixed(2);
-    const idempotenceKey = `recurring_${Date.now()}`; // Уникальный ключ для идемпотентности
+    const idempotenceKey = `recurring_${Date.now()}`; // Уникальный ключ
 
-    // 2. Создаем платеж с использованием сохраненного payment_method_id
+    // 2. Создаем рекуррентный платеж (БЕЗ подтверждения от клиента)
     const payment = await yooKassa.createPayment({
       amount: {
         value: outSum,
         currency: 'RUB'
       },
-      payment_method_id: user.yookassaPaymentMethodId, // 🔥 Магия рекуррента: списываем без участия клиента
+      payment_method_id: user.yookassaPaymentMethodId, // 🔥 Магия рекуррента
       capture: true,
       description: description || 'Рекуррентный платеж: Подписка',
+      
+      // 🧾 ЧЕК 54-ФЗ (ОБЯЗАТЕЛЬНО ДАЖЕ ДЛЯ АВТОМАТИЧЕСКИХ СПИСАНИЙ!)
       receipt: {
         customer: { email: user.email },
         items: [
@@ -47,18 +51,18 @@ export default async function handler(req, res) {
             description: description || 'Услуга по подписке',
             quantity: '1.00',
             amount: { value: outSum, currency: 'RUB' },
-            vat_code: 1 // или 2 (без НДС), в зависимости от вашей системы
+            vat_code: 2 // 🔥 КРИТИЧНО: 2 = "без НДС" (правильно для Самозанятых)
           }
         ]
       }
     }, idempotenceKey);
 
-    // 3. Сохраняем факт успешного списания в БД
+    // 3. Сохраняем факт успешного списания в нашу БД
     await Payment.create({
       userId,
       amount: outSum,
       provider: 'yookassa_recurring',
-      status: payment.status, // обычно 'succeeded', если карта не отклонена
+      status: payment.status, 
       yookassaPaymentId: payment.id,
       email: user.email,
       description: description || 'Рекуррентный платеж'

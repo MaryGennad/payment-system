@@ -1,3 +1,4 @@
+// api/payments/yookassa-webhook.js
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 import User from '../../models/User.js';
@@ -15,7 +16,7 @@ export default async function handler(req, res) {
     // Нас интересует только успешная оплата
     if (event === 'payment.succeeded') {
       const yookassaPaymentId = object.id;
-      const paymentMethodId = object.payment_method?.id; // 🔥 ВОТ ОН, ТОКЕН ДЛЯ РЕКУРРЕНТА!
+      const paymentMethodId = object.payment_method?.id; // 🔥 ТОКЕН ДЛЯ РЕКУРРЕНТА!
       const saved = object.payment_method?.saved; // true, если карта сохранилась
 
       console.log('✅ Оплата прошла:', yookassaPaymentId);

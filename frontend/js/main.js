@@ -4,22 +4,19 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log('main.js запущен (DOMContentLoaded)');
   
-//  ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
+  // 🔥 ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
   const savedAmount = localStorage.getItem('pending_payment_amount');
   const savedDesc = localStorage.getItem('pending_payment_desc');
   const savedSave = localStorage.getItem('pending_payment_save');
   
-  // Если параметры были сохранены, используем их
   if (savedAmount) {
     console.log('Восстановлены параметры платежа из localStorage');
-    // Обновляем URL, чтобы всё работало как обычно
     const newUrl = new URL(window.location);
     newUrl.searchParams.set('amount', savedAmount);
     if (savedDesc) newUrl.searchParams.set('description', savedDesc);
     if (savedSave) newUrl.searchParams.set('save', savedSave);
     window.history.replaceState({}, '', newUrl);
     
-    // Очищаем сохраненные параметры
     localStorage.removeItem('pending_payment_amount');
     localStorage.removeItem('pending_payment_desc');
     localStorage.removeItem('pending_payment_save');
@@ -29,13 +26,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const authData = window.auth?.getAuth() || {};
   const token = authData.token;
   
-  console.log('Токен:', token ? 'ЕСТЬ' : 'НЕТ (гость)');
+  console.log('🔑 Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
   
-  // Чтение параметров из URL
   const urlParams = new URLSearchParams(window.location.search);
   const urlAmount = urlParams.get('amount');
   const urlDesc = urlParams.get('description');
-  const urlSave = urlParams.get('save');
+  const urlSave = urlParams.get('save'); // 'true' если выбрана рекуррентная оплата
   
   console.log(' Параметры URL:', { amount: urlAmount, desc: urlDesc, save: urlSave });
   
@@ -46,21 +42,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const serviceElement = document.getElementById('serviceName');
   
   if (urlAmount && totalElement) {
-    const amountNum = parseFloat(urlAmount);
-    totalElement.textContent = `${amountNum.toFixed(2)} ₽`;
-    console.log(' Сумма обновлена:', totalElement.textContent);
-  } else {
-    console.warn(' Не удалось обновить сумму. urlAmount:', urlAmount, 'totalElement:', totalElement);
+    totalElement.textContent = `${parseFloat(urlAmount).toFixed(2)} ₽`;
   }
   
   if (urlDesc && serviceElement) {
     serviceElement.textContent = decodeURIComponent(urlDesc);
-    console.log(' Услуга обновлена:', serviceElement.textContent);
-  } else {
-    console.warn(' Не удалось обновить услугу. urlDesc:', urlDesc, 'serviceElement:', serviceElement);
   }
   
-  // Чекбокс сохранения
   if (urlSave === 'true') {
     const consentSave = document.getElementById('consentSave');
     if (consentSave) consentSave.checked = true;
@@ -73,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function() {
   const btnSubmit = document.getElementById('btnSubmit');
   const consent152 = document.getElementById('consent152');
   const consentOffer = document.getElementById('consentOffer');
-  const consentSave = document.getElementById('consentSave');
   
   function isValidEmail(email) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -92,58 +79,59 @@ document.addEventListener('DOMContentLoaded', function() {
   if (emailInput) emailInput.addEventListener('input', checkForm);
   if (consent152) consent152.addEventListener('change', checkForm);
   if (consentOffer) consentOffer.addEventListener('change', checkForm);
-  if (consentSave) consentSave.addEventListener('change', checkForm);
   
   // ============================================
-  // 4. ОТПРАВКА ФОРМЫ
+  // 4. ОТПРАВКА ФОРМЫ (УМНАЯ ЛОГИКА: ГОСТЬ ИЛИ АВТОРИЗОВАН)
   // ============================================
   if (btnSubmit) {
     btnSubmit.addEventListener('click', async (e) => {
       e.preventDefault();
       if (btnSubmit.disabled) return;
       
-      // Проверка авторизации
       const currentAuth = window.auth?.getAuth() || {};
       const currentToken = currentAuth.token;
-      
-      if (!currentToken) {
-        console.log('⚠️ Нет токена, редирект на вход');
+      const isRecurring = urlSave === 'true';
 
-        // 🔥 СОХРАНЯЕМ ПАРАМЕТРЫ ПЛАТЕЖА
-  if (urlAmount) localStorage.setItem('pending_payment_amount', urlAmount);
-  if (urlDesc) localStorage.setItem('pending_payment_desc', urlDesc);
-  if (urlSave) localStorage.setItem('pending_payment_save', urlSave);
-  
-  // Сохраняем email, если введен
-  const emailInput = document.getElementById('email'); // Это поле на странице payment.html
-  if (emailInput && emailInput.value) {
-    localStorage.setItem('pending_payment_email', emailInput.value.trim());
-  }
-
-  
+      // ЕСЛИ ГОСТЬ, НО ХОЧЕТ СОХРАНИТЬ КАРТУ (РЕКУРРЕНТ) → ПРОСИМ ВОЙТИ
+      if (!currentToken && isRecurring) {
+        console.log(' Гость хочет рекуррентный платеж. Редирект на вход...');
+        
+        if (urlAmount) localStorage.setItem('pending_payment_amount', urlAmount);
+        if (urlDesc) localStorage.setItem('pending_payment_desc', urlDesc);
+        if (urlSave) localStorage.setItem('pending_payment_save', urlSave);
+        
+        if (emailInput && emailInput.value) {
+          localStorage.setItem('pending_payment_email', emailInput.value.trim());
+        }
 
         const currentUrl = window.location.pathname + window.location.search;
         window.location.href = `auth.html?returnTo=${encodeURIComponent(currentUrl)}`;
-        return;
+        return; // Останавливаем выполнение, ждем входа
       }
-      
+
+      //  ЕСЛИ ГОСТЬ ИЛИ АВТОРИЗОВАН, НО ПЛАТЕЖ РАЗОВЫЙ → ПРОДОЛЖАЕМ ОПЛАТУ
       const originalText = btnSubmit.textContent;
       btnSubmit.disabled = true;
       btnSubmit.textContent = 'Подготовка платежа...';
       
       try {
+        // Формируем заголовки: добавляем Authorization ТОЛЬКО если есть токен
+        const headers = {
+          'Content-Type': 'application/json'
+        };
+        if (currentToken) {
+          headers['Authorization'] = `Bearer ${currentToken}`;
+        }
+
         const res = await fetch(`${API_BASE}/payments/create`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${currentToken}`
-          },
+          headers: headers,
           body: JSON.stringify({
             provider: 'yookassa',
             amount: parseFloat(urlAmount || 1000.00),
             email: emailInput.value.trim(),
-            description: urlDesc ? decodeURIComponent(urlDesc) : 'Оплата услуги 1С:Отель',
-            save_payment_method: urlSave === 'true'
+            description: urlDesc ? decodeURIComponent(urlDesc) : 'Оплата услуги',
+            save_payment_method: isRecurring
           })
         });
         
@@ -173,13 +161,13 @@ document.addEventListener('DOMContentLoaded', function() {
   checkForm();
   loadRecipientInfo();
   
-  // Обработка возврата
+  // Обработка возврата с платежного шлюза
   const status = urlParams.get('status');
   if (status === 'success') {
     setTimeout(() => {
-      alert('Оплата прошла успешно!');
+      alert('Оплата прошла успешно! Чек отправлен на ваш email.');
       localStorage.removeItem('pending_payment');
-      window.location.href = 'cards.html';
+      window.location.href = 'index.html'; // Или cards.html, если авторизован
     }, 500);
   } else if (status === 'fail' || status === 'canceled') {
     alert('Оплата не прошла или была отменена.');
