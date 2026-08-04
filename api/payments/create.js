@@ -16,14 +16,14 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    // 🔥 Безопасное получение body (защита от ошибок Vercel Functions)
+    //   Безопасное получение body (защита от ошибок Vercel Functions)
     const body = req.body || (await req.json());
     const { amount, email, description, save_payment_method } = body;
     const authHeader = req.headers.authorization;
     
     let userId = null;
 
-    // 🔥 Проверяем токен ТОЛЬКО если он передан (разрешаем гостевую оплату)
+    //  Проверяем токен ТОЛЬКО если он передан (разрешаем гостевую оплату)
     if (authHeader) {
       try {
         const token = authHeader.split(' ')[1];
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 🔥 ЗАЩИТА: Если пользователь не авторизован, но пытается сохранить карту — блокируем
+    //ЗАЩИТА: Если пользователь не авторизован, но пытается сохранить карту — блокируем
     if (!userId && save_payment_method) {
       return res.status(403).json({ error: 'Для сохранения карты и рекуррентных платежей необходима авторизация' });
     }
@@ -57,7 +57,7 @@ export default async function handler(req, res) {
       save_payment_method: save_payment_method || false, // СОХРАНЕНИЕ КАРТЫ ДЛЯ РЕКУРРЕНТА!
       description: description || 'Оплата услуг',
       
-      // 🧾 Данные для чека (54-ФЗ)
+      // Данные для чека (54-ФЗ)
       receipt: {
         customer: {
           email: email
@@ -70,14 +70,14 @@ export default async function handler(req, res) {
               value: outSum,
               currency: 'RUB'
             },
-            // 🔥 ВАЖНО: 2 = "без НДС". Это единственно верный код для Самозанятых (НПД)
+            // 2 = "без НДС". код для Самозанятых (НПД)
             vat_code: 2 
           }
         ]
       }
     }, idempotenceKey);
 
-    // 2. Сохраняем платеж в нашу БД (userId может быть null для гостей)
+    // 2. Сохраняем платеж в БД (userId может быть null для гостей)
     const dbPayment = await Payment.create({
       userId, 
       amount: outSum,

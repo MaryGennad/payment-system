@@ -4,7 +4,7 @@
 document.addEventListener('DOMContentLoaded', function() {
   console.log('main.js запущен (DOMContentLoaded)');
   
-  // 🔥 ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
+  //   ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
   const savedAmount = localStorage.getItem('pending_payment_amount');
   const savedDesc = localStorage.getItem('pending_payment_desc');
   const savedSave = localStorage.getItem('pending_payment_save');

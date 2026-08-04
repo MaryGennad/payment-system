@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema({
     type: String, 
     required: true 
   },
-  // 🔥 ДОБАВЛЕНО: Поле для хранения токена карты ЮKassa для рекуррентных платежей
+  //   ДОБАВЛЕНО: Поле для хранения токена карты ЮKassa для рекуррентных платежей
   yookassaPaymentMethodId: { 
     type: String, 
     default: null 

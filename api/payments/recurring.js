@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    // 🔥 Безопасный парсинг body для Vercel Functions
+    //   Безопасный парсинг body для Vercel Functions
     const body = req.body || (await req.json());
     const { userId, amount, description } = body;
 
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         value: outSum,
         currency: 'RUB'
       },
-      payment_method_id: user.yookassaPaymentMethodId, // 🔥 Магия рекуррента
+      payment_method_id: user.yookassaPaymentMethodId, //   Магия рекуррента
       capture: true,
       description: description || 'Рекуррентный платеж: Подписка',
       
@@ -51,7 +51,7 @@ export default async function handler(req, res) {
             description: description || 'Услуга по подписке',
             quantity: '1.00',
             amount: { value: outSum, currency: 'RUB' },
-            vat_code: 2 // 🔥 КРИТИЧНО: 2 = "без НДС" (правильно для Самозанятых)
+            vat_code: 2 //   КРИТИЧНО: 2 = "без НДС" (правильно для Самозанятых)
           }
         ]
       }
