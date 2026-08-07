@@ -1,4 +1,3 @@
-// api/auth/login.js
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '../../lib/db.js';
@@ -9,18 +8,20 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  // для Vercel Functions
-  const body = await req.json();
-  const { email, password } = body;
-
-
-
   await connectDB();
 
   try {
-    const { email, password } = req.body;
+    //  Безопасный парсинг body для Vercel Functions
+    let body;
+    if (typeof req.body === 'object' && req.body !== null) {
+      body = req.body;
+    } else {
+      body = await req.json();
+    }
+    
+    const { email, password } = body;
 
-    //ЗАЩИТА: Очистка и приведение к нижнему регистру
+    // ЗАЩИТА: Очистка и приведение к нижнему регистру
     const cleanEmail = email ? email.trim().toLowerCase() : '';
 
     if (!cleanEmail || !password) {
@@ -30,7 +31,7 @@ export default async function handler(req, res) {
     // Поиск пользователя
     const user = await User.findOne({ email: cleanEmail }).select('+password');
     
-    // ЗАЩИТА:Generic ошибка (не раскрывает, существует ли email)
+    // ЗАЩИТА: Generic ошибка
     if (!user) {
       return res.status(401).json({ error: 'Неверный email или пароль' });
     }

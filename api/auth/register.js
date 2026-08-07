@@ -1,4 +1,3 @@
-// api/auth/register.js
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import connectDB from '../../lib/db.js';
@@ -17,9 +16,17 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    const { name, email, password } = req.body;
+    // БЕЗОПАСНЫЙ ПАРСИНГ BODY ДЛЯ VERCEL
+    let body;
+    if (typeof req.body === 'object' && req.body !== null) {
+      body = req.body;
+    } else {
+      body = await req.json();
+    }
+    
+    const { name, email, password } = body;
 
-    // 🔒 ЗАЩИТА: Валидация входных данных
+    // ЗАЩИТА: Валидация входных данных
     if (!email || !password) {
       return res.status(400).json({ error: 'Email и пароль обязательны' });
     }
@@ -41,7 +48,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Пользователь с таким email уже существует' });
     }
 
-    // Хэширование пароля (bcrypt.hash сам генерирует salt, 10 раундов - оптимально)
+    // Хэширование пароля
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Создание пользователя
