@@ -1,4 +1,3 @@
-// api/payments/webhook.js
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 import User from '../../models/User.js';
@@ -11,13 +10,22 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    const event = req.body;
-    console.log('🔔 Webhook received:', event.event);
+    // 🔥 Безопасный парсинг body для Vercel
+    let body;
+    if (typeof req.body === 'object' && req.body !== null) {
+      body = req.body;
+    } else {
+      body = await req.json();
+    }
+    
+    const { event, object } = body;
+    console.log('🔔 Webhook received:', event);
 
     // Обрабатываем успешную оплату
-    if (event.event === 'payment.succeeded') {
-      const paymentData = event.object;
-      const yookassaId = paymentData.id;
+    if (event === 'payment.succeeded') {
+      const yookassaId = object.id;
+      const paymentMethodId = object.payment_method?.id;
+      const saved = object.payment_method?.saved;
 
       // 1. Обновляем статус платежа в БД
       const dbPayment = await Payment.findOneAndUpdate(
@@ -27,9 +35,7 @@ export default async function handler(req, res) {
       );
 
       // 2. Если это рекуррент и карта сохранилась, сохраняем токен пользователю
-      if (dbPayment && dbPayment.userId && paymentData.payment_method?.saved) {
-        const paymentMethodId = paymentData.payment_method.id;
-        
+      if (dbPayment && dbPayment.userId && saved && paymentMethodId) {
         await User.findByIdAndUpdate(dbPayment.userId, {
           yookassaPaymentMethodId: paymentMethodId
         });
@@ -38,8 +44,8 @@ export default async function handler(req, res) {
     }
 
     // Обрабатываем отмену платежа
-    if (event.event === 'payment.canceled') {
-      const paymentData = event.object;
+    if (event === 'payment.canceled') {
+      const paymentData = object;
       await Payment.findOneAndUpdate(
         { yookassaPaymentId: paymentData.id },
         { status: 'canceled' }
@@ -47,8 +53,8 @@ export default async function handler(req, res) {
     }
 
     // Обрабатываем возврат
-    if (event.event === 'refund.succeeded') {
-      const refundData = event.object;
+    if (event === 'refund.succeeded') {
+      const refundData = object;
       await Payment.findOneAndUpdate(
         { yookassaPaymentId: refundData.payment_id },
         { status: 'refunded' }

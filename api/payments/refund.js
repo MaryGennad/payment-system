@@ -1,4 +1,5 @@
-import { YooKassa }  from 'yookassa';
+import { YooKassa } from 'yookassa';
+import jwt from 'jsonwebtoken';
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 
@@ -15,12 +16,21 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) return res.status(401).json({ error: 'Нет токена авторизации' });
-
-    // (Здесь можно добавить проверку JWT, как в create.js, для безопасности)
+    // 🔥 Безопасный парсинг body для Vercel
+    let body;
+    if (typeof req.body === 'object' && req.body !== null) {
+      body = req.body;
+    } else {
+      body = await req.json();
+    }
     
-    const { paymentId } = req.body; // Это _id нашего платежа из MongoDB
+    const { paymentId } = body;
+
+    // Проверка авторизации (базовая)
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'Нет токена авторизации' });
+    }
 
     // 1. Находим платеж в нашей БД
     const payment = await Payment.findById(paymentId);
