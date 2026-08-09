@@ -85,7 +85,7 @@ router.post('/create', async (req, res) => { // <-- УБРАЛИ 'auth' отсю
             description: description || 'Услуга',
             quantity: '1.00',
             amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
-            vat_code: 2 // 🔥 Без НДС
+            vat_code: 2 // Без НДС
           }]
         }
       },
