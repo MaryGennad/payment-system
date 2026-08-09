@@ -35,14 +35,14 @@ async function findExistingCard(userId, last4, expiryMonth, expiryYear) {
   });
 }
 
-// ============================================
+/// ============================================
 // СОЗДАТЬ ПЛАТЕЖ (в файле backend/routes/payments.js)
 // ============================================
-router.post('/create', async (req, res) => { // <-- УБРАЛИ 'auth' отсюда, чтобы пустить гостей
+router.post('/create', async (req, res) => {  // 🔥 УБРАЛИ 'auth' отсюда!
   try {
     const { provider, amount, email, description, save_payment_method } = req.body;
     
-    // 1. Проверяем токен, если он есть
+    // 1. Проверяем токен, если он есть (гостевая оплата разрешена)
     let userId = null;
     const authHeader = req.headers.authorization;
     if (authHeader) {
@@ -85,7 +85,7 @@ router.post('/create', async (req, res) => { // <-- УБРАЛИ 'auth' отсю
             description: description || 'Услуга',
             quantity: '1.00',
             amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
-            vat_code: 2 // Без НДС
+            vat_code: 2 // 🔥 Без НДС
           }]
         }
       },
@@ -102,14 +102,16 @@ router.post('/create', async (req, res) => { // <-- УБРАЛИ 'auth' отсю
     );
 
     const paymentData = yookassaResponse.data;
+    console.log('YooKassa response:', paymentData);
+    console.log('Payment ID:', paymentData.id);
 
-    // Сохранение платежа в БД (используем оригинальное поле paymentId!)
+    // Сохранение платежа в БД (используем paymentId, как в модели!)
     const payment = new Payment({
       userId, // Будет null для гостей
       amount,
       provider,
       status: paymentData.status,
-      paymentId: paymentData.id, // 🔥 Оригинальное поле, которое ждет модель
+      paymentId: paymentData.id, // 🔥 paymentId (как в модели!)
       email,
       description
     });
