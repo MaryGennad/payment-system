@@ -4,13 +4,13 @@ const PaymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null //   ИЗМЕНЕНО: Теперь может быть null для гостевых оплат (убрали required: true)
+    default: null 
   },
   yookassaPaymentId: { 
     type: String,
     unique: true,
-    required: true,
-    index: true // Добавили индекс для быстрого поиска платежа при обработке Webhook
+    required: true, // Это поле ОБЯЗАТЕЛЬНО (ID платежа из ЮKassa)
+    index: true
   },
   provider: {
     type: String,
@@ -32,7 +32,7 @@ const PaymentSchema = new mongoose.Schema({
   },
   email: {
     type: String,
-    required: true // Email обязателен всегда (и для гостей, и для авторизованных) для отправки чека 54-ФЗ
+    required: true
   },
   description: {
     type: String,
