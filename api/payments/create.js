@@ -87,7 +87,7 @@ export default async function handler(req, res) {
     });
 
   } catch (err) {
-    console.error('❌ CREATE PAYMENT ERROR:', err.message);
+    console.error(' CREATE PAYMENT ERROR:', err.message);
     console.error('Stack:', err.stack);
     res.status(500).json({ 
       error: 'Ошибка создания платежа',
