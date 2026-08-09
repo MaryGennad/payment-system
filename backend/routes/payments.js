@@ -36,29 +36,57 @@ async function findExistingCard(userId, last4, expiryMonth, expiryYear) {
 }
 
 // ============================================
-// СОЗДАТЬ ПЛАТЕЖ
+// СОЗДАТЬ ПЛАТЕЖ (в файле backend/routes/payments.js)
 // ============================================
-router.post('/create', auth, async (req, res) => {
+router.post('/create', async (req, res) => { // <-- УБРАЛИ 'auth' отсюда, чтобы пустить гостей
   try {
     const { provider, amount, email, description, save_payment_method } = req.body;
+    
+    // 1. Проверяем токен, если он есть
+    let userId = null;
+    const authHeader = req.headers.authorization;
+    if (authHeader) {
+      try {
+        const token = authHeader.replace('Bearer ', '');
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        userId = decoded.id;
+      } catch (err) {
+        console.warn('⚠️ Неверный токен, продолжаем как гость');
+      }
+    }
+
+    // 2. ЗАЩИТА: гость не может сохранить карту для рекуррента
+    if (!userId && save_payment_method) {
+      return res.status(403).json({ error: 'Для сохранения карты необходима авторизация' });
+    }
 
     // Создание платежа в ЮKassa
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
       {
         amount: {
-          value: amount.toFixed(2),
+          value: parseFloat(amount).toFixed(2),
           currency: 'RUB'
         },
         confirmation: {
           type: 'redirect',
-          return_url: process.env.YOOKASSA_RETURN_URL || 'https://payment-system-coral.vercel.app/cards.html?status=success'
+          return_url: process.env.YOOKASSA_RETURN_URL || 'https://payment-system-coral.vercel.app/index.html?status=success'
         },
         capture: true,
-        description: description || 'Привязка карты',
+        description: description || 'Оплата услуг',
         save_payment_method: save_payment_method || false,
         payment_method_data: {
           type: 'bank_card'
+        },
+        // 🧾 ЧЕК 54-ФЗ (Без НДС для самозанятых)
+        receipt: {
+          customer: { email: email },
+          items: [{
+            description: description || 'Услуга',
+            quantity: '1.00',
+            amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
+            vat_code: 2 // 🔥 Без НДС
+          }]
         }
       },
       {
@@ -75,40 +103,32 @@ router.post('/create', auth, async (req, res) => {
 
     const paymentData = yookassaResponse.data;
 
-    // ДЛЯ ОТЛАДКИ:
-    console.log('YooKassa response:', paymentData);
-    console.log('Payment ID:', paymentData.id);
-
-    // Сохранение платежа в БД
+    // Сохранение платежа в БД (используем оригинальное поле paymentId!)
     const payment = new Payment({
-      userId: req.userId,
+      userId, // Будет null для гостей
       amount,
       provider,
       status: paymentData.status,
-      paymentId: paymentData.id,
-      email
+      paymentId: paymentData.id, // 🔥 Оригинальное поле, которое ждет модель
+      email,
+      description
     });
 
     await payment.save();
 
-    // Если нужно сохранить карту И данные карты есть
+    // Логика сохранения карты (если нужно)
     if (save_payment_method && paymentData.payment_method?.card) {
       const cardData = paymentData.payment_method.card;
-      
-      // ПРОВЕРКА: Ищем существующую карту
-      const existingCard = await findExistingCard(
-        req.userId,
-        cardData.last4,
-        cardData.expiry_month,
-        cardData.expiry_year
-      );
+      const existingCard = await Card.findOne({
+        userId: userId,
+        last4: cardData.last4,
+        expiryMonth: cardData.expiry_month,
+        expiryYear: cardData.expiry_year
+      });
 
-      if (existingCard) {
-        console.log('Карта уже существует, пропускаем сохранение:', existingCard._id);
-      } else {
-        // Создаём новую карту только если её нет
+      if (!existingCard) {
         const card = new Card({
-          userId: req.userId,
+          userId: userId,
           provider: provider || 'yookassa',
           cardToken: paymentData.id,
           last4: cardData.last4,
@@ -118,13 +138,10 @@ router.post('/create', auth, async (req, res) => {
           isDefault: false
         });
         await card.save();
-        console.log('Новая карта сохранена:', card);
       }
     }
 
-    // Проверяем, что confirmation существует
     if (!paymentData.confirmation || !paymentData.confirmation.confirmation_url) {
-      console.error('No confirmation URL in YooKassa response');
       return res.status(500).json({ error: 'No confirmation URL' });
     }
 

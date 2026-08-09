@@ -4,18 +4,16 @@ const PaymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null 
+    default: null // 🔥 Разрешаем null для гостевых оплат
   },
-  yookassaPaymentId: { 
+  paymentId: { // 🔥 ВОЗВРАЩАЕМ оригинальное имя поля, которое использует ваш server.js!
     type: String,
     unique: true,
-    required: true, // Это поле ОБЯЗАТЕЛЬНО (ID платежа из ЮKassa)
-    index: true
+    required: true
   },
   provider: {
     type: String,
-    required: true,
-    default: 'yookassa'
+    required: true
   },
   amount: {
     type: Number,
@@ -35,8 +33,7 @@ const PaymentSchema = new mongoose.Schema({
     required: true
   },
   description: {
-    type: String,
-    default: 'Оплата услуги'
+    type: String
   }
 }, { 
   timestamps: true 
