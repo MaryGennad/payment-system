@@ -19,16 +19,18 @@ window.auth = {
 // ============================================
 // АВТОРЕДИРЕКТ: Если уже авторизован и зашел на auth.html
 // ============================================
-if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
-  const urlParams = new URLSearchParams(window.location.search);
-  const returnTo = urlParams.get('returnTo');
-  
-  if (returnTo) {
-    window.location.href = decodeURIComponent(returnTo);
-  } else {
-    window.location.href = 'cards.html';
+document.addEventListener('DOMContentLoaded', () => {
+  if (window.location.pathname.includes('auth.html') && window.auth.getAuth().token) {
+    const urlParams = new URLSearchParams(window.location.search);
+    const returnTo = urlParams.get('returnTo');
+    
+    if (returnTo) {
+      window.location.href = decodeURIComponent(returnTo);
+    } else {
+      window.location.href = 'cards.html';
+    }
   }
-}
+});
 
 // ============================================
 // ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК (Вход / Регистрация)
@@ -53,7 +55,7 @@ if (tabBtns.length > 0) {
 }
 
 // ============================================
-// ВХОД В АККАУНТ (ИСПРАВЛЕНО: добавлена проверка returnTo)
+// ВХОД В АККАУНТ
 // ============================================
 const loginForm = document.getElementById('loginForm');
 if (loginForm) {
@@ -81,15 +83,14 @@ if (loginForm) {
       
       window.auth.setAuth(data.token, data.user);
       
-      // очищаем сразу после успешного входа, чтобы email не "прилипал" к форме входа навсегда, когда пользователь просто захочет войти в аккаунт в другой раз
-      localStorage.removeItem('pending_payment_email');
+      //   ВАЖНО: НЕ удаляем pending_payment_email здесь! 
+      // main.js на странице оплаты сам использует его для автозаполнения и потом очистит.
 
-      // ПРОВЕРЯЕМ, КУДА НУЖНО ВЕРНУТЬ ПОЛЬЗОВАТЕЛЯ
       const urlParams = new URLSearchParams(window.location.search);
       const returnTo = urlParams.get('returnTo');
       
       if (returnTo) {
-        console.log('🔄 Возврат на страницу оплаты с параметрами:', decodeURIComponent(returnTo));
+        console.log('🔄 Возврат на страницу оплаты:', decodeURIComponent(returnTo));
         window.location.href = decodeURIComponent(returnTo);
       } else {
         window.location.href = 'cards.html';
@@ -107,7 +108,7 @@ if (loginForm) {
 }
 
 // ============================================
-// РЕГИСТРАЦИЯ (добавлена проверка returnTo)
+// РЕГИСТРАЦИЯ
 // ============================================
 const registerForm = document.getElementById('registerForm');
 if (registerForm) {
@@ -136,13 +137,13 @@ if (registerForm) {
       
       window.auth.setAuth(data.token, data.user);
       
-      localStorage.removeItem('pending_payment_email');
-      // ПРОВЕРЯЕМ, КУДА НУЖНО ВЕРНУТЬ ПОЛЬЗОВАТЕЛЯ
+      //   ВАЖНО: НЕ удаляем pending_payment_email здесь!
+
       const urlParams = new URLSearchParams(window.location.search);
       const returnTo = urlParams.get('returnTo');
       
       if (returnTo) {
-        console.log('🔄 Возврат на страницу оплаты с параметрами:', decodeURIComponent(returnTo));
+        console.log('🔄 Возврат на страницу оплаты:', decodeURIComponent(returnTo));
         window.location.href = decodeURIComponent(returnTo);
       } else {
         window.location.href = 'cards.html';

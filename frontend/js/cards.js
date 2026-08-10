@@ -5,22 +5,22 @@ const authData = window.auth?.getAuth() || {};
 const token = authData.token;
 
 if (!token) {
-  // Если нет токена — редирект на авторизацию
   window.location.href = 'auth.html';
 }
 
 (function () {
   const auth = window.auth?.getAuth() || {};
-  const token = auth.token;
+  const currentToken = auth.token;
 
-  if (!token) {
+  if (!currentToken) {
     window.location.href = 'auth.html';
     return;
   }
 
+  const API_BASE = window.API_BASE || '/api';
   const headers = {
     'Content-Type': 'application/json',
-    'Authorization': `Bearer ${token}`,
+    'Authorization': `Bearer ${currentToken}`,
   };
 
   // ============================================
@@ -34,20 +34,21 @@ if (!token) {
   async function apiFetch(url, options = {}) {
     const res = await fetch(url, { ...options, headers });
     if (res.status === 401) {
+      window.auth.clearAuth();
       window.location.href = 'auth.html';
       throw new Error('Сессия истекла. Пожалуйста, войдите снова.');
     }
     return res;
   }
 
-  // Премиальные Toast-уведомления (без эмодзи)
+  // Премиальные Toast-уведомления
   function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     const isSuccess = type === 'success';
     
     const iconSvg = isSuccess 
-      ? `<svg class="icon" style="color:var(--text-primary)" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
-      : `<svg class="icon" style="color:var(--error)" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+      ? `<svg class="icon" style="color:var(--text-primary); width:20px; height:20px;" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>`
+      : `<svg class="icon" style="color:var(--error); width:20px; height:20px;" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
 
     const borderColor = isSuccess ? 'var(--text-primary)' : 'var(--error)';
     const bgColor = isSuccess ? 'var(--bg)' : 'var(--error-bg)';
@@ -119,25 +120,25 @@ if (!token) {
       list.innerHTML = cards.map(c => {
         const month = String(c.expiryMonth ?? '').padStart(2, '0');
         const isDefault = c.isDefault 
-          ? '<span class="badge">Основная</span>'
+          ? '<span class="badge" style="background:var(--text-primary); color:var(--bg); padding:4px 8px; border-radius:4px; font-size:12px; font-weight:600;">Основная</span>'
           : `<button class="btn-small" data-action="setDefault" data-id="${escape(c._id)}">Сделать основной</button>`;
         
         return `
-          <div class="card-item animate-in">
+          <div class="card-item animate-in" style="background:var(--surface); border:1px solid var(--border); padding:20px; border-radius:8px; margin-bottom:16px;">
             <div class="card-info">
               <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
-                <svg class="icon" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
-                <span style="font-weight:600; letter-spacing:-0.02em;">•••• ${escape(c.last4)}</span>
+                <svg class="icon" style="width:24px; height:24px; color:var(--text-secondary);" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg>
+                <span style="font-weight:600; letter-spacing:-0.02em; font-size:16px;">•••• ${escape(c.last4)}</span>
               </div>
-              <div style="font-size:13px; color:var(--text-secondary); font-weight:400; margin-left: 28px;">
-                ${escape(c.cardType)} • ${escape(month)}/${escape(c.expiryYear)}
+              <div style="font-size:13px; color:var(--text-secondary); font-weight:400; margin-left: 34px;">
+                ${escape(c.cardType || 'Банковская карта')} • ${escape(month)}/${escape(c.expiryYear)}
               </div>
             </div>
-            <div class="card-actions">
+            <div class="card-actions" style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
               ${isDefault}
-              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}">Списать 1000 ₽</button>
-              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}">
-                <svg class="icon icon-sm" style="margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 1000 ₽</button>
+              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}" style="background:transparent; color:var(--error); border:1px solid var(--error); padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center;">
+                <svg class="icon" style="width:16px; height:16px; margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Удалить
               </button>
             </div>
@@ -158,7 +159,7 @@ if (!token) {
     const action = btn.dataset.action;
 
     if (action === 'setDefault') window.setDefault(id);
-    if (action === 'charge') window.chargeSavedCard(id, 1000, 3); // 1000 рублей, 3 раза
+    if (action === 'charge') window.chargeSavedCard(id, 1000, 1); // 1 раз для безопасного теста
     if (action === 'delete') window.deleteCard(id);
   });
 
@@ -226,7 +227,7 @@ if (!token) {
             if (p.status === 'failed' || p.status === 'canceled') { statusColor = 'var(--error)'; statusText = 'Отменено'; }
 
             const refundButton = isSucceeded ? `
-              <button class="btn-small" style="margin-top:16px; width:100%;" 
+              <button class="btn-small" style="margin-top:16px; width:100%; background:transparent; color:var(--text-secondary); border:1px solid var(--border); padding:8px; border-radius:6px; cursor:pointer;" 
                 onclick="window.requestRefund('${escape(p._id)}', ${p.amount})">
                 Оформить возврат
               </button>
@@ -240,11 +241,11 @@ if (!token) {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:8px; font-size:13px; color:var(--text-secondary);">
                   <div style="display:flex; align-items:center; gap:8px;">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                    <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                     ${new Date(p.createdAt).toLocaleDateString('ru-RU')} в ${new Date(p.createdAt).toLocaleTimeString('ru-RU', {hour: '2-digit', minute:'2-digit'})}
                   </div>
                   <div style="display:flex; align-items:center; gap:8px;">
-                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
                     ${escape(p.provider)} • ${escape(p.description || 'Платеж')}
                   </div>
                 </div>
@@ -288,8 +289,8 @@ if (!token) {
     }
   };
 
-  window.chargeSavedCard = async (cardId, amount = 1, count = 10) => {
-    if (!confirm(`Подтвердите рекуррентное списание: ${amount} ₽ × ${count} раз (Итого: ${amount * count} ₽).`)) return;
+  window.chargeSavedCard = async (cardId, amount = 1000, count = 1) => {
+    if (!confirm(`Подтвердите списание: ${amount} ₽ × ${count} раз (Итого: ${amount * count} ₽).`)) return;
 
     try {
       const progressDiv = document.createElement('div');
@@ -313,6 +314,76 @@ if (!token) {
         progressBar.style.width = `${((i - 1) / count) * 100}%`;
 
         try {
+          //   ИСПОЛЬЗУЕМ apiFetch, чтобы автоматически подставить заголовки с токеном!
           const res = await apiFetch(`${API_BASE}/payments/charge-saved`, {
             method: 'POST',
-            body: JSON.stringify({ cardId, amount, email: 'user@example.com', description
+            body: JSON.stringify({ 
+              cardId, 
+              amount, 
+              email: auth.user?.email || 'user@example.com', 
+              description: `Рекуррентный платеж (этап ${i} из ${count})` 
+            })
+          });
+          
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'Ошибка списания');
+          
+          successCount++;
+        } catch (err) {
+          failCount++;
+          console.error(`Charge attempt ${i} failed:`, err);
+        }
+
+        progressBar.style.width = `${(i / count) * 100}%`;
+      }
+
+      statusDiv.textContent = `Завершено: успешно ${successCount}, ошибок ${failCount}`;
+      setTimeout(() => progressDiv.remove(), 3000);
+      
+      if (successCount > 0) {
+        showToast(`Успешно списано ${successCount} раз`);
+        historyCache = null; // Сброс кэша для обновления истории
+        await loadPaymentHistory();
+        await updateStats();
+      } else {
+        showToast('Все попытки списания завершились ошибкой', 'error');
+      }
+
+    } catch (err) {
+      showToast(err.message, 'error');
+      const progressDiv = document.getElementById('chargeProgress');
+      if (progressDiv) progressDiv.remove();
+    }
+  };
+
+  window.requestRefund = async (paymentId, amount) => {
+    if (!confirm(`Вы уверены, что хотите оформить возврат на сумму ${amount} ₽?`)) return;
+
+    try {
+      const res = await apiFetch(`${API_BASE}/payments/refund`, {
+        method: 'POST',
+        body: JSON.stringify({ paymentId })
+      });
+      
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка оформления возврата');
+
+      showToast('Возврат успешно инициирован');
+      historyCache = null; // Сброс кэша
+      await loadPaymentHistory();
+      await updateStats();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  // ============================================
+  // ИНИЦИАЛИЗАЦИЯ
+  // ============================================
+  document.addEventListener('DOMContentLoaded', () => {
+    loadCards();
+    updateStats();
+    loadPaymentHistory();
+  });
+
+})();

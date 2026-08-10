@@ -4,6 +4,7 @@ import axios from 'axios';
 import jwt from 'jsonwebtoken';
 import Payment from '../../models/Payment.js';
 import Card from '../../models/Card.js';
+import User from '../../models/User.js';
 
 const router = express.Router();
 
@@ -24,21 +25,9 @@ const auth = (req, res, next) => {
 };
 
 // ============================================
-// ВСПОМОГАТЕЛЬНАЯ ФУНКЦИЯ: Проверка дубликата карты
+// СОЗДАТЬ ПЛАТЕЖ (гостевая оплата разрешена)
 // ============================================
-async function findExistingCard(userId, last4, expiryMonth, expiryYear) {
-  return await Card.findOne({
-    userId: userId,
-    last4: last4,
-    expiryMonth: expiryMonth,
-    expiryYear: expiryYear
-  });
-}
-
-/// ============================================
-// СОЗДАТЬ ПЛАТЕЖ (в файле backend/routes/payments.js)
-// ============================================
-router.post('/create', async (req, res) => {  // УБРАЛИ 'auth' отсюда!
+router.post('/create', async (req, res) => {
   try {
     const { provider, amount, email, description, save_payment_method } = req.body;
     
@@ -60,92 +49,68 @@ router.post('/create', async (req, res) => {  // УБРАЛИ 'auth' отсюд�
       return res.status(403).json({ error: 'Для сохранения карты необходима авторизация' });
     }
 
-// Создание платежа в ЮKassa
-const yookassaResponse = await axios.post(
-  'https://api.yookassa.ru/v3/payments',
-  {
-    amount: {
-      value: parseFloat(amount).toFixed(2),
-      currency: 'RUB'
-    },
-    confirmation: {
-      type: 'redirect',
-      // если save_payment_method=true → cards.html, иначе → index.html
-      return_url: save_payment_method 
-        ? `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
-        : `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/index.html?status=success`,
-    },
-    capture: true,
-    description: description || 'Оплата услуг',
-    save_payment_method: save_payment_method || false,
-    payment_method_data: {
-      type: 'bank_card'
-    },
-    // ЧЕК 54-ФЗ (Без НДС для самозанятых)
-    receipt: {
-      customer: { email: email },
-      items: [{
-        description: description || 'Услуга',
-        quantity: '1.00',
-        amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
-        vat_code: 2 // Без НДС
-      }]
-    }
-  },
-  {
-    auth: {
-      username: process.env.YOOKASSA_SHOP_ID,
-      password: process.env.YOOKASSA_SECRET_KEY
-    },
-    headers: {
-      'Content-Type': 'application/json',
-      'Idempotence-Key': Date.now().toString()
-    }
-  }
-);
+    // 3. Создание платежа в ЮKassa
+    const yookassaResponse = await axios.post(
+      'https://api.yookassa.ru/v3/payments',
+      {
+        amount: {
+          value: parseFloat(amount).toFixed(2),
+          currency: 'RUB'
+        },
+        confirmation: {
+          type: 'redirect',
+          // Умный return_url: если save_payment_method=true → cards.html, иначе → index.html
+          return_url: save_payment_method 
+            ? `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
+            : `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/index.html?status=success`,
+        },
+        capture: true,
+        description: description || 'Оплата услуг',
+        save_payment_method: save_payment_method || false,
+        payment_method_data: {
+          type: 'bank_card'
+        },
+        // ЧЕК 54-ФЗ (Без НДС для самозанятых)
+        receipt: {
+          customer: { email: email },
+          items: [{
+            description: description || 'Услуга',
+            quantity: '1.00',
+            amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
+            vat_code: 2 // Без НДС
+          }]
+        }
+      },
+      {
+        auth: {
+          username: process.env.YOOKASSA_SHOP_ID,
+          password: process.env.YOOKASSA_SECRET_KEY
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': Date.now().toString()
+        }
+      }
+    );
 
     const paymentData = yookassaResponse.data;
     console.log('YooKassa response:', paymentData);
     console.log('Payment ID:', paymentData.id);
 
-    // Сохранение платежа в БД (используем paymentId, как в модели!)
+    // 4. Сохранение платежа в БД
     const payment = new Payment({
       userId, // Будет null для гостей
       amount,
-      provider,
+      provider: provider || 'yookassa',
       status: paymentData.status,
-      paymentId: paymentData.id, //   paymentId (как в модели!)
+      paymentId: paymentData.id,
       email,
       description
     });
 
     await payment.save();
 
-    // Логика сохранения карты (если нужно)
-    if (save_payment_method && paymentData.payment_method?.card) {
-      const cardData = paymentData.payment_method.card;
-      const existingCard = await Card.findOne({
-        userId: userId,
-        last4: cardData.last4,
-        expiryMonth: cardData.expiry_month,
-        expiryYear: cardData.expiry_year
-      });
-
-      if (!existingCard) {
-        const card = new Card({
-          userId: userId,
-          provider: provider || 'yookassa',
-          cardToken: paymentData.id,
-          last4: cardData.last4,
-          cardType: cardData.card_type,
-          expiryMonth: cardData.expiry_month,
-          expiryYear: cardData.expiry_year,
-          isDefault: false
-        });
-        await card.save();
-      }
-    }
-
+    // 5. Возвращаем ссылку на оплату
     if (!paymentData.confirmation || !paymentData.confirmation.confirmation_url) {
       return res.status(500).json({ error: 'No confirmation URL' });
     }
@@ -164,61 +129,76 @@ const yookassaResponse = await axios.post(
 });
 
 // ============================================
-// WEBHOOK ОТ ЮKassa
+// WEBHOOK ОТ ЮKASSA (сохранение карты после успешной оплаты)
 // ============================================
 router.post('/webhook', async (req, res) => {
   try {
     const event = req.body;
-    console.log('Webhook received:', event.event);
+    console.log('🔔 Webhook received:', event.event);
 
+    // Обрабатываем успешную оплату
     if (event.event === 'payment.succeeded') {
       const paymentData = event.object;
+      const yookassaPaymentId = paymentData.id;
 
-      // Найди платеж в БД
-      const payment = await Payment.findOne({ paymentId: paymentData.id });
+      // 1. Обновляем статус платежа в БД
+      const payment = await Payment.findOneAndUpdate(
+        { paymentId: yookassaPaymentId },
+        { status: 'succeeded' },
+        { new: true }
+      );
 
-      if (payment && paymentData.payment_method?.card) {
+      // 2. СОХРАНЯЕМ КАРТУ (только если пользователь авторизован и карта была сохранена)
+      if (payment && payment.userId && paymentData.payment_method?.saved) {
         const cardData = paymentData.payment_method.card;
+        const paymentMethodId = paymentData.payment_method.id; // ID метода платежа для рекуррента
         
-        // ПРОВЕРКА: Ищем существующую карту
-        const existingCard = await findExistingCard(
-          payment.userId,
-          cardData.last4,
-          cardData.expiry_month,
-          cardData.expiry_year
-        );
-
-        if (existingCard) {
-          console.log(' Карта уже существует (webhook):', existingCard._id);
-        } else {
-          // Сохрани карту только если её нет
-          const card = new Card({
+        if (cardData) {
+          // Проверяем, не сохранена ли уже такая карта
+          const existingCard = await Card.findOne({
             userId: payment.userId,
-            provider: payment.provider,
-            cardToken: paymentData.id,
-            last4: cardData.last4,
-            cardType: cardData.card_type,
-            expiryMonth: cardData.expiry_month,
-            expiryYear: cardData.expiry_year,
-            isDefault: false
+            last4: cardData.last4
           });
 
-          await card.save();
-          console.log(' Новая карта сохранена через webhook:', card);
+          if (!existingCard) {
+            const card = new Card({
+              userId: payment.userId,
+              provider: payment.provider || 'yookassa',
+              cardToken: paymentMethodId, // ВАЖНО: сохраняем payment_method.id, а не payment.id!
+              last4: cardData.last4,
+              cardType: cardData.card_type,
+              expiryMonth: cardData.expiry_month,
+              expiryYear: cardData.expiry_year,
+              isDefault: true // Первая карта — основная
+            });
+            await card.save();
+            console.log('✅ Карта сохранена после успешной оплаты:', card._id);
+          }
         }
 
-        // Обнови статус платежа
-        await Payment.updateOne(
-          { paymentId: paymentData.id },
-          { status: paymentData.status }
-        );
+        // 3. Сохраняем payment_method_id в User для будущих рекуррентных платежей
+        await User.findByIdAndUpdate(payment.userId, {
+          yookassaPaymentMethodId: paymentMethodId
+        });
+        console.log('💳 Токен карты сохранен для пользователя:', payment.userId);
       }
     }
 
-    res.json({ status: 'ok' });
+    // Обрабатываем отмену платежа
+    if (event.event === 'payment.canceled') {
+      const paymentData = event.object;
+      await Payment.findOneAndUpdate(
+        { paymentId: paymentData.id },
+        { status: 'canceled' }
+      );
+    }
+
+    // ЮKassa всегда ожидает ответ 200
+    res.status(200).json({ status: 'ok' });
+
   } catch (err) {
     console.error('Webhook error:', err);
-    res.status(500).json({ error: 'Webhook error' });
+    res.status(500).json({ error: 'Webhook processing failed' });
   }
 });
 
@@ -248,12 +228,12 @@ router.post('/charge-saved', auth, async (req, res) => {
       'https://api.yookassa.ru/v3/payments',
       {
         amount: {
-          value: amount.toFixed(2),
+          value: parseFloat(amount).toFixed(2),
           currency: 'RUB'
         },
         capture: true,
         description: description || 'Регулярный платёж',
-        payment_method_id: card.cardToken,  // ID сохранённого метода оплаты
+        payment_method_id: card.cardToken, // ID сохранённого метода оплаты
         save_payment_method: true
       },
       {
@@ -278,7 +258,8 @@ router.post('/charge-saved', auth, async (req, res) => {
       provider: card.provider,
       status: paymentData.status,
       paymentId: paymentData.id,
-      email
+      email,
+      description
     });
 
     await payment.save();
