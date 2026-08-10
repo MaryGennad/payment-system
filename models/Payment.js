@@ -4,9 +4,9 @@ const PaymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    default: null // 🔥 Разрешаем null для гостевых оплат
+    default: null //  Разрешаем null для гостевых оплат
   },
-  paymentId: { // 🔥 ВОЗВРАЩАЕМ оригинальное имя поля, которое использует ваш server.js!
+  paymentId: { // ВОЗВРАЩАЕМ оригинальное имя поля, которое использует ваш server.js!
     type: String,
     unique: true,
     required: true
