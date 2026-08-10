@@ -59,7 +59,6 @@ router.post('/create', async (req, res) => {
         },
         confirmation: {
           type: 'redirect',
-          // Умный return_url: если save_payment_method=true → cards.html, иначе → index.html
           return_url: save_payment_method 
             ? `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
             : `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/index.html?status=success`,
@@ -99,21 +98,20 @@ router.post('/create', async (req, res) => {
 
     // 4. Сохранение платежа в БД
     const payment = new Payment({
-      userId, // Будет null для гостей
+      userId, 
       amount,
       provider: provider || 'yookassa',
       status: paymentData.status,
       paymentId: paymentData.id,
       email,
-      description,
-      // Информация о рекуррентности
-  recurringInfo: {
-    isRecurring: save_payment_method || false,
-    totalStages: save_payment_method ? 3 : 1, // Для комплексной настройки — 3 этапа
-    currentStage: 1
-  },
-  parentPaymentId: null // Первый платеж — родительский
-});
+      description, // Описание придет с фронта (например, "Комплексная настройка 1С Отель (этап 1 из 3)")
+      recurringInfo: {
+        isRecurring: save_payment_method || false,
+        totalStages: save_payment_method ? 3 : 1, 
+        currentStage: 1
+      },
+      parentPaymentId: null 
+    });
     
     await payment.save();
 
@@ -158,10 +156,9 @@ router.post('/webhook', async (req, res) => {
       // 2. СОХРАНЯЕМ КАРТУ (только если пользователь авторизован и карта была сохранена)
       if (payment && payment.userId && paymentData.payment_method?.saved) {
         const cardData = paymentData.payment_method.card;
-        const paymentMethodId = paymentData.payment_method.id; // ID метода платежа для рекуррента
+        const paymentMethodId = paymentData.payment_method.id; 
         
         if (cardData) {
-          // Проверяем, не сохранена ли уже такая карта
           const existingCard = await Card.findOne({
             userId: payment.userId,
             last4: cardData.last4
@@ -171,12 +168,12 @@ router.post('/webhook', async (req, res) => {
             const card = new Card({
               userId: payment.userId,
               provider: payment.provider || 'yookassa',
-              cardToken: paymentMethodId, // ВАЖНО: сохраняем payment_method.id, а не payment.id!
+              cardToken: paymentMethodId, 
               last4: cardData.last4,
               cardType: cardData.card_type,
               expiryMonth: cardData.expiry_month,
               expiryYear: cardData.expiry_year,
-              isDefault: true // Первая карта — основная
+              isDefault: true 
             });
             await card.save();
             console.log('✅ Карта сохранена после успешной оплаты:', card._id);
@@ -214,7 +211,7 @@ router.post('/webhook', async (req, res) => {
 // ============================================
 router.post('/charge-saved', auth, async (req, res) => {
   try {
-    const { amount, email, description, cardId, stageNumber, totalStages } = req.body;
+    const { amount, email, cardId, stageNumber, totalStages } = req.body;
 
     // Найди сохранённую карту
     const card = await Card.findOne({ 
@@ -230,6 +227,11 @@ router.post('/charge-saved', auth, async (req, res) => {
       return res.status(400).json({ error: 'Карта не привязана для повторных списаний' });
     }
 
+    // 🔥 Формируем корректное описание для ЮKassa и БД
+    const currentStage = stageNumber || 1;
+    const maxStages = totalStages || 3;
+    const paymentDescription = `Комплексная настройка 1С Отель (этап ${currentStage} из ${maxStages})`;
+
     // Создание рекуррентного платежа
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
@@ -239,7 +241,7 @@ router.post('/charge-saved', auth, async (req, res) => {
           currency: 'RUB'
         },
         capture: true,
-        description: description || `Рекуррентный платеж (этап ${stageNumber || 1} из ${totalStages || 3})`,
+        description: paymentDescription, // Используем сформированное описание
         payment_method_id: card.cardToken,
         save_payment_method: true
       },
@@ -258,7 +260,7 @@ router.post('/charge-saved', auth, async (req, res) => {
     const paymentData = yookassaResponse.data;
     console.log('Recurrent payment response:', paymentData);
 
-    // Найди первый (родительский) платеж для этой карты
+    // Найди первый (родительский) платеж для этой карты, чтобы связать их
     const firstPayment = await Payment.findOne({
       userId: req.userId,
       'recurringInfo.isRecurring': true
@@ -272,11 +274,11 @@ router.post('/charge-saved', auth, async (req, res) => {
       status: paymentData.status,
       paymentId: paymentData.id,
       email,
-      description: description || `Рекуррентный платеж (этап ${stageNumber || 1} из ${totalStages || 3})`,
+      description: paymentDescription, // Сохраняем правильное описание в БД
       recurringInfo: {
         isRecurring: true,
-        totalStages: totalStages || 3,
-        currentStage: stageNumber || 1
+        totalStages: maxStages,
+        currentStage: currentStage
       },
       parentPaymentId: firstPayment ? firstPayment._id : null
     });
@@ -288,8 +290,8 @@ router.post('/charge-saved', auth, async (req, res) => {
       paymentId: payment._id,
       status: paymentData.status,
       amount: paymentData.amount.value,
-      stage: stageNumber || 1,
-      totalStages: totalStages || 3
+      stage: currentStage,
+      totalStages: maxStages
     });
 
   } catch (err) {
