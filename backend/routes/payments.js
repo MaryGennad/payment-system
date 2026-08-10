@@ -302,7 +302,72 @@ router.post('/charge-saved', auth, async (req, res) => {
     });
   }
 });
+// ============================================
+// ОФОРМИТЬ ВОЗВРАТ
+// ============================================
+router.post('/refund', auth, async (req, res) => {
+  try {
+    const { paymentId } = req.body;
 
+    // Найди платеж в БД
+    const payment = await Payment.findOne({
+      _id: paymentId,
+      userId: req.userId
+    });
+
+    if (!payment) {
+      return res.status(404).json({ error: 'Платеж не найден' });
+    }
+
+    if (payment.status !== 'succeeded') {
+      return res.status(400).json({ error: 'Возврат возможен только для успешных платежей' });
+    }
+
+    // Создаем возврат в ЮKassa
+    const refundResponse = await axios.post(
+      'https://api.yookassa.ru/v3/refunds',
+      {
+        payment_id: payment.paymentId, // ID платежа в ЮKassa
+        amount: {
+          value: payment.amount.toFixed(2),
+          currency: 'RUB'
+        },
+        description: `Возврат по платежу: ${payment.description}`
+      },
+      {
+        auth: {
+          username: process.env.YOOKASSA_SHOP_ID,
+          password: process.env.YOOKASSA_SECRET_KEY
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': Date.now().toString()
+        }
+      }
+    );
+
+    const refundData = refundResponse.data;
+    console.log('Refund created:', refundData);
+
+    // Обновляем статус платежа в БД
+    await Payment.findByIdAndUpdate(paymentId, {
+      status: 'refunded'
+    });
+
+    res.json({
+      success: true,
+      refundId: refundData.id,
+      status: refundData.status
+    });
+
+  } catch (err) {
+    console.error('Refund error:', err.message);
+    console.error('YooKassa error:', err.response?.data);
+    res.status(500).json({
+      error: err.response?.data?.description || err.response?.data?.error_description || 'Ошибка оформления возврата'
+    });
+  }
+});
 // ============================================
 // ПОЛУЧИТЬ ИСТОРИЮ ПЛАТЕЖЕЙ ПОЛЬЗОВАТЕЛЯ
 // ============================================
