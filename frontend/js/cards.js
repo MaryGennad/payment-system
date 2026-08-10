@@ -136,7 +136,7 @@ if (!token) {
             </div>
             <div class="card-actions" style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
               ${isDefault}
-              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 1000 ₽</button>
+              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 1000 ₽ (3 этапа)</button>
               <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}" style="background:transparent; color:var(--error); border:1px solid var(--error); padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center;">
                 <svg class="icon" style="width:16px; height:16px; margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Удалить
@@ -159,7 +159,7 @@ if (!token) {
     const action = btn.dataset.action;
 
     if (action === 'setDefault') window.setDefault(id);
-    if (action === 'charge') window.chargeSavedCard(id, 1000, 1); // 1 раз для безопасного теста
+    if (action === 'charge') window.chargeSavedCard(id, 1000, 3); // 🔥 ИСПРАВЛЕНО: теперь по умолчанию 3 этапа
     if (action === 'delete') window.deleteCard(id);
   });
 
@@ -233,6 +233,7 @@ if (!token) {
               </button>
             ` : '';
 
+            // 🔥 ИСПРАВЛЕНА ВЕРСТКА И СИНТАКСИС ШАБЛОННОЙ СТРОКИ ЗДЕСЬ:
             return `
               <div style="background:var(--bg); border:1px solid var(--border); padding:20px; border-radius:8px; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--border-hover)'" onmouseout="this.style.borderColor='var(--border)'">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -246,8 +247,13 @@ if (!token) {
                   </div>
                   <div style="display:flex; align-items:center; gap:8px;">
                     <svg class="icon" style="width:16px; height:16px;" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
-                    ${escape(p.provider)} • ${escape(p.description || 'Платеж')}
+                    ${escape(p.description || 'Платеж')}
                   </div>
+                  ${p.recurringInfo?.isRecurring ? `
+                    <div style="margin-top:4px; font-size:12px; color:var(--text-primary); font-weight: 600; background: var(--surface); padding: 4px 8px; border-radius: 4px; display: inline-block; width: fit-content; border: 1px solid var(--border);">
+                      Этап ${p.recurringInfo.currentStage} из ${p.recurringInfo.totalStages}
+                    </div>
+                  ` : ''}
                 </div>
                 ${refundButton}
               </div>`;
@@ -289,8 +295,8 @@ if (!token) {
     }
   };
 
-  window.chargeSavedCard = async (cardId, amount = 1000, count = 1) => {
-    if (!confirm(`Подтвердите списание: ${amount} ₽ × ${count} раз (Итого: ${amount * count} ₽).`)) return;
+  window.chargeSavedCard = async (cardId, amount = 1000, totalStages = 3) => {
+    if (!confirm(`Подтвердите рекуррентное списание: ${amount} ₽ × ${totalStages} раз (Итого: ${amount * totalStages} ₽).`)) return;
 
     try {
       const progressDiv = document.createElement('div');
@@ -309,40 +315,46 @@ if (!token) {
       let successCount = 0;
       let failCount = 0;
 
-      for (let i = 1; i <= count; i++) {
-        statusDiv.textContent = `Обработка ${i} из ${count}...`;
-        progressBar.style.width = `${((i - 1) / count) * 100}%`;
+      for (let stage = 1; stage <= totalStages; stage++) {
+        statusDiv.textContent = `Обработка этапа ${stage} из ${totalStages}...`;
+        progressBar.style.width = `${((stage - 1) / totalStages) * 100}%`;
 
         try {
-          //   ИСПОЛЬЗУЕМ apiFetch, чтобы автоматически подставить заголовки с токеном!
-          const res = await apiFetch(`${API_BASE}/payments/charge-saved`, {
+          const currentAuth = window.auth?.getAuth() || {};
+          const res = await fetch(`${API_BASE}/payments/charge-saved`, {
             method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${currentAuth.token}`
+            },
             body: JSON.stringify({ 
               cardId, 
               amount, 
-              email: auth.user?.email || 'user@example.com', 
-              description: `Рекуррентный платеж (этап ${i} из ${count})` 
+              email: currentAuth.user?.email || 'user@example.com', 
+              description: `Рекуррентный платеж (этап ${stage} из ${totalStages})`,
+              stageNumber: stage,
+              totalStages: totalStages
             })
           });
-          
+
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || 'Ошибка списания');
           
           successCount++;
         } catch (err) {
           failCount++;
-          console.error(`Charge attempt ${i} failed:`, err);
+          console.error(`Charge stage ${stage} failed:`, err);
         }
 
-        progressBar.style.width = `${(i / count) * 100}%`;
+        progressBar.style.width = `${(stage / totalStages) * 100}%`;
       }
 
-      statusDiv.textContent = `Завершено: успешно ${successCount}, ошибок ${failCount}`;
+      statusDiv.textContent = `Завершено: успешно ${successCount} из ${totalStages}`;
       setTimeout(() => progressDiv.remove(), 3000);
       
       if (successCount > 0) {
-        showToast(`Успешно списано ${successCount} раз`);
-        historyCache = null; // Сброс кэша для обновления истории
+        showToast(`Успешно списано ${successCount} этапов из ${totalStages}`);
+        historyCache = null;
         await loadPaymentHistory();
         await updateStats();
       } else {

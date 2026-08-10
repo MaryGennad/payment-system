@@ -105,9 +105,16 @@ router.post('/create', async (req, res) => {
       status: paymentData.status,
       paymentId: paymentData.id,
       email,
-      description
-    });
-
+      description,
+      // Информация о рекуррентности
+  recurringInfo: {
+    isRecurring: save_payment_method || false,
+    totalStages: save_payment_method ? 3 : 1, // Для комплексной настройки — 3 этапа
+    currentStage: 1
+  },
+  parentPaymentId: null // Первый платеж — родительский
+});
+    
     await payment.save();
 
     // 5. Возвращаем ссылку на оплату
@@ -207,7 +214,7 @@ router.post('/webhook', async (req, res) => {
 // ============================================
 router.post('/charge-saved', auth, async (req, res) => {
   try {
-    const { amount, email, description, cardId } = req.body;
+    const { amount, email, description, cardId, stageNumber, totalStages } = req.body;
 
     // Найди сохранённую карту
     const card = await Card.findOne({ 
@@ -223,7 +230,7 @@ router.post('/charge-saved', auth, async (req, res) => {
       return res.status(400).json({ error: 'Карта не привязана для повторных списаний' });
     }
 
-    // Создание рекуррентного платежа (БЕЗ confirmation!)
+    // Создание рекуррентного платежа
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
       {
@@ -232,8 +239,8 @@ router.post('/charge-saved', auth, async (req, res) => {
           currency: 'RUB'
         },
         capture: true,
-        description: description || 'Регулярный платёж',
-        payment_method_id: card.cardToken, // ID сохранённого метода оплаты
+        description: description || `Рекуррентный платеж (этап ${stageNumber || 1} из ${totalStages || 3})`,
+        payment_method_id: card.cardToken,
         save_payment_method: true
       },
       {
@@ -251,6 +258,12 @@ router.post('/charge-saved', auth, async (req, res) => {
     const paymentData = yookassaResponse.data;
     console.log('Recurrent payment response:', paymentData);
 
+    // Найди первый (родительский) платеж для этой карты
+    const firstPayment = await Payment.findOne({
+      userId: req.userId,
+      'recurringInfo.isRecurring': true
+    }).sort({ createdAt: 1 });
+
     // Сохранение платежа в БД
     const payment = new Payment({
       userId: req.userId,
@@ -259,7 +272,13 @@ router.post('/charge-saved', auth, async (req, res) => {
       status: paymentData.status,
       paymentId: paymentData.id,
       email,
-      description
+      description: description || `Рекуррентный платеж (этап ${stageNumber || 1} из ${totalStages || 3})`,
+      recurringInfo: {
+        isRecurring: true,
+        totalStages: totalStages || 3,
+        currentStage: stageNumber || 1
+      },
+      parentPaymentId: firstPayment ? firstPayment._id : null
     });
 
     await payment.save();
@@ -268,7 +287,9 @@ router.post('/charge-saved', auth, async (req, res) => {
       success: true,
       paymentId: payment._id,
       status: paymentData.status,
-      amount: paymentData.amount.value
+      amount: paymentData.amount.value,
+      stage: stageNumber || 1,
+      totalStages: totalStages || 3
     });
 
   } catch (err) {
