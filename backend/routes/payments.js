@@ -38,7 +38,7 @@ async function findExistingCard(userId, last4, expiryMonth, expiryYear) {
 /// ============================================
 // СОЗДАТЬ ПЛАТЕЖ (в файле backend/routes/payments.js)
 // ============================================
-router.post('/create', async (req, res) => {  // 🔥 УБРАЛИ 'auth' отсюда!
+router.post('/create', async (req, res) => {  // УБРАЛИ 'auth' отсюда!
   try {
     const { provider, amount, email, description, save_payment_method } = req.body;
     
@@ -60,46 +60,49 @@ router.post('/create', async (req, res) => {  // 🔥 УБРАЛИ 'auth' отс
       return res.status(403).json({ error: 'Для сохранения карты необходима авторизация' });
     }
 
-    // Создание платежа в ЮKassa
-    const yookassaResponse = await axios.post(
-      'https://api.yookassa.ru/v3/payments',
-      {
-        amount: {
-          value: parseFloat(amount).toFixed(2),
-          currency: 'RUB'
-        },
-        confirmation: {
-          type: 'redirect',
-          return_url: process.env.YOOKASSA_RETURN_URL || 'https://payment-system-coral.vercel.app/index.html?status=success'
-        },
-        capture: true,
-        description: description || 'Оплата услуг',
-        save_payment_method: save_payment_method || false,
-        payment_method_data: {
-          type: 'bank_card'
-        },
-        // 🧾 ЧЕК 54-ФЗ (Без НДС для самозанятых)
-        receipt: {
-          customer: { email: email },
-          items: [{
-            description: description || 'Услуга',
-            quantity: '1.00',
-            amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
-            vat_code: 2 // 🔥 Без НДС
-          }]
-        }
-      },
-      {
-        auth: {
-          username: process.env.YOOKASSA_SHOP_ID,
-          password: process.env.YOOKASSA_SECRET_KEY
-        },
-        headers: {
-          'Content-Type': 'application/json',
-          'Idempotence-Key': Date.now().toString()
-        }
-      }
-    );
+// Создание платежа в ЮKassa
+const yookassaResponse = await axios.post(
+  'https://api.yookassa.ru/v3/payments',
+  {
+    amount: {
+      value: parseFloat(amount).toFixed(2),
+      currency: 'RUB'
+    },
+    confirmation: {
+      type: 'redirect',
+      // если save_payment_method=true → cards.html, иначе → index.html
+      return_url: save_payment_method 
+        ? `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
+        : `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/index.html?status=success`,
+    },
+    capture: true,
+    description: description || 'Оплата услуг',
+    save_payment_method: save_payment_method || false,
+    payment_method_data: {
+      type: 'bank_card'
+    },
+    // ЧЕК 54-ФЗ (Без НДС для самозанятых)
+    receipt: {
+      customer: { email: email },
+      items: [{
+        description: description || 'Услуга',
+        quantity: '1.00',
+        amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
+        vat_code: 2 // Без НДС
+      }]
+    }
+  },
+  {
+    auth: {
+      username: process.env.YOOKASSA_SHOP_ID,
+      password: process.env.YOOKASSA_SECRET_KEY
+    },
+    headers: {
+      'Content-Type': 'application/json',
+      'Idempotence-Key': Date.now().toString()
+    }
+  }
+);
 
     const paymentData = yookassaResponse.data;
     console.log('YooKassa response:', paymentData);
@@ -111,7 +114,7 @@ router.post('/create', async (req, res) => {  // 🔥 УБРАЛИ 'auth' отс
       amount,
       provider,
       status: paymentData.status,
-      paymentId: paymentData.id, // 🔥 paymentId (как в модели!)
+      paymentId: paymentData.id, //   paymentId (как в модели!)
       email,
       description
     });

@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    // 🔥 Безопасный парсинг body для Vercel
+    //   Безопасный парсинг body для Vercel
     let body;
     if (typeof req.body === 'object' && req.body !== null) {
       body = req.body;

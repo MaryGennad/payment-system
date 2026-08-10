@@ -1,5 +1,5 @@
  # MongoDB
- MONGO_URI=mongodb+srv://user:pass@cluster.mongodb.net/payments_db
+ MONGODB_URI=mongodb+srv://user:pass@cluster.mongodb.net/payments_db
 
  # JWT
  JWT_SECRET=SuperSecretKey_Joker_2026
