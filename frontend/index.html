@@ -15,8 +15,10 @@
       <div class="header-top">
         <div style="width: 40px;"></div>
         <h1>Каталог услуг</h1>
-        <a href="cards.html" id="cardsBtn" style="display: none; background: var(--text-primary); color: var(--bg); padding: 8px 16px; border-radius: 6px; text-decoration: none; font-weight: 500;">Мои карты</a>
-        <button class="logout-btn" id="authBtn">Войти</button>
+         <div style="display: flex; gap: 12px; align-items: center;">
+          <a href="cards.html" id="cardsLink" style="display: none; color: var(--text-primary); text-decoration: none; font-weight: 500; font-size: 14px;">Мои карты</a>
+          <button class="logout-btn" id="authBtn">Войти</button>
+        </div>
       </div>
       <!-- <h1>Каталог услуг</h1> -->
       <p class="header-subtitle">Выберите подходящий тариф для подключения</p>
@@ -169,27 +171,26 @@
   </div>
 
   <script src="/js/auth.js"></script>
+ <script src="/js/auth.js"></script>
 <script>
-  // Умная кнопка в шапке: "Войти" или "Мои карты"
+  // Умная кнопка в шапке
   document.addEventListener('DOMContentLoaded', () => {
     const authData = window.auth?.getAuth() || {};
     const token = authData.token;
     const authBtn = document.getElementById('authBtn');
-    const cardsBtn = document.getElementById('cardsBtn');
+    const cardsLink = document.getElementById('cardsLink');
     
-    if (authBtn && cardsBtn) {
+    if (authBtn && cardsLink) {
       if (token) {
-        // Если авторизован: кнопка превращается в "Мои карты"
-        authBtn.textContent = 'Мои карты';
-        authBtn.onclick = () => window.location.href = 'cards.html';
-        authBtn.style.display = 'inline-block';
-        cardsBtn.style.display = 'none'; // скрываем лишнюю ссылку
+        // АВТОРИЗОВАН: показываем ссылку "Мои карты" и кнопку "Выйти"
+        cardsLink.style.display = 'block';
+        authBtn.textContent = 'Выйти';
+        authBtn.onclick = () => window.logout();
       } else {
-        // Если гость: кнопка "Войти"
+        // ГОСТЬ: показываем только кнопку "Войти"
+        cardsLink.style.display = 'none';
         authBtn.textContent = 'Войти';
         authBtn.onclick = () => window.location.href = 'auth.html';
-        authBtn.style.display = 'inline-block';
-        cardsBtn.style.display = 'none';
       }
     }
   });
