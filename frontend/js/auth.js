@@ -169,3 +169,22 @@ window.logout = function() {
     window.location.href = 'index.html';
   }
 };
+
+// ============================================
+// КНОПКА В ШАПКЕ: "Войти" или "Мои карты"
+// ============================================
+document.addEventListener('DOMContentLoaded', () => {
+  const authData = window.auth?.getAuth() || {};
+  const token = authData.token;
+  const authBtn = document.getElementById('authBtn');
+  
+  if (authBtn) {
+    if (token) {
+      authBtn.textContent = 'Мои карты';
+      authBtn.onclick = () => window.location.href = 'cards.html';
+    } else {
+      authBtn.textContent = 'Войти';
+      authBtn.onclick = () => window.location.href = 'auth.html';
+    }
+  }
+});
