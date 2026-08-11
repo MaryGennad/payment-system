@@ -232,9 +232,8 @@ if (!token) {
                 Оформить возврат
               </button>
             ` : '';
-
-            // 🔥 ИСПРАВЛЕНА ВЕРСТКА И СИНТАКСИС ШАБЛОННОЙ СТРОКИ ЗДЕСЬ:
-            return `
+//верстка и синтаксис шаблонной строки
+           return `
               <div style="background:var(--bg); border:1px solid var(--border); padding:20px; border-radius:8px; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--border-hover)'" onmouseout="this.style.borderColor='var(--border)'">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
                   <span style="font-weight:600; font-size:16px; letter-spacing:-0.02em; color:var(--text-primary);">${escape(p.amount)} ₽</span>

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import connectDB from '../../lib/db.js';
 import User from '../../models/User.js';
 
-// Простая, но эффективная проверка email
+// проверка email
 const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 };

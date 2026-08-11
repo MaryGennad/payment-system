@@ -32,7 +32,7 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Нет токена авторизации' });
     }
 
-    // 1. Находим платеж в нашей БД
+    // 1. Находим платеж в БД
     const payment = await Payment.findById(paymentId);
     
     if (!payment) {
@@ -60,7 +60,7 @@ export default async function handler(req, res) {
       description: `Возврат по платежу ${payment.yookassaPaymentId}`
     }, idempotenceKey);
 
-    // 3. Обновляем статус в нашей БД
+    // 3. Обновляем статус в БД
     payment.status = 'refunded';
     await payment.save();
 

@@ -29,8 +29,8 @@ export default async function handler(req, res) {
     const userId = decoded.id;
 
     // Получаем карты пользователя
-    // (Примечание: если вы перешли на хранение токена в User.yookassaPaymentMethodId, 
-    // этот запрос можно будет упростить, но пока оставляем как есть)
+    // 
+    // этот запрос можно будет упростить, но пока так
     const cards = await Card.find({ userId: userId });
     
     res.status(200).json(cards);

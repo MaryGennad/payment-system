@@ -17,7 +17,7 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
 
 
-// Импорт роутов (обрати внимание: добавь .js в конце!)
+// Импорт роутов (внимание! .js в конце!)
 import authRoutes from './backend/routes/auth.js';
 import cardRoutes from './backend/routes/cards.js';
 import paymentRoutes from './backend/routes/payments.js';

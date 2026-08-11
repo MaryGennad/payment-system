@@ -1,5 +1,5 @@
 import { YooKassa } from 'yookassa';
-import jwt from 'jsonwebtoken'; // импортируем jwt наверх
+import jwt from 'jsonwebtoken'; 
 import connectDB from '../../lib/db.js';
 import Payment from '../../models/Payment.js';
 

@@ -8,13 +8,13 @@ document.addEventListener('DOMContentLoaded', function() {
   const authData = window.auth?.getAuth() || {};
   const token = authData.token;
   
-  console.log('🔑 Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
+  console.log(' Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
   
   //   ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
   const savedAmount = localStorage.getItem('pending_payment_amount');
   const savedDesc = localStorage.getItem('pending_payment_desc');
   const savedSave = localStorage.getItem('pending_payment_save');
-  const savedEmail = localStorage.getItem('pending_payment_email'); //   НОВОЕ
+  const savedEmail = localStorage.getItem('pending_payment_email'); 
   
   if (savedAmount) {
     console.log('Восстановлены параметры платежа из localStorage');
@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       // ЕСЛИ ГОСТЬ, НО ХОЧЕТ СОХРАНИТЬ КАРТУ (РЕКУРРЕНТ) → ПРОСИМ ВОЙТИ
       if (!currentToken && isRecurring) {
-        console.log('🚫 Гость хочет рекуррентный платеж. Редирект на вход...');
+        console.log('Гость хочет рекуррентный платеж. Редирект на вход...');
         
         if (urlAmount) localStorage.setItem('pending_payment_amount', urlAmount);
         if (urlDesc) localStorage.setItem('pending_payment_desc', urlDesc);

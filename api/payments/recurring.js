@@ -43,7 +43,7 @@ export default async function handler(req, res) {
       capture: true,
       description: description || 'Рекуррентный платеж: Подписка',
       
-      // 🧾 ЧЕК 54-ФЗ (ОБЯЗАТЕЛЬНО ДАЖЕ ДЛЯ АВТОМАТИЧЕСКИХ СПИСАНИЙ!)
+      // ЧЕК 54-ФЗ (ОБЯЗАТЕЛЬНО ДАЖЕ ДЛЯ АВТОМАТИЧЕСКИХ СПИСАНИЙ!)
       receipt: {
         customer: { email: user.email },
         items: [
@@ -51,13 +51,13 @@ export default async function handler(req, res) {
             description: description || 'Услуга по подписке',
             quantity: '1.00',
             amount: { value: outSum, currency: 'RUB' },
-            vat_code: 2 //   КРИТИЧНО: 2 = "без НДС" (правильно для Самозанятых)
+            vat_code: 2 //   КРИТИЧНО: 2 = "без НДС" (для Самозанятых)
           }
         ]
       }
     }, idempotenceKey);
 
-    // 3. Сохраняем факт успешного списания в нашу БД
+    // 3. Сохраняем факт успешного списания в БД
     await Payment.create({
       userId,
       amount: outSum,

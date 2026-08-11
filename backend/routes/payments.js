@@ -1,4 +1,3 @@
-// backend/routes/payments.js
 import express from 'express';
 import axios from 'axios';
 import jwt from 'jsonwebtoken';
@@ -176,7 +175,7 @@ router.post('/webhook', async (req, res) => {
               isDefault: true 
             });
             await card.save();
-            console.log('✅ Карта сохранена после успешной оплаты:', card._id);
+            console.log('Карта сохранена после успешной оплаты:', card._id);
           }
         }
 
