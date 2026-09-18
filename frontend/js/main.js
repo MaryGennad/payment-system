@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   console.log(' Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
   console.log(' Это рекуррентный платеж?', isRecurring);
-  console.log(' Параметр save из URL:', urlSave);
+  console.log('🔗 Параметр save из URL:', urlSave);
   console.log(' Параметры URL:', { amount: urlAmount, desc: urlDesc, save: urlSave });
   
   // ============================================
