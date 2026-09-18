@@ -205,9 +205,9 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-// ============================================
+
 // СПИСАНИЕ С СОХРАНЁННОЙ КАРТЫ (РЕКУРРЕНТНЫЙ ПЛАТЁЖ)
-// ============================================
+
 router.post('/charge-saved', auth, async (req, res) => {
   try {
     const { amount, email, cardId, stageNumber, totalStages } = req.body;
