@@ -8,9 +8,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const authData = window.auth?.getAuth() || {};
   const token = authData.token;
   
-  console.log(' Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
+  console.log('Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
   
-  //   ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
+  // ПРОВЕРЯЕМ, НЕ ВЕРНУЛИСЬ ЛИ МЫ С АВТОРИЗАЦИИ
   const savedAmount = localStorage.getItem('pending_payment_amount');
   const savedDesc = localStorage.getItem('pending_payment_desc');
   const savedSave = localStorage.getItem('pending_payment_save');
@@ -27,19 +27,20 @@ document.addEventListener('DOMContentLoaded', function() {
     localStorage.removeItem('pending_payment_amount');
     localStorage.removeItem('pending_payment_desc');
     localStorage.removeItem('pending_payment_save');
-    localStorage.removeItem('pending_payment_email'); //   Очищаем после использования
+    localStorage.removeItem('pending_payment_email');
   }
 
   const urlParams = new URLSearchParams(window.location.search);
   const urlAmount = urlParams.get('amount');
   const urlDesc = urlParams.get('description');
-  const urlSave = urlParams.get('save'); // 'true' если выбрана рекуррентная оплата
+  const urlSave = urlParams.get('save');
+  
+  // СТРОГАЯ ПРОВЕРКА: рекуррентный платеж только если явно передано 'true'
   const isRecurring = (urlSave === 'true');
 
-  console.log(' Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
-  console.log(' Это рекуррентный платеж?', isRecurring);
-  console.log('🔗 Параметр save из URL:', urlSave);
-  console.log(' Параметры URL:', { amount: urlAmount, desc: urlDesc, save: urlSave });
+  console.log('Это рекуррентный платеж?', isRecurring);
+  console.log('Параметр save из URL:', urlSave);
+  console.log('Параметры URL:', { amount: urlAmount, desc: urlDesc, save: urlSave });
   
   // ============================================
   // 2. ОБНОВЛЕНИЕ ИНТЕРФЕЙСА
@@ -61,7 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (consentSave) consentSave.checked = true;
   }
 
-  //   ВОССТАНАВЛИВАЕМ EMAIL, если пользователь вернулся с регистрации
+  // ВОССТАНАВЛИВАЕМ EMAIL, если пользователь вернулся с регистрации
   if (savedEmail && emailInput) {
     emailInput.value = savedEmail;
     // Триггерим событие input, чтобы сработала валидация и кнопка разблокировалась
@@ -103,9 +104,8 @@ document.addEventListener('DOMContentLoaded', function() {
       
       const currentAuth = window.auth?.getAuth() || {};
       const currentToken = currentAuth.token;
-      const isRecurring = urlSave === 'true';
 
-      // ЕСЛИ ГОСТЬ, НО ХОЧЕТ СОХРАНИТЬ КАРТУ (РЕКУРРЕНТ) → ПРОСИМ ВОЙТИ
+      // ЕСЛИ ГОСТЬ, НО ХОЧЕТ СОХРАНИТЬ КАРТУ (РЕКУРРЕНТ) -> ПРОСИМ ВОЙТИ
       if (!currentToken && isRecurring) {
         console.log('Гость хочет рекуррентный платеж. Редирект на вход...');
         
@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return; // Останавливаем выполнение, ждем входа
       }
 
-      // ЕСЛИ ГОСТЬ ИЛИ АВТОРИЗОВАН, НО ПЛАТЕЖ РАЗОВЫЙ → ПРОДОЛЖАЕМ ОПЛАТУ
+      // ЕСЛИ ГОСТЬ (РАЗОВЫЙ) ИЛИ АВТОРИЗОВАН -> ПРОДОЛЖАЕМ ОПЛАТУ
       const originalText = btnSubmit.textContent;
       btnSubmit.disabled = true;
       btnSubmit.textContent = 'Подготовка платежа...';
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', function() {
           method: 'POST',
           headers: headers,
           body: JSON.stringify({
-            provider: 'yookassa',
+            provider: 'yookassa', // Или 'robokassa', когда переключитесь
             amount: parseFloat(urlAmount || 1000.00),
             email: emailInput.value.trim(),
             description: urlDesc ? decodeURIComponent(urlDesc) : 'Оплата услуги',
@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Инициализация
+  // Инициализация формы при загрузке
   checkForm();
   loadRecipientInfo();
   
@@ -182,8 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
       alert('Оплата прошла успешно! Чек отправлен на ваш email.');
       localStorage.removeItem('pending_payment');
       
-      // УМНЫЙ РЕДИРЕКТ: если пользователь авторизован (сохранял карту), 
-      // ведем его в кабинет, иначе на главную
+      // УМНЫЙ РЕДИРЕКТ: если пользователь авторизован, ведем в кабинет, иначе на главную
       const currentTokenCheck = window.auth?.getAuth()?.token;
       const targetPage = currentTokenCheck ? 'cards.html' : 'index.html';
       
