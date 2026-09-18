@@ -34,7 +34,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const urlAmount = urlParams.get('amount');
   const urlDesc = urlParams.get('description');
   const urlSave = urlParams.get('save'); // 'true' если выбрана рекуррентная оплата
-  
+  const isRecurring = (urlSave === 'true');
+
+  console.log(' Токен:', token ? 'ЕСТЬ (авторизован)' : 'НЕТ (гость)');
+  console.log(' Это рекуррентный платеж?', isRecurring);
+  console.log(' Параметр save из URL:', urlSave);
   console.log(' Параметры URL:', { amount: urlAmount, desc: urlDesc, save: urlSave });
   
   // ============================================
