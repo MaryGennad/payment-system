@@ -8,7 +8,7 @@
  # YooKassa (Тестовые ключи)
  YOOKASSA_SHOP_ID=123456
  YOOKASSA_SECRET_KEY=test_abcdef123456789xyz
- YOOKASSA_RETURN_URL=https://payment-system-alpha-eight.vercel.app/cards
+ YOOKASSA_RETURN_URL=https://hotel-prod.ru/cards
 
  # Port
  PORT=3000

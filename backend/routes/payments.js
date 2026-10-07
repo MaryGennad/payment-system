@@ -59,8 +59,8 @@ router.post('/create', async (req, res) => {
         confirmation: {
           type: 'redirect',
           return_url: save_payment_method 
-            ? `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/cards.html?status=success`
-            : `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/index.html?status=success`,
+            ? `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=success`
+            : `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/index.html?status=success`,
         },
         capture: true,
         description: description || 'Оплата услуг',

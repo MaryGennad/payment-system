@@ -27,7 +27,7 @@ app.use('/api/cards', cardRoutes);
 app.use('/api/payments', paymentRoutes);
 
 app.get('/api/test', (req, res) => {
-  res.json({ message: 'Vercel API is working with Express!' });
+  res.json({ message: 'API is working with Express!' });
 });
 
 export default app;

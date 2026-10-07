@@ -1,9 +1,7 @@
 export default function cors(req, res, next) {
   // Разрешаем только ваш домен
   const allowedOrigins = [
-    'https://payment-system-coral.vercel.app',
-    'https://payment-system-git-main-maria-gennadievnas-projects.vercel.app'
-  ];
+    'https://hotel-prod.ru'];
 
   const origin = req.headers.origin;
   

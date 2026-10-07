@@ -16,7 +16,7 @@ export default async function handler(req, res) {
   await connectDB();
 
   try {
-    // БЕЗОПАСНЫЙ ПАРСИНГ BODY ДЛЯ VERCEL
+    // БЕЗОПАСНЫЙ ПАРСИНГ BODY 
     let body;
     if (typeof req.body === 'object' && req.body !== null) {
       body = req.body;

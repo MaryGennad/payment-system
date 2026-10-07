@@ -53,7 +53,7 @@ export default async function handler(req, res) {
       amount: { value: outSum, currency: 'RUB' },
       confirmation: {
         type: 'redirect',
-        return_url: `${process.env.FRONTEND_URL || 'https://payment-system-coral.vercel.app'}/index.html?status=success`
+        return_url: `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/index.html?status=success`
       },
       capture: true,
       save_payment_method: save_payment_method || false,
