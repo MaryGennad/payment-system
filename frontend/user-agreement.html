@@ -123,7 +123,7 @@
 </footer>
   </div>
 <script src="/js/auth.js"></script>
-<script>
+<!-- <script>
   // Умный футер: показываем "Мои карты" если авторизован, "Войти" если нет
   document.addEventListener('DOMContentLoaded', () => {
     const authData = window.auth?.getAuth() || {};
@@ -144,7 +144,23 @@
       }
     }
   });
-</script>
+</script> -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const authData = window.auth?.getAuth() || {};
+      const token = authData.token;
+      const authLink = document.getElementById('footerAuthBtn');
+      
+      if (authLink) {
+        if (token) {
+          authLink.innerHTML = `<a href="/cards" style="margin-right: 16px;">Мои карты</a><a href="#" onclick="window.logout(); return false;">Выйти</a>`;
+        } else {
+          authLink.innerHTML = `<a href="/auth">Войти</a>`;
+        }
+      }
+    });
+  </script>
+
 <script src="/js/footer.js"></script>
 <script src="/js/main.js"></script>
 <script src="/js/cards.js"></script>
