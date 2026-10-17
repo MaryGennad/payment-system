@@ -39,7 +39,7 @@ router.post('/create', async (req, res) => {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
         userId = decoded.id;
       } catch (err) {
-        console.warn('⚠️ Неверный токен, продолжаем как гость');
+        console.warn('Неверный токен, продолжаем как гость');
       }
     }
 
@@ -138,7 +138,7 @@ router.post('/create', async (req, res) => {
 router.post('/webhook', async (req, res) => {
   try {
     const event = req.body;
-    console.log('🔔 Webhook received:', event.event);
+    console.log('Webhook received:', event.event);
 
     // Обрабатываем успешную оплату
     if (event.event === 'payment.succeeded') {
@@ -183,7 +183,7 @@ router.post('/webhook', async (req, res) => {
         await User.findByIdAndUpdate(payment.userId, {
           yookassaPaymentMethodId: paymentMethodId
         });
-        console.log('💳 Токен карты сохранен для пользователя:', payment.userId);
+        console.log('Токен карты сохранен для пользователя:', payment.userId);
       }
     }
 
@@ -226,7 +226,7 @@ router.post('/charge-saved', auth, async (req, res) => {
       return res.status(400).json({ error: 'Карта не привязана для повторных списаний' });
     }
 
-    // 🔥 Формируем корректное описание для ЮKassa и БД
+    // Формируем корректное описание для ЮKassa и БД
     const currentStage = stageNumber || 1;
     const maxStages = totalStages || 3;
     const paymentDescription = `Комплексная настройка 1С Отель (этап ${currentStage} из ${maxStages})`;
