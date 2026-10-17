@@ -19,7 +19,7 @@ export default async function handler(req, res) {
     }
     
     const { event, object } = body;
-    console.log('🔔 Webhook received:', event);
+    console.log('Webhook received:', event);
 
     // Обрабатываем успешную оплату
     if (event === 'payment.succeeded') {
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
         await User.findByIdAndUpdate(dbPayment.userId, {
           yookassaPaymentMethodId: paymentMethodId
         });
-        console.log('💳 Токен карты сохранен для пользователя:', dbPayment.userId);
+        console.log('Токен карты сохранен для пользователя:', dbPayment.userId);
       }
     }
 
