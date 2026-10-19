@@ -388,10 +388,9 @@ if (!token) {
     }
   };
 
-    // ============================================
+  // ============================================
   // ДОБАВЛЕНИЕ КАРТЫ ВРУЧНУЮ
   // ============================================
-  document.addEventListener('DOMContentLoaded', () => {
   const addCardBtn = document.getElementById('addCardBtn');
   const addCardBtnEmpty = document.getElementById('addCardBtnEmpty');
   const addCardModal = document.getElementById('addCardModal');
@@ -458,94 +457,23 @@ if (!token) {
       }
     });
   }
-});
-  // Вешаем обработчики на обе кнопки (в шапке и в пустом состоянии)
-  if (addCardBtn) {
-    addCardBtn.addEventListener('click', openAddCardModal);
-  }
-  if (addCardBtnEmpty) {
-    addCardBtnEmpty.addEventListener('click', openAddCardModal);
-  }
-
-  // Закрыть модалку
-  if (cancelAddCard) {
-    cancelAddCard.addEventListener('click', () => {
-      addCardModal.style.display = 'none';
-    });
-  }
-
-  // Закрыть при клике вне модалки
-  if (addCardModal) {
-    addCardModal.addEventListener('click', (e) => {
-      if (e.target === addCardModal) {
-        addCardModal.style.display = 'none';
-      }
-    });
-  }
-
-  // Подтвердить добавление карты
-  if (confirmAddCard) {
-    confirmAddCard.addEventListener('click', async () => {
-      const email = cardEmailInput ? cardEmailInput.value.trim() : '';
-      
-      if (!email) {
-        showToast('Введите email для чека', 'error');
-        return;
-      }
-
-      confirmAddCard.disabled = true;
-      confirmAddCard.textContent = 'Обработка...';
-
-      try {
-        const response = await fetch(`${API_BASE}/payments/save-card`, {
-          method: 'POST',
-          headers: headers,
-          body: JSON.stringify({
-            email: email,
-            amount: 1, 
-            description: 'Привязка карты для будущих платежей'
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok && data.confirmation_url) {
-          showToast('Перенаправление на оплату...');
-          setTimeout(() => {
-            window.location.href = data.confirmation_url;
-          }, 500);
-        } else {
-          showToast(data.error || 'Ошибка привязки карты', 'error');
-          confirmAddCard.disabled = false;
-          confirmAddCard.textContent = 'Привязать карту';
-        }
-      } catch (err) {
-        console.error('Add card error:', err);
-        showToast('Ошибка соединения с сервером', 'error');
-        confirmAddCard.disabled = false;
-        confirmAddCard.textContent = 'Привязать карту';
-      }
-    });
-  }
 
   // ============================================
   // ОБРАБОТКА ВОЗВРАТА ПОСЛЕ ПРИВЯЗКИ КАРТЫ
   // ============================================
-  document.addEventListener('DOMContentLoaded', () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const status = urlParams.get('status');
+  const urlParams = new URLSearchParams(window.location.search);
+  const status = urlParams.get('status');
 
-    if (status === 'card-saved') {
-      showToast('Карта успешно привязана!', 'success');
-      window.history.replaceState({}, document.title, window.location.pathname);
-      
-      setTimeout(() => {
-        historyCache = null;
-        loadCards();
-        updateStats();
-      }, 1000);
-    }
-  });
+  if (status === 'card-saved') {
+    showToast('Карта успешно привязана!', 'success');
+    window.history.replaceState({}, document.title, window.location.pathname);
+    
+    setTimeout(() => {
+      historyCache = null;
+      loadCards();
+      updateStats();
+    }, 1000);
+  }
 
   // ============================================
   // ИНИЦИАЛИЗАЦИЯ
@@ -556,4 +484,4 @@ if (!token) {
     loadPaymentHistory();
   });
 
-})(); // ЗАКРЫВАЮЩАЯ СКОБКА IIFE
+})();
