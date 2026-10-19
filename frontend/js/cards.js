@@ -392,6 +392,16 @@ if (!token) {
   // ДОБАВЛЕНИЕ КАРТЫ ВРУЧНУЮ
   // ============================================
   const addCardBtn = document.getElementById('addCardBtn');
+const addCardBtnEmpty = document.getElementById('addCardBtnEmpty');
+
+// Если есть кнопка в пустом состоянии - тоже вешаем обработчик
+if (addCardBtnEmpty) {
+  addCardBtnEmpty.addEventListener('click', () => {
+    const currentAuth = window.auth?.getAuth() || {};
+    cardEmailInput.value = currentAuth.user?.email || '';
+    addCardModal.style.display = 'flex';
+  });
+}
   const addCardModal = document.getElementById('addCardModal');
   const cancelAddCard = document.getElementById('cancelAddCard');
   const confirmAddCard = document.getElementById('confirmAddCard');
