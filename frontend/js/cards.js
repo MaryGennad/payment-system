@@ -399,12 +399,22 @@ if (!token) {
   const cardEmailInput = document.getElementById('cardEmail');
 
   const openAddCardModal = () => {
+    console.log('=== КЛИК ПО КНОПКЕ ===');
+    console.log('window.auth:', window.auth);
+    
     const currentAuth = window.auth?.getAuth() || {};
+    console.log('currentAuth:', currentAuth);
+    
     if (cardEmailInput) {
       cardEmailInput.value = currentAuth.user?.email || '';
+      console.log('Email установлен:', cardEmailInput.value);
     }
+    
     if (addCardModal) {
       addCardModal.style.display = 'flex';
+      console.log('Модалка открыта!');
+    } else {
+      console.error('Модалка не найдена!');
     }
   };
 
