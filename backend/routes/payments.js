@@ -382,5 +382,86 @@ router.get('/history', auth, async (req, res) => {
     res.status(500).json({ error: 'Ошибка получения истории' });
   }
 });
+// ============================================
+// СОХРАНЕНИЕ КАРТЫ (привязка через тестовый платеж 1 ₽)
+// ============================================
+router.post('/save-card', auth, async (req, res) => {
+  try {
+    const { email, amount = 1, description = 'Привязка карты для будущих платежей' } = req.body;
+
+    // Создаем платеж с сохранением метода оплаты
+    const yookassaResponse = await axios.post(
+      'https://api.yookassa.ru/v3/payments',
+      {
+        amount: {
+          value: parseFloat(amount).toFixed(2), // ✅ ИСПРАВЛЕНО: строгий формат "1.00"
+          currency: 'RUB'
+        },
+        confirmation: {
+          type: 'redirect',
+          return_url: `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=card-saved`
+        },
+        capture: true, // Автоматическое подтверждение (списание)
+        save_payment_method: true, // ✅ ГЛАВНОЕ: сохраняем карту
+        description: description,
+        payment_method_data: {
+          type: 'bank_card'
+        },
+        // ✅ ДОБАВЛЕНО: Чек 54-ФЗ (как в основном роуте /create)
+        receipt: {
+          customer: { email: email },
+          items: [{
+            description: description,
+            quantity: '1.00',
+            amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
+            vat_code: 2 // Без НДС (для самозанятых)
+          }]
+        }
+      },
+      {
+        auth: {
+          username: process.env.YOOKASSA_SHOP_ID,
+          password: process.env.YOOKASSA_SECRET_KEY
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': Date.now().toString()
+        }
+      }
+    );
+
+    const paymentData = yookassaResponse.data;
+
+    // Сохраняем платеж в БД
+    const payment = new Payment({
+      userId: req.userId,
+      paymentId: paymentData.id,
+      provider: 'yookassa',
+      amount: parseFloat(amount),
+      currency: 'RUB',
+      status: paymentData.status,
+      email: email,
+      description: description,
+      recurringInfo: {
+        isRecurring: true,
+        totalStages: 1,
+        currentStage: 1
+      }
+    });
+
+    await payment.save();
+
+    res.json({
+      success: true,
+      confirmation_url: paymentData.confirmation.confirmation_url
+    });
+
+  } catch (err) {
+    console.error('Save card error:', err.response?.data || err.message);
+    res.status(500).json({ 
+      error: err.response?.data?.description || 'Ошибка привязки карты' 
+    });
+  }
+});
 
 export default router;

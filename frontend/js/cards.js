@@ -367,7 +367,7 @@ if (!token) {
     }
   };
 
-  window.requestRefund = async (paymentId, amount) => {
+    window.requestRefund = async (paymentId, amount) => {
     if (!confirm(`Вы уверены, что хотите оформить возврат на сумму ${amount} ₽?`)) return;
 
     try {
@@ -389,6 +389,102 @@ if (!token) {
   };
 
   // ============================================
+  // ДОБАВЛЕНИЕ КАРТЫ ВРУЧНУЮ
+  // ============================================
+  const addCardBtn = document.getElementById('addCardBtn');
+  const addCardModal = document.getElementById('addCardModal');
+  const cancelAddCard = document.getElementById('cancelAddCard');
+  const confirmAddCard = document.getElementById('confirmAddCard');
+  const cardEmailInput = document.getElementById('cardEmail');
+
+  if (addCardBtn && addCardModal) {
+    // Открыть модальное окно
+    addCardBtn.addEventListener('click', () => {
+      const currentAuth = window.auth?.getAuth() || {};
+      cardEmailInput.value = currentAuth.user?.email || '';
+      addCardModal.style.display = 'flex';
+    });
+
+    // Закрыть модальное окно
+    cancelAddCard.addEventListener('click', () => {
+      addCardModal.style.display = 'none';
+    });
+
+    // Закрыть при клике вне модалки
+    addCardModal.addEventListener('click', (e) => {
+      if (e.target === addCardModal) {
+        addCardModal.style.display = 'none';
+      }
+    });
+
+    // Подтвердить добавление карты
+    confirmAddCard.addEventListener('click', async () => {
+      const email = cardEmailInput.value.trim();
+      
+      if (!email) {
+        showToast('Введите email для чека', 'error');
+        return;
+      }
+
+      confirmAddCard.disabled = true;
+      confirmAddCard.textContent = 'Обработка...';
+
+      try {
+        const response = await fetch(`${API_BASE}/payments/save-card`, {
+          method: 'POST',
+          headers: headers, // Используем готовые headers из IIFE!
+          body: JSON.stringify({
+            email: email,
+            amount: 1, 
+            description: 'Привязка карты для будущих платежей'
+          })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.confirmation_url) {
+          showToast('Перенаправление на оплату...');
+          setTimeout(() => {
+            window.location.href = data.confirmation_url;
+          }, 500);
+        } else {
+          showToast(data.error || 'Ошибка привязки карты', 'error');
+          confirmAddCard.disabled = false;
+          confirmAddCard.textContent = 'Привязать карту';
+        }
+      } catch (err) {
+        console.error('Add card error:', err);
+        showToast('Ошибка соединения с сервером', 'error');
+        confirmAddCard.disabled = false;
+        confirmAddCard.textContent = 'Привязать карту';
+      }
+    });
+  }
+
+  // ============================================
+  // ОБРАБОТКА ВОЗВРАТА ПОСЛЕ ПРИВЯЗКИ КАРТЫ
+  // ============================================
+  document.addEventListener('DOMContentLoaded', () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const status = urlParams.get('status');
+
+    if (status === 'card-saved') {
+      // Показать красивое уведомление (используем нашу функцию showToast!)
+      showToast('Карта успешно привязана!', 'success');
+      
+      // Очистить URL от параметров
+      window.history.replaceState({}, document.title, window.location.pathname);
+      
+      // Обновить список карт через 1 секунду
+      setTimeout(() => {
+        historyCache = null; // Сбрасываем кэш, чтобы загрузить свежие данные
+        loadCards();
+        updateStats();
+      }, 1000);
+    }
+  });
+
+  // ============================================
   // ИНИЦИАЛИЗАЦИЯ
   // ============================================
   document.addEventListener('DOMContentLoaded', () => {
@@ -397,4 +493,4 @@ if (!token) {
     loadPaymentHistory();
   });
 
-})();
+})(); // ЗАКРЫВАЮЩАЯ СКОБКА IIFE
