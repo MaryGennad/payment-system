@@ -391,6 +391,7 @@ if (!token) {
     // ============================================
   // ДОБАВЛЕНИЕ КАРТЫ ВРУЧНУЮ
   // ============================================
+  document.addEventListener('DOMContentLoaded', () => {
   const addCardBtn = document.getElementById('addCardBtn');
   const addCardBtnEmpty = document.getElementById('addCardBtnEmpty');
   const addCardModal = document.getElementById('addCardModal');
@@ -398,7 +399,6 @@ if (!token) {
   const confirmAddCard = document.getElementById('confirmAddCard');
   const cardEmailInput = document.getElementById('cardEmail');
 
-  // Единая функция для открытия модалки
   const openAddCardModal = () => {
     const currentAuth = window.auth?.getAuth() || {};
     if (cardEmailInput) {
@@ -409,6 +409,56 @@ if (!token) {
     }
   };
 
+  if (addCardBtn) addCardBtn.addEventListener('click', openAddCardModal);
+  if (addCardBtnEmpty) addCardBtnEmpty.addEventListener('click', openAddCardModal);
+
+  if (cancelAddCard) {
+    cancelAddCard.addEventListener('click', () => {
+      addCardModal.style.display = 'none';
+    });
+  }
+
+  if (addCardModal) {
+    addCardModal.addEventListener('click', (e) => {
+      if (e.target === addCardModal) {
+        addCardModal.style.display = 'none';
+      }
+    });
+  }
+
+  if (confirmAddCard) {
+    confirmAddCard.addEventListener('click', async () => {
+      const email = cardEmailInput ? cardEmailInput.value.trim() : '';
+      if (!email) {
+        showToast('Введите email для чека', 'error');
+        return;
+      }
+      confirmAddCard.disabled = true;
+      confirmAddCard.textContent = 'Обработка...';
+      try {
+        const response = await fetch(`${API_BASE}/payments/save-card`, {
+          method: 'POST',
+          headers: headers,
+          body: JSON.stringify({ email, amount: 1, description: 'Привязка карты для будущих платежей' })
+        });
+        const data = await response.json();
+        if (response.ok && data.confirmation_url) {
+          showToast('Перенаправление на оплату...');
+          setTimeout(() => { window.location.href = data.confirmation_url; }, 500);
+        } else {
+          showToast(data.error || 'Ошибка привязки карты', 'error');
+          confirmAddCard.disabled = false;
+          confirmAddCard.textContent = 'Привязать карту';
+        }
+      } catch (err) {
+        console.error('Add card error:', err);
+        showToast('Ошибка соединения с сервером', 'error');
+        confirmAddCard.disabled = false;
+        confirmAddCard.textContent = 'Привязать карту';
+      }
+    });
+  }
+});
   // Вешаем обработчики на обе кнопки (в шапке и в пустом состоянии)
   if (addCardBtn) {
     addCardBtn.addEventListener('click', openAddCardModal);
