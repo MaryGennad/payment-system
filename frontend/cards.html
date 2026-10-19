@@ -43,14 +43,20 @@
     </div>
 
     <!-- Empty State -->
-    <div id="emptyState" class="empty-state" style="display: none;">
-      <div class="empty-icon">💳</div>
-      <h3>Нет привязанных карт</h3>
-      <p>Привяжите карту для быстрых платежей</p>
-      <button class="btn btn-primary" onclick="window.location.href='index.html'">
-        Перейти к услугам
-      </button>
-    </div>
+<div id="emptyState" class="empty-state" style="display: none;">
+  <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;"></div>
+  <h3 style="margin: 0 0 8px 0;">Нет привязанных карт</h3>
+  <p style="color: var(--text-secondary); margin-bottom: 24px;">Привяжите карту для быстрых платежей</p>
+  
+  <div style="display: flex; gap: 12px; justify-content: center;">
+    <button id="addCardBtnEmpty" class="btn btn-primary" style="padding: 12px 24px; font-size: 14px;">
+      + Добавить карту
+    </button>
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'" style="padding: 12px 24px;">
+      Перейти к услугам
+    </button>
+  </div>
+</div>
 
     <!-- История платежей -->
     <div id="paymentHistory" style="margin-top:30px; padding:20px;">
