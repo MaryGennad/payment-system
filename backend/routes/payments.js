@@ -389,32 +389,35 @@ router.post('/save-card', auth, async (req, res) => {
   try {
     const { email, amount = 1, description = 'Привязка карты для будущих платежей' } = req.body;
 
-    // Создаем платеж с сохранением метода оплаты
+    console.log('=== СОЗДАНИЕ ПЛАТЕЖА ДЛЯ ПРИВЯЗКИ КАРТЫ ===');
+    console.log('Shop ID:', process.env.YOOKASSA_SHOP_ID);
+    console.log('Email:', email);
+    console.log('Amount:', amount);
+
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
       {
         amount: {
-          value: parseFloat(amount).toFixed(2), // ✅ ИСПРАВЛЕНО: строгий формат "1.00"
+          value: parseFloat(amount).toFixed(2),
           currency: 'RUB'
         },
         confirmation: {
           type: 'redirect',
           return_url: `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=card-saved`
         },
-        capture: true, // Автоматическое подтверждение (списание)
-        save_payment_method: true, // ✅ ГЛАВНОЕ: сохраняем карту
+        capture: true,
+        save_payment_method: true,
         description: description,
         payment_method_data: {
           type: 'bank_card'
         },
-        // ✅ ДОБАВЛЕНО: Чек 54-ФЗ (как в основном роуте /create)
         receipt: {
           customer: { email: email },
           items: [{
             description: description,
             quantity: '1.00',
             amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
-            vat_code: 2 // Без НДС (для самозанятых)
+            vat_code: 2
           }]
         }
       },
@@ -425,14 +428,15 @@ router.post('/save-card', auth, async (req, res) => {
         },
         headers: {
           'Content-Type': 'application/json',
-          'Idempotence-Key': Date.now().toString()
+          'Idempotence-Key': Date.now().toString(),
+          'Accept': 'application/json'
         }
       }
     );
 
     const paymentData = yookassaResponse.data;
+    console.log('YooKassa ответ:', paymentData);
 
-    // Сохраняем платеж в БД
     const payment = new Payment({
       userId: req.userId,
       paymentId: paymentData.id,
@@ -457,7 +461,11 @@ router.post('/save-card', auth, async (req, res) => {
     });
 
   } catch (err) {
-    console.error('Save card error:', err.response?.data || err.message);
+    console.error('=== ОШИБКА ПРИ СОЗДАНИИ ПЛАТЕЖА ===');
+    console.error('Status:', err.response?.status);
+    console.error('Data:', err.response?.data);
+    console.error('Message:', err.message);
+    
     res.status(500).json({ 
       error: err.response?.data?.description || 'Ошибка привязки карты' 
     });
