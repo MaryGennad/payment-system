@@ -79,7 +79,7 @@ router.post('/set-default', auth, async (req, res) => {
     const card = await Card.findOneAndUpdate(
       { _id: cardId, userId: req.userId },
       { isDefault: true },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     if (!card) {
