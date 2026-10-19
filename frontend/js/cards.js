@@ -388,48 +388,55 @@ if (!token) {
     }
   };
 
-  // ============================================
+    // ============================================
   // ДОБАВЛЕНИЕ КАРТЫ ВРУЧНУЮ
   // ============================================
   const addCardBtn = document.getElementById('addCardBtn');
-const addCardBtnEmpty = document.getElementById('addCardBtnEmpty');
-
-// Если есть кнопка в пустом состоянии - тоже вешаем обработчик
-if (addCardBtnEmpty) {
-  addCardBtnEmpty.addEventListener('click', () => {
-    const currentAuth = window.auth?.getAuth() || {};
-    cardEmailInput.value = currentAuth.user?.email || '';
-    addCardModal.style.display = 'flex';
-  });
-}
+  const addCardBtnEmpty = document.getElementById('addCardBtnEmpty');
   const addCardModal = document.getElementById('addCardModal');
   const cancelAddCard = document.getElementById('cancelAddCard');
   const confirmAddCard = document.getElementById('confirmAddCard');
   const cardEmailInput = document.getElementById('cardEmail');
 
-  if (addCardBtn && addCardModal) {
-    // Открыть модальное окно
-    addCardBtn.addEventListener('click', () => {
-      const currentAuth = window.auth?.getAuth() || {};
+  // Единая функция для открытия модалки
+  const openAddCardModal = () => {
+    const currentAuth = window.auth?.getAuth() || {};
+    if (cardEmailInput) {
       cardEmailInput.value = currentAuth.user?.email || '';
+    }
+    if (addCardModal) {
       addCardModal.style.display = 'flex';
-    });
+    }
+  };
 
-    // Закрыть модальное окно
+  // Вешаем обработчики на обе кнопки (в шапке и в пустом состоянии)
+  if (addCardBtn) {
+    addCardBtn.addEventListener('click', openAddCardModal);
+  }
+  if (addCardBtnEmpty) {
+    addCardBtnEmpty.addEventListener('click', openAddCardModal);
+  }
+
+  // Закрыть модалку
+  if (cancelAddCard) {
     cancelAddCard.addEventListener('click', () => {
       addCardModal.style.display = 'none';
     });
+  }
 
-    // Закрыть при клике вне модалки
+  // Закрыть при клике вне модалки
+  if (addCardModal) {
     addCardModal.addEventListener('click', (e) => {
       if (e.target === addCardModal) {
         addCardModal.style.display = 'none';
       }
     });
+  }
 
-    // Подтвердить добавление карты
+  // Подтвердить добавление карты
+  if (confirmAddCard) {
     confirmAddCard.addEventListener('click', async () => {
-      const email = cardEmailInput.value.trim();
+      const email = cardEmailInput ? cardEmailInput.value.trim() : '';
       
       if (!email) {
         showToast('Введите email для чека', 'error');
@@ -442,7 +449,7 @@ if (addCardBtnEmpty) {
       try {
         const response = await fetch(`${API_BASE}/payments/save-card`, {
           method: 'POST',
-          headers: headers, // Используем готовые headers из IIFE!
+          headers: headers,
           body: JSON.stringify({
             email: email,
             amount: 1, 
@@ -479,15 +486,11 @@ if (addCardBtnEmpty) {
     const status = urlParams.get('status');
 
     if (status === 'card-saved') {
-      // Показать красивое уведомление (используем нашу функцию showToast!)
       showToast('Карта успешно привязана!', 'success');
-      
-      // Очистить URL от параметров
       window.history.replaceState({}, document.title, window.location.pathname);
       
-      // Обновить список карт через 1 секунду
       setTimeout(() => {
-        historyCache = null; // Сбрасываем кэш, чтобы загрузить свежие данные
+        historyCache = null;
         loadCards();
         updateStats();
       }, 1000);
