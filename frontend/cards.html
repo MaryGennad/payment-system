@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Мои карты | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 
 <body>
@@ -22,16 +23,16 @@
         </button>
       </div>
       <p class="header-subtitle">Управление привязанными картами</p>
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
-  <div>
-    <h2 style="margin: 0;">Мои карты</h2>
-    <p style="color: var(--text-secondary); font-size: 14px; margin-top: 8px;">Управление привязанными картами</p>
-  </div>
-  <button id="addCardBtn" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
-    + Добавить карту
-  </button>
-</div>
     </header>
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+      <div>
+        <h2 style="margin: 0;">Мои карты</h2>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 8px;">Управление привязанными картами</p>
+      </div>
+      <button id="addCardBtn" class="btn btn-primary" style="padding: 10px 20px; font-size: 14px;">
+        + Добавить карту
+      </button>
+    </div>
 
     <!-- Статистика (вставится сюда динамически) -->
     <div id="paymentStats"></div>
@@ -83,24 +84,25 @@
   <script src="/js/footer.js"></script>
   <script src="/js/cards.js"></script>
   <!-- Модальное окно добавления карты -->
-<div id="addCardModal" class="modal" style="display: none;">
-  <div class="modal-content">
-    <h3>Привязать карту</h3>
-    <p style="color: var(--text-secondary); font-size: 14px;">
-      Для привязки карты будет проведена тестовая оплата на 1 ₽, которая сразу вернется.
-    </p>
-    
-    <div style="margin: 20px 0;">
-      <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email для чека:</label>
-      <input type="email" id="cardEmail" class="input-field" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px;">
-    </div>
-    
-    <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
-      <button id="cancelAddCard" class="btn btn-secondary">Отмена</button>
-      <button id="confirmAddCard" class="btn btn-primary">Привязать карту</button>
+  <div id="addCardModal" class="modal" style="display: none;">
+    <div class="modal-content">
+      <h3>Привязать карту</h3>
+      <p style="color: var(--text-secondary); font-size: 14px;">
+        Для привязки карты будет проведена тестовая оплата на 1 ₽, которая сразу вернется.
+      </p>
+
+      <div style="margin: 20px 0;">
+        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email для чека:</label>
+        <input type="email" id="cardEmail" class="input-field"
+          style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px;">
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+        <button id="cancelAddCard" class="btn btn-secondary">Отмена</button>
+        <button id="confirmAddCard" class="btn btn-primary">Привязать карту</button>
+      </div>
     </div>
   </div>
-</div>
 </body>
 
 </html>
