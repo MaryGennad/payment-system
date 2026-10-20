@@ -137,8 +137,11 @@ if (!token) {
             <div class="card-actions" style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
               ${isDefault}
               <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 1000 ₽ (3 этапа)</button>
-              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}" style="background:transparent; color:var(--error); border:1px solid var(--error); padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center;">
-                <svg class="icon" style="width:16px; height:16px; margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}" 
+              style="background:transparent; color:var(--error); border:1px solid var(--error); 
+              padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center;">
+                <svg class="icon" style="width:16px; height:16px; margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6">
+                </polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 Удалить
               </button>
             </div>
