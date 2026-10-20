@@ -56,26 +56,13 @@ router.post('/create', async (req, res) => {
           value: parseFloat(amount).toFixed(2),
           currency: 'RUB'
         },
-        // confirmation: {
-        //   type: 'redirect',
-        //   return_url: save_payment_method 
-        //     ? `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=success`
-        //     : `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/index.html?status=success`,
-        // },
-        // capture: true,
-        // save_payment_method: true, 
-        // description: description || 'Оплата услуг',
-        // save_payment_method: save_payment_method || false,
-        // payment_method_data: {
-        //   type: 'bank_card'
-        // },
-                confirmation: {
+        confirmation: {
           type: 'redirect',
           return_url: save_payment_method 
             ? `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=success`
             : `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/index.html?status=success`,
         },
-        capture: true,
+        capture: false,  // Деньги только блокируются, не списываются
         description: description || 'Оплата услуг',
         payment_method_data: {
           type: 'bank_card'
@@ -201,6 +188,73 @@ router.post('/webhook', async (req, res) => {
       }
     }
 
+    // СПОСОБ ОПЛАТЫ СОХРАНЁН (ГЛАВНОЕ СОБЫТИЕ ДЛЯ РЕКУРРЕНТА!)
+    if (event.event === 'payment_method.active') {
+      const paymentMethod = event.object;
+      const paymentMethodId = paymentMethod.id;
+      
+      console.log('=== СПОСОБ ОПЛАТЫ СОХРАНЁН ===');
+      console.log('Payment Method ID:', paymentMethodId);
+
+      // Находим платёж, к которому привязан этот способ
+      const payment = await Payment.findOne({
+        paymentId: paymentMethod.payment_id?.id
+      }).sort({ createdAt: -1 });
+
+      if (payment && payment.userId) {
+        const cardData = paymentMethod.card;
+        
+        if (cardData) {
+          const existingCard = await Card.findOne({
+            userId: payment.userId,
+            last4: cardData.last4
+          });
+
+          if (!existingCard) {
+            const card = new Card({
+              userId: payment.userId,
+              provider: 'yookassa',
+              cardToken: paymentMethodId,
+              last4: cardData.last4,
+              cardType: cardData.card_type,
+              expiryMonth: cardData.expiry_month,
+              expiryYear: cardData.expiry_year,
+              isDefault: true
+            });
+            await card.save();
+            console.log('Карта сохранена:', card._id);
+          }
+
+          await User.findByIdAndUpdate(payment.userId, {
+            yookassaPaymentMethodId: paymentMethodId
+          });
+          console.log('Токен карты сохранён для пользователя:', payment.userId);
+
+          // ОТМЕНЯЕМ ПЛАТЁЖ (деньги вернутся)
+          try {
+            await axios.post(
+              `https://api.yookassa.ru/v3/payments/${payment.paymentId}/cancel`,
+              {},
+              {
+                auth: {
+                  username: process.env.YOOKASSA_SHOP_ID,
+                  password: process.env.YOOKASSA_SECRET_KEY
+                },
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Idempotence-Key': Date.now().toString()
+                }
+              }
+            );
+            console.log('Платёж отменён, деньги возвращены');
+            await Payment.findByIdAndUpdate(payment._id, { status: 'canceled' });
+          } catch (cancelErr) {
+            console.error('Ошибка отмены:', cancelErr.response?.data);
+          }
+        }
+      }
+    }
+
     // Обрабатываем отмену платежа
     if (event.event === 'payment.canceled') {
       const paymentData = event.object;
@@ -219,9 +273,7 @@ router.post('/webhook', async (req, res) => {
   }
 });
 
-
 // СПИСАНИЕ С СОХРАНЁННОЙ КАРТЫ (РЕКУРРЕНТНЫЙ ПЛАТЁЖ)
-
 router.post('/charge-saved', auth, async (req, res) => {
   try {
     const { amount, email, cardId, stageNumber, totalStages } = req.body;
@@ -315,6 +367,7 @@ router.post('/charge-saved', auth, async (req, res) => {
     });
   }
 });
+
 // ============================================
 // ОФОРМИТЬ ВОЗВРАТ
 // ============================================
@@ -381,6 +434,7 @@ router.post('/refund', auth, async (req, res) => {
     });
   }
 });
+
 // ============================================
 // ПОЛУЧИТЬ ИСТОРИЮ ПЛАТЕЖЕЙ ПОЛЬЗОВАТЕЛЯ
 // ============================================
@@ -396,6 +450,7 @@ router.get('/history', auth, async (req, res) => {
     res.status(500).json({ error: 'Ошибка получения истории' });
   }
 });
+
 // ============================================
 // СОХРАНЕНИЕ КАРТЫ (привязка через тестовый платеж 1 ₽)
 // ============================================
@@ -419,7 +474,7 @@ router.post('/save-card', auth, async (req, res) => {
           type: 'redirect',
           return_url: `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=card-saved`
         },
-        capture: true,
+        capture: false, // ИЗМЕНЕНО: было true, стало false, чтобы деньги только блокировались и затем отменялись
         save_payment_method: true,
         description: description,
         payment_method_data: {

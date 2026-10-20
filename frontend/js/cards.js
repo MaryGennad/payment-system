@@ -136,7 +136,7 @@ if (!token) {
             </div>
             <div class="card-actions" style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
               ${isDefault}
-              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 1000 ₽ (3 этапа)</button>
+              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 100 ₽ (3 этапа)</button>
               <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}" 
               style="background:transparent; color:var(--error); border:1px solid var(--error); 
               padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center;">
@@ -162,7 +162,7 @@ if (!token) {
     const action = btn.dataset.action;
 
     if (action === 'setDefault') window.setDefault(id);
-    if (action === 'charge') window.chargeSavedCard(id, 1000, 3); // 🔥 ИСПРАВЛЕНО: теперь по умолчанию 3 этапа
+    if (action === 'charge') window.chargeSavedCard(id, 100, 3);
     if (action === 'delete') window.deleteCard(id);
   });
 
@@ -235,7 +235,7 @@ if (!token) {
                 Оформить возврат
               </button>
             ` : '';
-//верстка и синтаксис шаблонной строки
+
            return `
               <div style="background:var(--bg); border:1px solid var(--border); padding:20px; border-radius:8px; transition: border-color 0.3s ease;" onmouseover="this.style.borderColor='var(--border-hover)'" onmouseout="this.style.borderColor='var(--border)'">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
@@ -298,28 +298,32 @@ if (!token) {
   };
 
   window.chargeSavedCard = async (cardId, amount = 1000, totalStages = 3) => {
-    if (!confirm(`Подтвердите рекуррентное списание: ${amount} ₽ × ${totalStages} раз (Итого: ${amount * totalStages} ₽).`)) return;
+    if (!confirm(`Подтвердите рекуррентное списание: ${amount} ₽ x ${totalStages} раз (Итого: ${amount * totalStages} ₽). Списание будет происходить автоматически с интервалом 10 секунд.`)) return;
 
     try {
       const progressDiv = document.createElement('div');
       progressDiv.id = 'chargeProgress';
-      progressDiv.style.cssText = `position:fixed; top:24px; right:24px; background:var(--bg); border:1px solid var(--border); color:var(--text-primary); padding:20px; border-radius:8px; box-shadow:var(--shadow-lg); z-index:10000; min-width:260px; font-size:14px;`;
+      progressDiv.style.cssText = `position:fixed; top:24px; right:24px; background:var(--bg); border:1px solid var(--border); color:var(--text-primary); padding:20px; border-radius:8px; box-shadow:var(--shadow-lg); z-index:10000; min-width:300px; font-size:14px;`;
       progressDiv.innerHTML = `
         <div style="font-weight:600; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em; font-size:12px; color:var(--text-muted);">Выполнение списаний</div>
         <div id="chargeStatus" style="margin-bottom:12px;">Подготовка...</div>
         <div style="background:var(--border); height:4px; border-radius:2px; overflow:hidden;">
           <div id="chargeProgressBar" style="background:var(--text-primary); height:100%; width:0%; transition:width 0.3s ease;"></div>
-        </div>`;
+        </div>
+        <div id="chargeTimer" style="margin-top:12px; font-size:12px; color:var(--text-secondary);"></div>
+      `;
       document.body.appendChild(progressDiv);
 
       const statusDiv = document.getElementById('chargeStatus');
       const progressBar = document.getElementById('chargeProgressBar');
+      const timerDiv = document.getElementById('chargeTimer');
       let successCount = 0;
       let failCount = 0;
 
       for (let stage = 1; stage <= totalStages; stage++) {
         statusDiv.textContent = `Обработка этапа ${stage} из ${totalStages}...`;
         progressBar.style.width = `${((stage - 1) / totalStages) * 100}%`;
+        timerDiv.textContent = '';
 
         try {
           const currentAuth = window.auth?.getAuth() || {};
@@ -343,16 +347,32 @@ if (!token) {
           if (!res.ok) throw new Error(data.error || 'Ошибка списания');
           
           successCount++;
+          statusDiv.textContent = `Этап ${stage} из ${totalStages} выполнен`;
         } catch (err) {
           failCount++;
           console.error(`Charge stage ${stage} failed:`, err);
+          statusDiv.textContent = `Ошибка: этап ${stage} из ${totalStages} не выполнен`;
         }
 
         progressBar.style.width = `${(stage / totalStages) * 100}%`;
+
+        // ЗАДЕРЖКА 10 СЕКУНД МЕЖДУ ЭТАПАМИ (кроме последнего)
+        if (stage < totalStages) {
+          for (let countdown = 10; countdown > 0; countdown--) {
+            timerDiv.textContent = `Следующий этап через ${countdown} сек...`;
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+        }
       }
 
-      statusDiv.textContent = `Завершено: успешно ${successCount} из ${totalStages}`;
-      setTimeout(() => progressDiv.remove(), 3000);
+      if (failCount === 0) {
+        statusDiv.textContent = `Все ${totalStages} этапов успешно выполнены!`;
+        timerDiv.textContent = '';
+      } else {
+        statusDiv.textContent = `Завершено: успешно ${successCount}, ошибок ${failCount} из ${totalStages}`;
+      }
+
+      setTimeout(() => progressDiv.remove(), 5000);
       
       if (successCount > 0) {
         showToast(`Успешно списано ${successCount} этапов из ${totalStages}`);
@@ -370,7 +390,7 @@ if (!token) {
     }
   };
 
-    window.requestRefund = async (paymentId, amount) => {
+  window.requestRefund = async (paymentId, amount) => {
     if (!confirm(`Вы уверены, что хотите оформить возврат на сумму ${amount} ₽?`)) return;
 
     try {
@@ -383,7 +403,7 @@ if (!token) {
       if (!res.ok) throw new Error(data.error || 'Ошибка оформления возврата');
 
       showToast('Возврат успешно инициирован');
-      historyCache = null; // Сброс кэша
+      historyCache = null;
       await loadPaymentHistory();
       await updateStats();
     } catch (err) {
@@ -478,7 +498,7 @@ if (!token) {
   const status = urlParams.get('status');
 
   if (status === 'card-saved') {
-    showToast('Карта успешно привязана!', 'success');
+    showToast('Карта успешно привязана', 'success');
     window.history.replaceState({}, document.title, window.location.pathname);
     
     setTimeout(() => {
