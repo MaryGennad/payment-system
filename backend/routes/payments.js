@@ -56,7 +56,20 @@ router.post('/create', async (req, res) => {
           value: parseFloat(amount).toFixed(2),
           currency: 'RUB'
         },
-        confirmation: {
+        // confirmation: {
+        //   type: 'redirect',
+        //   return_url: save_payment_method 
+        //     ? `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=success`
+        //     : `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/index.html?status=success`,
+        // },
+        // capture: true,
+        // save_payment_method: true, 
+        // description: description || 'Оплата услуг',
+        // save_payment_method: save_payment_method || false,
+        // payment_method_data: {
+        //   type: 'bank_card'
+        // },
+                confirmation: {
           type: 'redirect',
           return_url: save_payment_method 
             ? `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=success`
@@ -64,10 +77,11 @@ router.post('/create', async (req, res) => {
         },
         capture: true,
         description: description || 'Оплата услуг',
-        save_payment_method: save_payment_method || false,
         payment_method_data: {
           type: 'bank_card'
         },
+        // Только если передан save_payment_method — добавляем его
+        ...(save_payment_method && { save_payment_method: true }),
         // ЧЕК 54-ФЗ (Без НДС для самозанятых)
         receipt: {
           customer: { email: email },
