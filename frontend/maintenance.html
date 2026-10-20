@@ -13,7 +13,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: #fafafa;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -22,20 +22,16 @@
     }
 
     .container {
-      background: white;
-      border-radius: 16px;
-      padding: 60px 40px;
-      max-width: 500px;
+      max-width: 480px;
       width: 100%;
       text-align: center;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     }
 
     .icon {
-      width: 80px;
-      height: 80px;
-      margin: 0 auto 24px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 32px;
+      background: #1a1a1a;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -43,62 +39,61 @@
     }
 
     .icon svg {
-      width: 40px;
-      height: 40px;
+      width: 32px;
+      height: 32px;
       color: white;
     }
 
     h1 {
-      font-size: 28px;
-      font-weight: 700;
+      font-size: 26px;
+      font-weight: 600;
       color: #1a1a1a;
       margin-bottom: 16px;
       letter-spacing: -0.02em;
     }
 
-    p {
+    .subtitle {
       font-size: 16px;
       line-height: 1.6;
       color: #666;
       margin-bottom: 32px;
     }
 
-    .info {
-      background: #f8f9fa;
+    .info-box {
+      background: white;
+      border: 1px solid #e5e5e5;
       border-radius: 8px;
-      padding: 16px;
+      padding: 16px 20px;
       margin-bottom: 24px;
     }
 
-    .info p {
+    .info-box p {
       font-size: 14px;
-      margin-bottom: 0;
       color: #555;
+      margin: 0;
     }
 
     .contact {
       font-size: 14px;
-      color: #999;
+      color: #888;
+      line-height: 1.6;
     }
 
     .contact a {
-      color: #667eea;
+      color: #1a1a1a;
       text-decoration: none;
       font-weight: 500;
+      border-bottom: 1px solid #e5e5e5;
+      transition: border-color 0.2s;
     }
 
     .contact a:hover {
-      text-decoration: underline;
+      border-bottom-color: #1a1a1a;
     }
 
     @media (max-width: 480px) {
-      .container {
-        padding: 40px 24px;
-      }
-
-      h1 {
-        font-size: 24px;
-      }
+      h1 { font-size: 22px; }
+      .subtitle { font-size: 15px; }
     }
   </style>
 </head>
@@ -112,19 +107,16 @@
     
     <h1>Ведутся технические работы</h1>
     
-    <p>
-      Мы обновляем систему, чтобы сделать её ещё лучше. 
-      Пожалуйста, попробуйте зайти через несколько минут.
+    <p class="subtitle">
+      Мы обновляем систему, чтобы обеспечить максимальную надёжность и безопасность платежей. Пожалуйста, попробуйте зайти через несколько минут.
     </p>
     
-    <div class="info">
-      <p>
-        ⏱️ Обычно работы занимают не более 5-10 минут
-      </p>
+    <div class="info-box">
+      <p>Обычно технические работы занимают не более 5–10 минут.</p>
     </div>
     
     <div class="contact">
-      Если проблема сохраняется, напишите нам:<br>
+      Если проблема сохраняется, пожалуйста, свяжитесь с нами:<br>
       <a href="mailto:maria-gennadievna@mail.ru">maria-gennadievna@mail.ru</a>
     </div>
   </div>
