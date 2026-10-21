@@ -163,8 +163,12 @@ if (registerForm) {
 // ============================================
 // ФУНКЦИЯ ВЫХОДА
 // ============================================
-window.logout = function() {
-  if (confirm('Вы действительно хотите выйти из аккаунта?')) {
+window.logout = async () => {
+  const confirmed = await showConfirm(
+    'Вы действительно хотите выйти из аккаунта?',
+    'Выход из аккаунта'
+  );
+  if (confirmed) {
     window.auth.clearAuth();
     window.location.href = 'index.html';
   }

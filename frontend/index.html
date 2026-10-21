@@ -177,6 +177,23 @@
   </div>
 </footer>
   </div>
+<!-- Универсальный диалог подтверждения -->
+<dialog id="confirmDialog" class="custom-dialog">
+  <div class="dialog-content">
+    <div class="dialog-header">
+      <h3 class="dialog-title" id="confirmTitle">Подтверждение</h3>
+    </div>
+    <div class="dialog-body">
+      <p id="confirmMessage" class="dialog-text">Вы уверены?</p>
+    </div>
+    <div class="dialog-footer">
+      <button id="confirmCancel" class="btn btn-secondary">Отмена</button>
+      <button id="confirmOk" class="btn btn-primary">Подтвердить</button>
+    </div>
+  </div>
+</dialog>
+
+  <script src="/js/utils.js"></script>
   <script src="/js/auth.js"></script>
 <script>
   // Умная кнопка в шапке
