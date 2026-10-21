@@ -90,7 +90,7 @@ if (loginForm) {
       const returnTo = urlParams.get('returnTo');
       
       if (returnTo) {
-        console.log('🔄 Возврат на страницу оплаты:', decodeURIComponent(returnTo));
+        console.log(' Возврат на страницу оплаты:', decodeURIComponent(returnTo));
         window.location.href = decodeURIComponent(returnTo);
       } else {
         window.location.href = 'cards.html';
@@ -143,7 +143,7 @@ if (registerForm) {
       const returnTo = urlParams.get('returnTo');
       
       if (returnTo) {
-        console.log('🔄 Возврат на страницу оплаты:', decodeURIComponent(returnTo));
+        console.log(' Возврат на страницу оплаты:', decodeURIComponent(returnTo));
         window.location.href = decodeURIComponent(returnTo);
       } else {
         window.location.href = 'cards.html';
