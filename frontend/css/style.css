@@ -220,6 +220,94 @@ h1 {
   outline: none;
   border-color: var(--accent);
 }
+
+  /* ============================================
+   ===== cards modal =====
+   ============================================ */
+    .custom-dialog {
+      border: none;
+      border-radius: 12px;
+      padding: 0;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+      max-width: 420px;
+      width: 90%;
+      background: var(--bg, #ffffff);
+      color: var(--text-primary, #1a1a1a);
+    }
+    .custom-dialog::backdrop {
+      background: rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(4px);
+    }
+    .dialog-content {
+      padding: 24px;
+    }
+    .dialog-header {
+      margin-bottom: 16px;
+    }
+    .dialog-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      color: var(--text-primary, #1a1a1a);
+    }
+    .dialog-text {
+      font-size: 14px;
+      line-height: 1.6;
+      color: var(--text-secondary, #666);
+      margin: 0 0 16px 0;
+    }
+    .dialog-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      font-size: 14px;
+      color: var(--text-primary, #1a1a1a);
+    }
+    .dialog-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      margin-top: 24px;
+    }
+    .progress-container {
+      background: var(--border, #e5e5e5);
+      height: 6px;
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 100%;
+      appearance: none;
+      background: var(--border, #e5e5e5);
+    }
+    .progress-bar::-webkit-progress-bar { background: var(--border, #e5e5e5); }
+    .progress-bar::-webkit-progress-value {
+      background: var(--text-primary, #1a1a1a);
+      transition: width 0.3s ease;
+    }
+    .progress-bar::-moz-progress-bar {
+      background: var(--text-primary, #1a1a1a);
+      transition: width 0.3s ease;
+    }
+    .timer-text {
+      font-size: 13px;
+      color: var(--text-secondary, #666);
+      margin: 0;
+      text-align: center;
+    }
+    /* Анимация появления диалога */
+    .custom-dialog[open] {
+      animation: dialog-fade-in 0.3s ease-out;
+    }
+    @keyframes dialog-fade-in {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+  /* ============================================
+   ===== cards modal =====
+   ============================================ */
 /* ============================================
    ===== SUMMARY =====
    ============================================ */

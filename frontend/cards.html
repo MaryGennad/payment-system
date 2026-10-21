@@ -6,8 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Мои карты | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="icon"
-    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 
 <body>
@@ -17,15 +16,12 @@
       <div class="header-top">
         <button class="back-btn" onclick="window.location.href='index.html'" title="На главную">←</button>
         <h1>Мои карты</h1>
-        <!-- КНОПКА ВЫХОДА -->
-        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">
-          Выйти
-        </button>
+        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">Выйти</button>
       </div>
       <p class="header-subtitle">Управление привязанными картами</p>
     </header>
  
-    <!-- Статистика (вставится сюда динамически) -->
+    <!-- Статистика -->
     <div id="paymentStats"></div>
 
     <!-- Cards List -->
@@ -34,25 +30,21 @@
     </div>
 
     <!-- Empty State -->
-<div id="emptyState" class="empty-state" style="display: none;">
-  <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;"></div>
-  <h3 style="margin: 0 0 8px 0;">Нет привязанных карт</h3>
-  <p style="color: var(--text-secondary); margin-bottom: 24px;">Привяжите карту для быстрых платежей</p>
-  
-  <div style="display: flex; gap: 12px; justify-content: center;">
-    <button id="addCardBtnEmpty" class="btn btn-primary" style="padding: 12px 24px; font-size: 14px;">
-      + Добавить карту
-    </button>
-    <button class="btn btn-secondary" onclick="window.location.href='index.html'" style="padding: 12px 24px;">
-      Перейти к услугам
-    </button>
-  </div>
-</div>
+    <div id="emptyState" class="empty-state" style="display: none;">
+      <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">💳</div>
+      <h3 style="margin: 0 0 8px 0;">Нет привязанных карт</h3>
+      <p style="color: var(--text-secondary); margin-bottom: 24px;">Привяжите карту для быстрых платежей</p>
+      
+      <div style="display: flex; gap: 12px; justify-content: center;">
+        <button id="addCardBtnEmpty" class="btn btn-primary" style="padding: 12px 24px; font-size: 14px;">+ Добавить карту</button>
+        <button class="btn btn-secondary" onclick="window.location.href='index.html'" style="padding: 12px 24px;">Перейти к услугам</button>
+      </div>
+    </div>
 
     <!-- История платежей -->
     <div id="paymentHistory" style="margin-top:30px; padding:20px;">
       <h3 style="margin-bottom:15px;">История платежей</h3>
-      <p style="text-align:center; color:#888;">Загрузка...</p>
+      <p style="text-align:center; color: var(--text-muted);">Загрузка...</p>
     </div>
 
     <!-- Footer -->
@@ -62,9 +54,7 @@
         <a href="user-agreement.html">Пользовательское соглашение</a>
         <a href="privacy-policy.html">Политика конфиденциальности</a>
         <a href="refund-policy.html">Условия возврата</a>
-        <span id="footerAuthBtn">
-          <!-- Здесь JavaScript вставит "Мои карты" или "Войти" -->
-        </span>
+        <span id="footerAuthBtn"></span>
       </div>
       <div class="footer-bottom">
         <div class="footer-legal">
@@ -77,31 +67,58 @@
     </footer>
   </div>
 
-  
-  <!-- Модальное окно добавления карты -->
-  <div id="addCardModal" class="modal" style="display: none;">
-    <div class="modal-content">
-      <h3>Привязать карту</h3>
-      <p style="color: var(--text-secondary); font-size: 14px;">
-        Для привязки карты будет проведена тестовая оплата на 1 ₽, которая сразу вернется.
-      </p>
-
-      <div style="margin: 20px 0;">
-        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email для чека:</label>
-        <input type="email" id="cardEmail" class="input-field"
-          style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px;">
+  <!-- 1. Диалог добавления карты -->
+  <dialog id="addCardDialog" class="custom-dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h3 class="dialog-title">Привязать карту</h3>
       </div>
-
-      <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px;">
+      <div class="dialog-body">
+        <p class="dialog-text">Для привязки карты будет проведена тестовая блокировка на 1 ₽, которая сразу вернется.</p>
+        <label class="dialog-label" for="cardEmail">Email для чека:</label>
+        <input type="email" id="cardEmail" class="input-field" placeholder="example@mail.ru" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+      </div>
+      <div class="dialog-footer">
         <button id="cancelAddCard" class="btn btn-secondary">Отмена</button>
-        <button id="confirmAddCard" class="btn btn-primary">Привязать карту</button>
+        <button id="confirmAddCard" class="btn btn-primary">Привязать</button>
       </div>
     </div>
-  </div>
+  </dialog>
+
+  <!-- 2. Универсальный диалог подтверждения (вместо confirm) -->
+  <dialog id="confirmDialog" class="custom-dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h3 class="dialog-title" id="confirmTitle">Подтверждение</h3>
+      </div>
+      <div class="dialog-body">
+        <p id="confirmMessage" class="dialog-text">Вы уверены?</p>
+      </div>
+      <div class="dialog-footer">
+        <button id="confirmCancel" class="btn btn-secondary">Отмена</button>
+        <button id="confirmOk" class="btn btn-primary">Подтвердить</button>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- 3. Диалог прогресса списания -->
+  <dialog id="chargeDialog" class="custom-dialog">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h3 class="dialog-title">Выполнение списаний</h3>
+      </div>
+      <div class="dialog-body" style="text-align: center;">
+        <p id="chargeStatus" class="dialog-text" style="margin-bottom: 16px;">Подготовка...</p>
+        <div class="progress-container">
+          <progress id="chargeProgressBar" class="progress-bar" value="0" max="100"></progress>
+        </div>
+        <p id="chargeTimer" class="timer-text"></p>
+      </div>
+    </div>
+  </dialog>
 
   <script src="/js/auth.js"></script>
   <script src="/js/footer.js"></script>
   <script src="/js/cards.js"></script>
 </body>
-
 </html>

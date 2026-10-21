@@ -27,10 +27,8 @@ if (!token) {
   // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
   // ============================================
   
-  // Защита от XSS
   const escape = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-  // Единый fetch с обработкой истекшего токена
   async function apiFetch(url, options = {}) {
     const res = await fetch(url, { ...options, headers });
     if (res.status === 401) {
@@ -41,7 +39,6 @@ if (!token) {
     return res;
   }
 
-  // Премиальные Toast-уведомления
   function showToast(message, type = 'success') {
     const toast = document.createElement('div');
     const isSuccess = type === 'success';
@@ -84,7 +81,37 @@ if (!token) {
     }, 3500);
   }
 
-  // Кэш для истории платежей
+  // Современная функция подтверждения через <dialog>
+  function showConfirm(message, title = 'Подтверждение', isDanger = false) {
+    return new Promise((resolve) => {
+      const dialog = document.getElementById('confirmDialog');
+      const titleEl = document.getElementById('confirmTitle');
+      const messageEl = document.getElementById('confirmMessage');
+      const okBtn = document.getElementById('confirmOk');
+      const cancelBtn = document.getElementById('confirmCancel');
+
+      titleEl.textContent = title;
+      messageEl.textContent = message;
+      okBtn.className = isDanger ? 'btn btn-primary' : 'btn btn-primary'; 
+      okBtn.textContent = isDanger ? 'Удалить' : 'Подтвердить';
+
+      const handleOk = () => { cleanup(); resolve(true); };
+      const handleCancel = () => { cleanup(); resolve(false); };
+      
+      const cleanup = () => {
+        okBtn.removeEventListener('click', handleOk);
+        cancelBtn.removeEventListener('click', handleCancel);
+        dialog.removeEventListener('close', handleCancel);
+      };
+
+      okBtn.addEventListener('click', handleOk);
+      cancelBtn.addEventListener('click', handleCancel);
+      dialog.addEventListener('close', handleCancel);
+
+      dialog.showModal();
+    });
+  }
+
   let historyCache = null;
   async function getPaymentHistory() {
     if (historyCache) return historyCache;
@@ -121,7 +148,7 @@ if (!token) {
         const month = String(c.expiryMonth ?? '').padStart(2, '0');
         const isDefault = c.isDefault 
           ? '<span class="badge" style="background:var(--text-primary); color:var(--bg); padding:4px 8px; border-radius:4px; font-size:12px; font-weight:600;">Основная</span>'
-          : `<button class="btn-small" data-action="setDefault" data-id="${escape(c._id)}">Сделать основной</button>`;
+          : `<button class="btn btn-secondary" data-action="setDefault" data-id="${escape(c._id)}" style="padding: 8px 16px; font-size: 14px;">Сделать основной</button>`;
         
         return `
           <div class="card-item animate-in" style="background:var(--surface); border:1px solid var(--border); padding:20px; border-radius:8px; margin-bottom:16px;">
@@ -136,12 +163,8 @@ if (!token) {
             </div>
             <div class="card-actions" style="display:flex; gap:8px; margin-top:16px; flex-wrap:wrap;">
               ${isDefault}
-              <button class="btn-small" data-action="charge" data-id="${escape(c._id)}" style="background:var(--text-primary); color:var(--bg); border:none; padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500;">Списать 100 ₽ (3 этапа)</button>
-              <button class="btn-small danger" data-action="delete" data-id="${escape(c._id)}" 
-              style="background:transparent; color:var(--error); border:1px solid var(--error); 
-              padding:8px 16px; border-radius:6px; cursor:pointer; font-weight:500; display:flex; align-items:center;">
-                <svg class="icon" style="width:16px; height:16px; margin-right:6px;" viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6">
-                </polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+              <button class="btn btn-primary" data-action="charge" data-id="${escape(c._id)}" style="padding: 8px 16px; font-size: 14px;">Оплатить 300 ₽ (3 этапа)</button>
+              <button class="btn btn-secondary" data-action="delete" data-id="${escape(c._id)}" style="padding: 8px 16px; font-size: 14px; color: var(--error); border-color: var(--error);">
                 Удалить
               </button>
             </div>
@@ -153,7 +176,6 @@ if (!token) {
     }
   }
 
-  // Делегирование событий для кнопок
   document.addEventListener('click', async (e) => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -162,7 +184,7 @@ if (!token) {
     const action = btn.dataset.action;
 
     if (action === 'setDefault') window.setDefault(id);
-    if (action === 'charge') window.chargeSavedCard(id, 100, 3);
+    if (action === 'charge') window.chargeSavedCard(id, 100, 3); // Тестовая сумма 100 * 3 = 300
     if (action === 'delete') window.deleteCard(id);
   });
 
@@ -230,7 +252,7 @@ if (!token) {
             if (p.status === 'failed' || p.status === 'canceled') { statusColor = 'var(--error)'; statusText = 'Отменено'; }
 
             const refundButton = isSucceeded ? `
-              <button class="btn-small" style="margin-top:16px; width:100%; background:transparent; color:var(--text-secondary); border:1px solid var(--border); padding:8px; border-radius:6px; cursor:pointer;" 
+              <button class="btn btn-secondary" style="margin-top:16px; width:100%; padding:8px; font-size:14px;" 
                 onclick="window.requestRefund('${escape(p._id)}', ${p.amount})">
                 Оформить возврат
               </button>
@@ -285,7 +307,9 @@ if (!token) {
   };
 
   window.deleteCard = async (cardId) => {
-    if (!confirm('Вы уверены, что хотите удалить эту карту? Это действие нельзя отменить.')) return;
+    const confirmed = await showConfirm('Удалить эту карту? Это действие нельзя отменить.', 'Удаление карты', true);
+    if (!confirmed) return;
+    
     try {
       const res = await apiFetch(`${API_BASE}/cards/${cardId}`, { method: 'DELETE' });
       const data = res.ok ? await res.json().catch(() => ({})) : {};
@@ -297,32 +321,31 @@ if (!token) {
     }
   };
 
-  window.chargeSavedCard = async (cardId, amount = 1000, totalStages = 3) => {
-    if (!confirm(`Подтвердите рекуррентное списание: ${amount} ₽ x ${totalStages} раз (Итого: ${amount * totalStages} ₽). Списание будет происходить автоматически с интервалом 10 секунд.`)) return;
+  window.chargeSavedCard = async (cardId, amount = 100, totalStages = 3) => {
+    const confirmed = await showConfirm(
+      `Оплатить ${amount * totalStages} ₽ в ${totalStages} этапа? С каждого этапа будет списано по ${amount} ₽.`,
+      'Подтверждение оплаты'
+    );
+    if (!confirmed) return;
 
     try {
-      const progressDiv = document.createElement('div');
-      progressDiv.id = 'chargeProgress';
-      progressDiv.style.cssText = `position:fixed; top:24px; right:24px; background:var(--bg); border:1px solid var(--border); color:var(--text-primary); padding:20px; border-radius:8px; box-shadow:var(--shadow-lg); z-index:10000; min-width:300px; font-size:14px;`;
-      progressDiv.innerHTML = `
-        <div style="font-weight:600; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em; font-size:12px; color:var(--text-muted);">Выполнение списаний</div>
-        <div id="chargeStatus" style="margin-bottom:12px;">Подготовка...</div>
-        <div style="background:var(--border); height:4px; border-radius:2px; overflow:hidden;">
-          <div id="chargeProgressBar" style="background:var(--text-primary); height:100%; width:0%; transition:width 0.3s ease;"></div>
-        </div>
-        <div id="chargeTimer" style="margin-top:12px; font-size:12px; color:var(--text-secondary);"></div>
-      `;
-      document.body.appendChild(progressDiv);
-
+      const dialog = document.getElementById('chargeDialog');
       const statusDiv = document.getElementById('chargeStatus');
       const progressBar = document.getElementById('chargeProgressBar');
       const timerDiv = document.getElementById('chargeTimer');
+
+      statusDiv.textContent = 'Подготовка...';
+      progressBar.value = 0;
+      timerDiv.textContent = '';
+      
+      if (dialog) dialog.showModal();
+
       let successCount = 0;
       let failCount = 0;
 
       for (let stage = 1; stage <= totalStages; stage++) {
-        statusDiv.textContent = `Обработка этапа ${stage} из ${totalStages}...`;
-        progressBar.style.width = `${((stage - 1) / totalStages) * 100}%`;
+        statusDiv.textContent = `Списание этапа ${stage} из ${totalStages}...`;
+        progressBar.value = ((stage - 1) / totalStages) * 100;
         timerDiv.textContent = '';
 
         try {
@@ -347,16 +370,15 @@ if (!token) {
           if (!res.ok) throw new Error(data.error || 'Ошибка списания');
           
           successCount++;
-          statusDiv.textContent = `Этап ${stage} из ${totalStages} выполнен`;
+          statusDiv.textContent = `Этап ${stage} выполнен`;
         } catch (err) {
           failCount++;
           console.error(`Charge stage ${stage} failed:`, err);
-          statusDiv.textContent = `Ошибка: этап ${stage} из ${totalStages} не выполнен`;
+          statusDiv.textContent = `Ошибка на этапе ${stage}`;
         }
 
-        progressBar.style.width = `${(stage / totalStages) * 100}%`;
+        progressBar.value = (stage / totalStages) * 100;
 
-        // ЗАДЕРЖКА 10 СЕКУНД МЕЖДУ ЭТАПАМИ (кроме последнего)
         if (stage < totalStages) {
           for (let countdown = 10; countdown > 0; countdown--) {
             timerDiv.textContent = `Следующий этап через ${countdown} сек...`;
@@ -372,10 +394,12 @@ if (!token) {
         statusDiv.textContent = `Завершено: успешно ${successCount}, ошибок ${failCount} из ${totalStages}`;
       }
 
-      setTimeout(() => progressDiv.remove(), 5000);
+      setTimeout(() => {
+        if (dialog) dialog.close();
+      }, 3000);
       
       if (successCount > 0) {
-        showToast(`Успешно списано ${successCount} этапов из ${totalStages}`);
+        showToast(`Оплачено этапов: ${successCount} из ${totalStages}`);
         historyCache = null;
         await loadPaymentHistory();
         await updateStats();
@@ -385,13 +409,14 @@ if (!token) {
 
     } catch (err) {
       showToast(err.message, 'error');
-      const progressDiv = document.getElementById('chargeProgress');
-      if (progressDiv) progressDiv.remove();
+      const dialog = document.getElementById('chargeDialog');
+      if (dialog) dialog.close();
     }
   };
 
   window.requestRefund = async (paymentId, amount) => {
-    if (!confirm(`Вы уверены, что хотите оформить возврат на сумму ${amount} ₽?`)) return;
+    const confirmed = await showConfirm(`Оформить возврат на сумму ${amount} ₽?`, 'Возврат платежа');
+    if (!confirmed) return;
 
     try {
       const res = await apiFetch(`${API_BASE}/payments/refund`, {
@@ -412,48 +437,38 @@ if (!token) {
   };
 
   // ============================================
-  // ДОБАВЛЕНИЕ КАРТЫ ВРУЧНУЮ
+  // ДОБАВЛЕНИЕ КАРТЫ (СОВРЕМЕННЫЙ <DIALOG>)
   // ============================================
   const addCardBtn = document.getElementById('addCardBtn');
   const addCardBtnEmpty = document.getElementById('addCardBtnEmpty');
-  const addCardModal = document.getElementById('addCardModal');
+  const addCardDialog = document.getElementById('addCardDialog');
   const cancelAddCard = document.getElementById('cancelAddCard');
   const confirmAddCard = document.getElementById('confirmAddCard');
   const cardEmailInput = document.getElementById('cardEmail');
 
-  const openAddCardModal = () => {
-    console.log('=== КЛИК ПО КНОПКЕ ===');
-    console.log('window.auth:', window.auth);
-    
+  const openAddCardDialog = () => {
     const currentAuth = window.auth?.getAuth() || {};
-    console.log('currentAuth:', currentAuth);
-    
     if (cardEmailInput) {
       cardEmailInput.value = currentAuth.user?.email || '';
-      console.log('Email установлен:', cardEmailInput.value);
     }
-    
-    if (addCardModal) {
-      addCardModal.style.display = 'flex';
-      console.log('Модалка открыта!');
-    } else {
-      console.error('Модалка не найдена!');
+    if (addCardDialog) {
+      addCardDialog.showModal();
     }
   };
 
-  if (addCardBtn) addCardBtn.addEventListener('click', openAddCardModal);
-  if (addCardBtnEmpty) addCardBtnEmpty.addEventListener('click', openAddCardModal);
+  if (addCardBtn) addCardBtn.addEventListener('click', openAddCardDialog);
+  if (addCardBtnEmpty) addCardBtnEmpty.addEventListener('click', openAddCardDialog);
 
   if (cancelAddCard) {
     cancelAddCard.addEventListener('click', () => {
-      addCardModal.style.display = 'none';
+      if (addCardDialog) addCardDialog.close();
     });
   }
 
-  if (addCardModal) {
-    addCardModal.addEventListener('click', (e) => {
-      if (e.target === addCardModal) {
-        addCardModal.style.display = 'none';
+  if (addCardDialog) {
+    addCardDialog.addEventListener('click', (e) => {
+      if (e.target === addCardDialog) {
+        addCardDialog.close();
       }
     });
   }
@@ -476,17 +491,18 @@ if (!token) {
         const data = await response.json();
         if (response.ok && data.confirmation_url) {
           showToast('Перенаправление на оплату...');
+          if (addCardDialog) addCardDialog.close();
           setTimeout(() => { window.location.href = data.confirmation_url; }, 500);
         } else {
           showToast(data.error || 'Ошибка привязки карты', 'error');
           confirmAddCard.disabled = false;
-          confirmAddCard.textContent = 'Привязать карту';
+          confirmAddCard.textContent = 'Привязать';
         }
       } catch (err) {
         console.error('Add card error:', err);
         showToast('Ошибка соединения с сервером', 'error');
         confirmAddCard.disabled = false;
-        confirmAddCard.textContent = 'Привязать карту';
+        confirmAddCard.textContent = 'Привязать';
       }
     });
   }
