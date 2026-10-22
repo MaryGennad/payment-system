@@ -541,4 +541,154 @@ router.post('/save-card', auth, async (req, res) => {
   }
 });
 
+// ============================================
+// ПРОВЕРКА МАРКИ (Честный ЗНАК) — 1 ₽, лимит 5/день
+// ============================================
+
+// Тестовая база марок (в реальности здесь будет запрос к API Честного ЗНАКа)
+const MOCK_MARKS = {
+  'MX-100000000001': { productName: 'Вода минеральная 0.5л', manufacturer: 'ООО "Аква"', status: 'Легальный оборот' },
+  'MX-100000000002': { productName: 'Молоко 3.2% 1л', manufacturer: 'ОАО "Молоко"', status: 'Легальный оборот' },
+  'MX-100000000003': { productName: 'Хлеб белый нарезной', manufacturer: 'ИП Пекарев', status: 'Легальный оборот' },
+  'MX-100000000004': { productName: 'Сигареты Marlboro', manufacturer: 'Филип Моррис', status: 'Легальный оборот' },
+  'MX-100000000005': { productName: 'Духи Chanel №5', manufacturer: 'Chanel', status: 'Легальный оборот' },
+};
+
+const DAILY_LIMIT = 5;
+
+// GET — получить лимит и историю
+router.get('/marks/check', auth, async (req, res) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayChecks = await Payment.countDocuments({
+      userId: req.userId,
+      description: 'Проверка марки',
+      createdAt: { $gte: today },
+      status: 'succeeded'
+    });
+
+    const history = await Payment.find({
+      userId: req.userId,
+      description: 'Проверка марки'
+    }).sort({ createdAt: -1 }).limit(20);
+
+    res.json({
+      remaining: Math.max(0, DAILY_LIMIT - todayChecks),
+      limit: DAILY_LIMIT,
+      used: todayChecks,
+      history: history.map(p => ({
+        code: p.metadata?.markCode || '—',
+        productName: p.metadata?.productName,
+        status: p.status,
+        createdAt: p.createdAt
+      }))
+    });
+  } catch (err) {
+    console.error('Get marks error:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// POST — проверить марку и списать 1 ₽
+router.post('/marks/check', auth, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) return res.status(400).json({ error: 'Не указан код марки' });
+
+    // Проверяем лимит
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const todayChecks = await Payment.countDocuments({
+      userId: req.userId,
+      description: 'Проверка марки',
+      createdAt: { $gte: today },
+      status: 'succeeded'
+    });
+
+    if (todayChecks >= DAILY_LIMIT) {
+      return res.status(403).json({
+        error: `Лимит проверок на сегодня исчерпан (${DAILY_LIMIT}/${DAILY_LIMIT})`,
+        remaining: 0,
+        limit: DAILY_LIMIT
+      });
+    }
+
+    // Проверяем привязанную карту
+    const Card = (await import('../../models/Card.js')).default;
+    const card = await Card.findOne({ userId: req.userId });
+    if (!card || !card.cardToken) {
+      return res.status(400).json({ error: 'Нет привязанной карты. Добавьте карту в разделе "Мои карты".' });
+    }
+
+    // Ищем марку в тестовой базе
+    const markData = MOCK_MARKS[code];
+    if (!markData) {
+      return res.status(404).json({
+        error: 'Марка не найдена в базе. Попробуйте: MX-100000000001',
+        remaining: DAILY_LIMIT - todayChecks,
+        limit: DAILY_LIMIT
+      });
+    }
+
+    // Списываем 1 ₽ через ЮKassa
+    const yookassaResponse = await axios.post(
+      'https://api.yookassa.ru/v3/payments',
+      {
+        amount: { value: '1.00', currency: 'RUB' },
+        capture: true,
+        description: 'Проверка марки',
+        payment_method_id: card.cardToken
+      },
+      {
+        auth: {
+          username: process.env.YOOKASSA_SHOP_ID,
+          password: process.env.YOOKASSA_SECRET_KEY
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': `mark-${req.userId}-${Date.now()}`
+        }
+      }
+    );
+
+    const paymentData = yookassaResponse.data;
+
+    // Сохраняем платёж с метаданными марки
+    await new Payment({
+      userId: req.userId,
+      paymentId: paymentData.id,
+      provider: 'yookassa',
+      amount: 1,
+      status: paymentData.status,
+      description: 'Проверка марки',
+      metadata: {
+        markCode: code,
+        productName: markData.productName,
+        manufacturer: markData.manufacturer
+      }
+    }).save();
+
+    const remaining = DAILY_LIMIT - (todayChecks + 1);
+
+    res.json({
+      success: true,
+      code,
+      productName: markData.productName,
+      manufacturer: markData.manufacturer,
+      status: markData.status,
+      remaining,
+      limit: DAILY_LIMIT
+    });
+
+  } catch (err) {
+    console.error('Check mark error:', err.response?.data || err.message);
+    res.status(500).json({
+      error: err.response?.data?.description || 'Ошибка проверки марки'
+    });
+  }
+});
+
 export default router;

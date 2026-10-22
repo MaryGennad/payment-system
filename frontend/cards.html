@@ -6,7 +6,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Мои карты | Оплата</title>
   <link rel="stylesheet" href="/css/style.css">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <link rel="icon"
+    href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cpath d='M16 4L6 9v6c0 6.5 4.5 12 10 13 5.5-1 10-6.5 10-13V9L16 4z' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
 </head>
 
 <body>
@@ -16,11 +17,15 @@
       <div class="header-top">
         <button class="back-btn" onclick="window.location.href='index.html'" title="На главную">←</button>
         <h1>Мои карты</h1>
+        <button class="logout-btn" onclick="window.location.href='marks.html'" title="Проверка марок"
+          style="margin-right:8px;">
+          Марки
+        </button>
         <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">Выйти</button>
       </div>
       <p class="header-subtitle">Управление привязанными картами</p>
     </header>
- 
+
     <!-- Статистика -->
     <div id="paymentStats"></div>
 
@@ -34,10 +39,12 @@
       <div class="empty-icon" style="font-size: 64px; margin-bottom: 16px;">💳</div>
       <h3 style="margin: 0 0 8px 0;">Нет привязанных карт</h3>
       <p style="color: var(--text-secondary); margin-bottom: 24px;">Привяжите карту для быстрых платежей</p>
-      
+
       <div style="display: flex; gap: 12px; justify-content: center;">
-        <button id="addCardBtnEmpty" class="btn btn-primary" style="padding: 12px 24px; font-size: 14px;">+ Добавить карту</button>
-        <button class="btn btn-secondary" onclick="window.location.href='index.html'" style="padding: 12px 24px;">Перейти к услугам</button>
+        <button id="addCardBtnEmpty" class="btn btn-primary" style="padding: 12px 24px; font-size: 14px;">+ Добавить
+          карту</button>
+        <button class="btn btn-secondary" onclick="window.location.href='index.html'"
+          style="padding: 12px 24px;">Перейти к услугам</button>
       </div>
     </div>
 
@@ -74,9 +81,11 @@
         <h3 class="dialog-title">Привязать карту</h3>
       </div>
       <div class="dialog-body">
-        <p class="dialog-text">Для привязки карты будет проведена тестовая блокировка на 1 ₽, которая сразу вернется.</p>
+        <p class="dialog-text">Для привязки карты будет проведена тестовая блокировка на 1 ₽, которая сразу вернется.
+        </p>
         <label class="dialog-label" for="cardEmail">Email для чека:</label>
-        <input type="email" id="cardEmail" class="input-field" placeholder="example@mail.ru" style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
+        <input type="email" id="cardEmail" class="input-field" placeholder="example@mail.ru"
+          style="width: 100%; padding: 10px; border: 1px solid var(--border); border-radius: 6px; font-size: 14px;">
       </div>
       <div class="dialog-footer">
         <button id="cancelAddCard" class="btn btn-secondary">Отмена</button>
@@ -122,4 +131,5 @@
   <script src="/js/footer.js"></script>
   <script src="/js/cards.js"></script>
 </body>
+
 </html>
