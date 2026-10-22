@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Админ-панель | Статистика</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .tabs { display: flex; gap: 8px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+    .tab-btn {
+      padding: 12px 20px; background: none; border: none; cursor: pointer;
+      font-size: 14px; font-weight: 500; color: var(--text-secondary);
+      border-bottom: 2px solid transparent; transition: all 0.2s;
+    }
+    .tab-btn.active { color: var(--text-primary); border-bottom-color: var(--text-primary); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border); padding: 20px;
+      border-radius: 8px; text-align: center;
+    }
+    .stat-value { font-size: 32px; font-weight: 600; margin-bottom: 8px; }
+    .stat-label { font-size: 13px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+    table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 8px; overflow: hidden; }
+    th, td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+    th { background: var(--bg); font-weight: 600; text-transform: uppercase; font-size: 12px; letter-spacing: 0.05em; color: var(--text-secondary); }
+    tr:hover { background: var(--bg); }
+    .badge {
+      display: inline-block; padding: 4px 10px; border-radius: 12px;
+      font-size: 11px; font-weight: 600; text-transform: uppercase;
+    }
+    .badge-success { background: #d4edda; color: #155724; }
+    .badge-warning { background: #fff3cd; color: #856404; }
+    .badge-danger { background: #f8d7da; color: #721c24; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <div class="header-top">
+        <button class="back-btn" onclick="window.location.href='cards.html'" title="Назад">←</button>
+        <h1>Админ-панель</h1>
+        <button class="logout-btn" onclick="window.logout()">Выйти</button>
+      </div>
+      <p class="header-subtitle">Статистика и управление</p>
+    </header>
+
+    <!-- Вкладки -->
+    <div class="tabs">
+      <button class="tab-btn active" data-tab="overview">Обзор</button>
+      <button class="tab-btn" data-tab="users">Пользователи</button>
+      <button class="tab-btn" data-tab="payments">Платежи</button>
+      <button class="tab-btn" data-tab="cards">Карты</button>
+    </div>
+
+    <!-- Обзор -->
+    <div id="tab-overview" class="tab-content active">
+      <div class="stats-grid" id="overviewStats"></div>
+    </div>
+
+    <!-- Пользователи -->
+    <div id="tab-users" class="tab-content">
+      <table id="usersTable">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Имя</th>
+            <th>Дата регистрации</th>
+            <th>Карт</th>
+            <th>Платежей</th>
+            <th>Сумма</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Платежи -->
+    <div id="tab-payments" class="tab-content">
+      <table id="paymentsTable">
+        <thead>
+          <tr>
+            <th>Дата</th>
+            <th>Email</th>
+            <th>Описание</th>
+            <th>Сумма</th>
+            <th>Статус</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Карты -->
+    <div id="tab-cards" class="tab-content">
+      <table id="cardsTable">
+        <thead>
+          <tr>
+            <th>Email</th>
+            <th>Карта</th>
+            <th>Тип</th>
+            <th>Срок</th>
+            <th>Токен</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <footer class="site-footer">
+      <div class="footer-top">
+        <a href="index.html">Каталог услуг</a>
+        <a href="cards.html">Мои карты</a>
+        <a href="marks.html">Проверка марок</a>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-legal">
+          <span>Самозанятый: Антоненко Мария Геннадьевна</span>
+          <span>ИНН: 532-113-934-079</span>
+        </div>
+        <div class="footer-copy">© 2026 Все права защищены</div>
+      </div>
+    </footer>
+  </div>
+
+  <script src="/js/auth.js"></script>
+  <script src="/js/utils.js"></script>
+  <script src="/js/admin.js"></script>
+</body>
+</html>

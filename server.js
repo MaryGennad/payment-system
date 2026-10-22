@@ -7,6 +7,7 @@ import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';// для чтения файла заглушки
+import adminRoutes from './backend/routes/admin.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -75,6 +76,7 @@ import cardRoutes from './backend/routes/cards.js';
 import paymentRoutes from './backend/routes/payments.js';
 
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/cards', cardRoutes);
 app.use('/api/payments', paymentRoutes);
 
