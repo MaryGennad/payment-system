@@ -28,7 +28,8 @@ const router = express.Router();
 //     res.status(401).json({ error: 'Неверный токен' });
 //   }
 // };
-const adminAuth = (req, res, next) => {
+// Middleware: проверка авторизации + роль админа
+const adminAuth = async (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Нет токена' });
 
@@ -36,16 +37,25 @@ const adminAuth = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
     
-    // Проверяем, что это админ (по email из .env)
-    User.findById(decoded.id).then(user => {
-      if (!user || user.email !== process.env.ADMIN_EMAIL) {
-        return res.status(403).json({ error: 'Доступ запрещён' });
-      }
-      next();
-    }).catch(err => {
-      return res.status(500).json({ error: 'Ошибка проверки прав' });
-    });
+    const user = await User.findById(decoded.id);
+    
+    // .trim() убирает случайные пробелы или переносы строк
+    const userEmail = user ? user.email.trim().toLowerCase() : '';
+    const adminEmail = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.trim().toLowerCase() : '';
+
+    console.log(`[ADMIN AUTH] Проверка доступа:`);
+    console.log(`[ADMIN AUTH] Email пользователя: "${userEmail}"`);
+    console.log(`[ADMIN AUTH] Email из .env:      "${adminEmail}"`);
+
+    if (!user || userEmail !== adminEmail) {
+      console.log('[ADMIN AUTH] ДОСТУП ЗАПРЕЩЁН (email не совпадает)');
+      return res.status(403).json({ error: 'Доступ запрещён' });
+    }
+
+    console.log('[ADMIN AUTH] ДОСТУП РАЗРЕШЁН');
+    next();
   } catch (err) {
+    console.error('[ADMIN AUTH] Ошибка проверки токена:', err.message);
     res.status(401).json({ error: 'Неверный токен' });
   }
 };
