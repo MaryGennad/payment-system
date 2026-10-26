@@ -27,6 +27,25 @@ if (!authData.token) {
     return res;
   }
 
+  // ДОБАВЛЕНО: Функция уведомлений (была пропущена в предыдущей версии)
+  function showToast(message, type = 'success') {
+    const toast = document.createElement('div');
+    const isSuccess = type === 'success';
+    toast.style.cssText = `
+      position:fixed; top:24px; right:24px; z-index:10000;
+      background:${isSuccess ? 'var(--bg,#fff)' : 'var(--error-bg,#fff5f5)'};
+      border:1px solid var(--border,#e5e5e5);
+      border-left:3px solid ${isSuccess ? 'var(--text-primary,#1a1a1a)' : 'var(--error,#dc3545)'};
+      color:var(--text-primary,#1a1a1a); padding:16px 20px; border-radius:8px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.1); font-size:14px; font-weight:500;
+      opacity:0; transform:translateY(-10px); transition:all 0.3s;
+    `;
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => { toast.style.opacity = '1'; toast.style.transform = 'translateY(0)'; });
+    setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3500);
+  }
+
   // Переключение вкладок
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -117,24 +136,116 @@ if (!authData.token) {
     }
   }
 
+  // Старая версия закомментирована (отлично, что вы так сделали!)
+  // async function loadCards() {
+  //   try {
+  //     const res = await apiFetch(`${API_BASE}/admin/cards`);
+  //     const cards = await res.json();
+  //     const tbody = document.querySelector('#cardsTable tbody');
+  //     tbody.innerHTML = cards.map(c => `
+  //       <tr>
+  //         <td>${escape(c.userEmail || '—')}</td>
+  //         <td>•••• ${escape(c.last4)}</td>
+  //         <td>${escape(c.cardType || '—')}</td>
+  //         <td>${String(c.expiryMonth || '').padStart(2,'0')}/${c.expiryYear || '—'}</td>
+  //         <td style="font-size:11px; color:var(--text-secondary);">${escape(c.cardToken || '—')}</td>
+  //       </tr>
+  //     `).join('');
+  //   } catch (err) {
+  //     console.error('Load cards error:', err);
+  //   }
+  // }
+
+  // Новая версия с кнопками управления тестом
   async function loadCards() {
     try {
       const res = await apiFetch(`${API_BASE}/admin/cards`);
       const cards = await res.json();
       const tbody = document.querySelector('#cardsTable tbody');
-      tbody.innerHTML = cards.map(c => `
-        <tr>
-          <td>${escape(c.userEmail || '—')}</td>
-          <td>•••• ${escape(c.last4)}</td>
-          <td>${escape(c.cardType || '—')}</td>
-          <td>${String(c.expiryMonth || '').padStart(2,'0')}/${c.expiryYear || '—'}</td>
-          <td style="font-size:11px; color:var(--text-secondary);">${escape(c.cardToken || '—')}</td>
-        </tr>
-      `).join('');
+      
+      // Загружаем активные тесты
+      const testsRes = await apiFetch(`${API_BASE}/admin/test-status`);
+      const activeTests = await testsRes.json();
+      
+      tbody.innerHTML = cards.map(c => {
+        const activeTest = activeTests.find(t => t.cardId === c._id);
+        return `
+          <tr>
+            <td>${escape(c.userEmail || '—')}</td>
+            <td>•••• ${escape(c.last4)}</td>
+            <td>${escape(c.cardType || '—')}</td>
+            <td>${String(c.expiryMonth || '').padStart(2,'0')}/${c.expiryYear || '—'}</td>
+            <td>
+              ${activeTest ? `
+                <span style="color:green; font-size:12px; font-weight:600;">✓ Активен</span><br>
+                <span style="color:var(--text-secondary); font-size:11px; display:block; margin: 4px 0;">
+                  Осталось: ${activeTest.remaining}/5<br>
+                  Следующее: ${new Date(activeTest.nextRun).toLocaleTimeString('ru-RU')}
+                </span>
+                <button class="btn btn-secondary" onclick="window.stopTest('${c._id}')" 
+                  style="margin-top:4px; padding:4px 12px; font-size:11px; cursor:pointer;">
+                  Остановить
+                </button>
+              ` : `
+                <button class="btn btn-primary" onclick="window.startTest('${c._id}')" 
+                  style="padding:6px 16px; font-size:12px; cursor:pointer;">
+                  Запустить тест
+                </button>
+              `}
+            </td>
+          </tr>
+        `;
+      }).join('');
     } catch (err) {
       console.error('Load cards error:', err);
     }
   }
+
+  // Запуск теста
+  window.startTest = async (cardId) => {
+    const confirmed = await window.showConfirm(
+      'Запустить тестовые списания? Будет списано 1 ₽ каждые 60 минут (максимум 5 раз).',
+      'Запуск теста'
+    );
+    if (!confirmed) return;
+
+    try {
+      const res = await apiFetch(`${API_BASE}/admin/start-test`, {
+        method: 'POST',
+        body: JSON.stringify({ cardId })
+      });
+      
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Ошибка');
+      }
+      
+      showToast('Тест запущен! Первое списание произойдёт в течение минуты.');
+      await loadCards();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  // Остановка теста
+  window.stopTest = async (cardId) => {
+    const confirmed = await window.showConfirm('Остановить тестовые списания?', 'Остановка теста');
+    if (!confirmed) return;
+
+    try {
+      const res = await apiFetch(`${API_BASE}/admin/stop-test`, {
+        method: 'POST',
+        body: JSON.stringify({ cardId })
+      });
+      
+      if (!res.ok) throw new Error('Ошибка');
+      
+      showToast('Тест остановлен');
+      await loadCards();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
 
   // Инициализация
   loadOverview();

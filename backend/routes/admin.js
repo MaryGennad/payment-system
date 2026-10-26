@@ -137,4 +137,72 @@ router.get('/cards', adminAuth, async (req, res) => {
   }
 });
 
+
+// Получить статус активных тестов
+router.get('/test-status', adminAuth, async (req, res) => {
+  try {
+    const RecurringTest = (await import('../../models/RecurringTest.js')).default;
+    const tests = await RecurringTest.find({ isActive: true });
+    res.json(tests);
+  } catch (err) {
+    console.error('Get test status error:', err);
+    res.status(500).json({ error: 'Ошибка' });
+  }
+});
+
+// Запустить тест
+router.post('/start-test', adminAuth, async (req, res) => {
+  try {
+    const { cardId } = req.body;
+    const RecurringTest = (await import('../../models/RecurringTest.js')).default;
+    const Card = (await import('../../models/Card.js')).default;
+
+    // Проверяем карту
+    const card = await Card.findById(cardId);
+    if (!card || !card.cardToken) {
+      return res.status(400).json({ error: 'Карта не найдена или не имеет токена' });
+    }
+
+    // Проверяем, нет ли уже активного теста
+    const existing = await RecurringTest.findOne({ cardId, isActive: true });
+    if (existing) {
+      return res.status(400).json({ error: 'Для этой карты уже запущен тест' });
+    }
+
+    // Создаём тест (первое списание через 1 минуту)
+    const nextRun = new Date(Date.now() + 60 * 1000);
+    
+    await new RecurringTest({
+      cardId,
+      userId: card.userId,
+      remaining: 5,
+      isActive: true,
+      nextRun
+    }).save();
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Start test error:', err);
+    res.status(500).json({ error: 'Ошибка сервера' });
+  }
+});
+
+// Остановить тест
+router.post('/stop-test', adminAuth, async (req, res) => {
+  try {
+    const { cardId } = req.body;
+    const RecurringTest = (await import('../../models/RecurringTest.js')).default;
+
+    await RecurringTest.findOneAndUpdate(
+      { cardId, isActive: true },
+      { isActive: false }
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Stop test error:', err);
+    res.status(500).json({ error: 'Ошибка' });
+  }
+});
+
 export default router;
