@@ -13,34 +13,22 @@
 <body>
   <div class="container">
     <!-- Header -->
-    <header class="header">
-      <div class="header-top">
-        <button class="back-btn" onclick="window.location.href='index.html'" title="На главную">←</button>
-        <h1>Мои карты</h1>
-        <button class="logout-btn" onclick="window.location.href='marks.html'" title="Проверка марок"
-          style="margin-right:8px;">
-          Марки
-        </button>
-     <button id="adminBtn" class="logout-btn" onclick="window.location.href='admin.html'" title="Админ-панель" style="margin-right:8px; background:var(--text-primary); color:var(--bg); display:none;">
-  Админ
-</button>
-
-<!-- <script>
-// Показываем кнопку админа только если email совпадает
-(function() {
-  const authData = window.auth?.getAuth() || {};
-  const user = authData.user;
-  const adminEmail = 'maria-gennadievna@mail.ru'; 
-  
-  if (user && user.email === adminEmail) {
-    document.getElementById('adminBtn').style.display = 'inline-block';
-  }
-})();
-</script> -->
-        <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">Выйти</button>
-      </div>
-      <p class="header-subtitle">Управление привязанными картами</p>
-    </header>
+   <header class="header">
+  <div class="header-top">
+    <button class="back-btn" onclick="window.location.href='index.html'" title="Назад">←</button>
+    <h1>Мои карты</h1>
+    <div style="display: flex; gap: 8px;">
+      <button class="logout-btn" onclick="window.location.href='marks.html'" title="Проверка марок">
+        Марки
+      </button>
+      <button class="logout-btn" onclick="window.location.href='admin.html'" title="Админ-панель" style="background:var(--text-primary); color:var(--bg);">
+        Админ
+      </button>
+      <button class="logout-btn" onclick="window.logout()">Выйти</button>
+    </div>
+  </div>
+  <p class="header-subtitle">Управление привязанными картами</p>
+</header>
 
     <!-- Статистика -->
     <div id="paymentStats"></div>
