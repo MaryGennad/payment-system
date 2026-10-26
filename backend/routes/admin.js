@@ -1,8 +1,8 @@
 import express from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
-import Card from '../models/Card.js';
-import Payment from '../models/Payment.js';
+import User from '../../models/User.js';
+import Card from '../../models/Card.js';
+import Payment from '../../models/Payment.js';
 
 const router = express.Router();
 
@@ -21,6 +21,8 @@ const adminAuth = (req, res, next) => {
         return res.status(403).json({ error: 'Доступ запрещён' });
       }
       next();
+    }).catch(err => {
+      return res.status(500).json({ error: 'Ошибка проверки прав' });
     });
   } catch (err) {
     res.status(401).json({ error: 'Неверный токен' });
@@ -69,7 +71,6 @@ router.get('/users', adminAuth, async (req, res) => {
   try {
     const users = await User.find().sort({ createdAt: -1 }).lean();
     
-    // Для каждого пользователя считаем карты, платежи и сумму
     const usersWithStats = await Promise.all(users.map(async (u) => {
       const cardsCount = await Card.countDocuments({ userId: u._id });
       const paymentsCount = await Payment.countDocuments({ userId: u._id });
@@ -111,7 +112,6 @@ router.get('/cards', adminAuth, async (req, res) => {
   try {
     const cards = await Card.find().sort({ createdAt: -1 }).lean();
     
-    // Добавляем email пользователя
     const cardsWithUser = await Promise.all(cards.map(async (c) => {
       const user = await User.findById(c.userId);
       return { ...c, userEmail: user?.email || '—' };
