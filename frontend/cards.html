@@ -21,9 +21,22 @@
           style="margin-right:8px;">
           Марки
         </button>
-        <button class="logout-btn" onclick="window.location.href='admin.html'" title="Админ-панель" style="margin-right:8px; background:var(--text-primary); color:var(--bg);">
+     <button id="adminBtn" class="logout-btn" onclick="window.location.href='admin.html'" title="Админ-панель" style="margin-right:8px; background:var(--text-primary); color:var(--bg); display:none;">
   Админ
 </button>
+
+<script>
+// Показываем кнопку админа только если email совпадает
+(function() {
+  const authData = window.auth?.getAuth() || {};
+  const user = authData.user;
+  const adminEmail = 'ваш_email@example.com'; // Укажите ваш email
+  
+  if (user && user.email === adminEmail) {
+    document.getElementById('adminBtn').style.display = 'inline-block';
+  }
+})();
+</script>
         <button class="logout-btn" onclick="window.logout()" title="Выйти из аккаунта">Выйти</button>
       </div>
       <p class="header-subtitle">Управление привязанными картами</p>

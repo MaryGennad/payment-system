@@ -4,6 +4,40 @@ if (!authData.token) {
   window.location.href = 'auth.html?returnTo=' + encodeURIComponent('admin.html');
 }
 
+// Проверка прав админа при загрузке страницы
+(async function checkAdminAccess() {
+  try {
+    const res = await fetch('/api/admin/overview', {
+      headers: {
+        'Authorization': `Bearer ${authData.token}`
+      }
+    });
+    
+    if (res.status === 403) {
+      // Нет прав админа
+      window.location.href = 'cards.html';
+      return;
+    }
+    
+    if (res.status === 401) {
+      // Не авторизован
+      window.auth.clearAuth();
+      window.location.href = 'auth.html';
+      return;
+    }
+    
+    // Всё ок, продолжаем загрузку
+    loadOverview();
+    loadUsers();
+    loadPayments();
+    loadCards();
+    
+  } catch (err) {
+    console.error('Admin access check error:', err);
+    window.location.href = 'cards.html';
+  }
+})();
+
 (function () {
   const API_BASE = window.API_BASE || '/api';
   const headers = {
