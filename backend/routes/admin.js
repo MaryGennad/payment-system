@@ -120,14 +120,19 @@ router.get('/payments', adminAuth, async (req, res) => {
   }
 });
 
-// Все карты
+// Все карты (токен маскируется для безопасности)
 router.get('/cards', adminAuth, async (req, res) => {
   try {
     const cards = await Card.find().sort({ createdAt: -1 }).lean();
     
     const cardsWithUser = await Promise.all(cards.map(async (c) => {
       const user = await User.findById(c.userId);
-      return { ...c, userEmail: user?.email || '—' };
+      return { 
+        ...c, 
+        userEmail: user?.email || '—',
+        // Маскируем токен: показываем только последние 4 символа
+        cardToken: c.cardToken ? `***${c.cardToken.slice(-4)}` : null
+      };
     }));
 
     res.json(cardsWithUser);

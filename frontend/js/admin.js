@@ -157,49 +157,50 @@ if (!authData.token) {
   // }
 
   // Новая версия с кнопками управления тестом
-  async function loadCards() {
-    try {
-      const res = await apiFetch(`${API_BASE}/admin/cards`);
-      const cards = await res.json();
-      const tbody = document.querySelector('#cardsTable tbody');
-      
-      // Загружаем активные тесты
-      const testsRes = await apiFetch(`${API_BASE}/admin/test-status`);
-      const activeTests = await testsRes.json();
-      
-      tbody.innerHTML = cards.map(c => {
-        const activeTest = activeTests.find(t => t.cardId === c._id);
-        return `
-          <tr>
-            <td>${escape(c.userEmail || '—')}</td>
-            <td>•••• ${escape(c.last4)}</td>
-            <td>${escape(c.cardType || '—')}</td>
-            <td>${String(c.expiryMonth || '').padStart(2,'0')}/${c.expiryYear || '—'}</td>
-            <td>
-              ${activeTest ? `
-                <span style="color:green; font-size:12px; font-weight:600;">✓ Активен</span><br>
-                <span style="color:var(--text-secondary); font-size:11px; display:block; margin: 4px 0;">
-                  Осталось: ${activeTest.remaining}/5<br>
-                  Следующее: ${new Date(activeTest.nextRun).toLocaleTimeString('ru-RU')}
-                </span>
-                <button class="btn btn-secondary" onclick="window.stopTest('${c._id}')" 
-                  style="margin-top:4px; padding:4px 12px; font-size:11px; cursor:pointer;">
-                  Остановить
-                </button>
-              ` : `
-                <button class="btn btn-primary" onclick="window.startTest('${c._id}')" 
-                  style="padding:6px 16px; font-size:12px; cursor:pointer;">
-                  Запустить тест
-                </button>
-              `}
-            </td>
-          </tr>
-        `;
-      }).join('');
-    } catch (err) {
-      console.error('Load cards error:', err);
-    }
+async function loadCards() {
+  try {
+    const res = await apiFetch(`${API_BASE}/admin/cards`);
+    const cards = await res.json();
+    const tbody = document.querySelector('#cardsTable tbody');
+    
+    // Загружаем активные тесты
+    const testsRes = await apiFetch(`${API_BASE}/admin/test-status`);
+    const activeTests = await testsRes.json();
+    
+    tbody.innerHTML = cards.map(c => {
+      const activeTest = activeTests.find(t => t.cardId === c._id);
+      return `
+        <tr>
+          <td>${escape(c.userEmail || '—')}</td>
+          <td>•••• ${escape(c.last4)}</td>
+          <td>${escape(c.cardType || '—')}</td>
+          <td>${String(c.expiryMonth || '').padStart(2,'0')}/${c.expiryYear || '—'}</td>
+         <td style="font-size:11px; color:var(--text-secondary); font-family: monospace;">${c.cardToken ? '••••' + escape(c.cardToken.slice(-4)) : '—'}</td>
+          <td>
+            ${activeTest ? `
+              <span style="color:green; font-size:12px; font-weight:600;">✓ Активен</span><br>
+              <span style="color:var(--text-secondary); font-size:11px; display:block; margin: 4px 0;">
+                Осталось: ${activeTest.remaining}/5<br>
+                Следующее: ${new Date(activeTest.nextRun).toLocaleTimeString('ru-RU')}
+              </span>
+              <button class="btn btn-secondary" onclick="window.stopTest('${c._id}')" 
+                style="margin-top:4px; padding:4px 12px; font-size:11px; cursor:pointer;">
+                Остановить
+              </button>
+            ` : `
+              <button class="btn btn-primary" onclick="window.startTest('${c._id}')" 
+                style="padding:6px 16px; font-size:12px; cursor:pointer;">
+                Запустить тест
+              </button>
+            `}
+          </td>
+        </tr>
+      `;
+    }).join('');
+  } catch (err) {
+    console.error('Load cards error:', err);
   }
+}
 
   // Запуск теста
   window.startTest = async (cardId) => {

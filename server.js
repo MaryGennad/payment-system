@@ -119,7 +119,7 @@ cron.schedule('* * * * *', async () => {
           continue;
         }
 
-        console.log(`[TEST] Списание 1 ₽. Карта: ${card.last4}. Осталось: ${test.remaining}`);
+       console.log(`[TEST] Списание 1 ₽. Карта: ****${card.last4}. Осталось: ${test.remaining}`);
 
         // Списываем 1 ₽ через ЮKassa
         const response = await axios.post(
