@@ -7,6 +7,28 @@ import Payment from '../../models/Payment.js';
 const router = express.Router();
 
 // Middleware: проверка авторизации + роль админа
+// const adminAuth = (req, res, next) => {
+//   const token = req.header('Authorization')?.replace('Bearer ', '');
+//   if (!token) return res.status(401).json({ error: 'Нет токена' });
+
+//   try {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+//     req.userId = decoded.id;
+    
+//     // Проверяем, что это админ (по email из .env)
+//     User.findById(decoded.id).then(user => {
+//       if (!user || user.email !== process.env.ADMIN_EMAIL) {
+//         return res.status(403).json({ error: 'Доступ запрещён' });
+//       }
+//       next();
+//     }).catch(err => {
+//       return res.status(500).json({ error: 'Ошибка проверки прав' });
+//     });
+//   } catch (err) {
+//     res.status(401).json({ error: 'Неверный токен' });
+//   }
+// };
+// просто проверяем токен
 const adminAuth = (req, res, next) => {
   const token = req.header('Authorization')?.replace('Bearer ', '');
   if (!token) return res.status(401).json({ error: 'Нет токена' });
@@ -14,16 +36,7 @@ const adminAuth = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.userId = decoded.id;
-    
-    // Проверяем, что это админ (по email из .env)
-    User.findById(decoded.id).then(user => {
-      if (!user || user.email !== process.env.ADMIN_EMAIL) {
-        return res.status(403).json({ error: 'Доступ запрещён' });
-      }
-      next();
-    }).catch(err => {
-      return res.status(500).json({ error: 'Ошибка проверки прав' });
-    });
+    next(); // Просто пропускаем, если токен валиден
   } catch (err) {
     res.status(401).json({ error: 'Неверный токен' });
   }
