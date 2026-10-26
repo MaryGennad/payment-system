@@ -912,19 +912,22 @@ h1 {
 
 .admin-table {
   width: 100%;
-  border-collapse: collapse;
+  border-collapse: separate;
+  border-spacing: 0;
   background: var(--surface);
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--border);
+  table-layout: auto;
 }
 
 .admin-table th,
 .admin-table td {
-  padding: 12px 16px;
+  padding: 14px 16px;
   text-align: left;
   border-bottom: 1px solid var(--border);
   font-size: 14px;
+  vertical-align: middle;
 }
 
 .admin-table th {
@@ -934,9 +937,10 @@ h1 {
   font-size: 12px;
   letter-spacing: 0.05em;
   color: var(--text-secondary);
+  border-bottom: 2px solid var(--border);
 }
 
-.admin-table tr:hover {
+.admin-table tr:hover td {
   background: var(--bg);
 }
 
