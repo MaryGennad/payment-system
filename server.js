@@ -154,6 +154,7 @@ cron.schedule('* * * * *', async () => {
         // Сохраняем платёж в историю
         await new Payment({
           userId: test.userId,
+          email: userEmail, 
           paymentId: response.data.id,
           provider: 'yookassa',
           amount: 1,
