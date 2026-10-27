@@ -142,7 +142,7 @@ router.post('/webhook', async (req, res) => {
     console.log('Webhook received:', event.event);
 
     // Обрабатываем успешную оплату
-      if (event.event === 'payment.succeeded') {
+    if (event.event === 'payment.succeeded') {
       const paymentData = event.object;
       const yookassaPaymentId = paymentData.id;
 
@@ -188,7 +188,7 @@ router.post('/webhook', async (req, res) => {
 
         // 3. АВТОМАТИЧЕСКИЙ ВОЗВРАТ 1 РУБЛЯ ПОСЛЕ УСПЕШНОГО СОХРАНЕНИЯ КАРТЫ
         try {
-          console.log('Оформление возврата 1 ₽ за привязку карты...');
+          console.log('Оформление возврата 1 рубль за привязку карты...');
           await axios.post(
             'https://api.yookassa.ru/v3/refunds',
             {
@@ -203,11 +203,11 @@ router.post('/webhook', async (req, res) => {
               },
               headers: {
                 'Content-Type': 'application/json',
-                'Idempotence-Key': `refund-bind-${yookassaPaymentId}`
+                'Idempotence-Key': 'refund-bind-' + yookassaPaymentId
               }
             }
           );
-          console.log('Возврат 1 ₽ успешно создан, деньги вернутся пользователю');
+          console.log('Возврат 1 рубль успешно создан, деньги вернутся пользователю');
           await Payment.findByIdAndUpdate(payment._id, { status: 'refunded' });
         } catch (refundErr) {
           console.error('Ошибка создания возврата:', refundErr.response?.data || refundErr.message);
@@ -510,7 +510,7 @@ router.post('/save-card', auth, async (req, res) => {
           type: 'redirect',
           return_url: `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=card-saved`
         },
-        capture: false, // Деньги только блокируются и затем отменяются
+        capture: true, // Деньги только блокируются и затем отменяются
         save_payment_method: true,
         description: description,
         payment_method_data: {
