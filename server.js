@@ -14,6 +14,7 @@ import axios from 'axios';    // <-- 2. Импортируем axios для за
 import RecurringTest from './models/RecurringTest.js';
 import Card from './models/Card.js';
 import Payment from './models/Payment.js';
+import User from './models/User.js';
 
 import adminRoutes from './backend/routes/admin.js';
 import authRoutes from './backend/routes/auth.js';
