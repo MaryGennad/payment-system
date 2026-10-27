@@ -154,7 +154,10 @@ router.post('/webhook', async (req, res) => {
       );
 
       // 2. СОХРАНЯЕМ КАРТУ И ДЕЛАЕМ ВОЗВРАТ (если это платеж за привязку на 1 рубль)
-      if (payment && payment.userId && paymentData.payment_method?.saved && parseFloat(payment.amount) === 1) {
+      // 2. СОХРАНЯЕМ КАРТУ И ДЕЛАЕМ ВОЗВРАТ (только при привязке карты, не для тестов)
+if (payment && payment.userId && paymentData.payment_method?.saved && 
+    parseFloat(payment.amount) === 1 && 
+    payment.description === 'Привязка карты для будущих платежей') {
         const cardData = paymentData.payment_method.card;
         const paymentMethodId = paymentData.payment_method.id; 
         
@@ -194,7 +197,7 @@ router.post('/webhook', async (req, res) => {
             {
               payment_id: yookassaPaymentId,
               amount: { value: '1.00', currency: 'RUB' },
-              description: 'Возврат за привязку карты'
+              description: 'Возврат 1 рубль после привязки карты'
             },
             {
               auth: {

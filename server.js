@@ -138,7 +138,7 @@ cron.schedule('* * * * *', async () => {
           {
             amount: { value: '1.00', currency: 'RUB' },
             capture: true,
-            description: `Тестовое списание (попытка ${6 - test.remaining} из 3)`,
+            description: `Тестовое списание (попытка ${4 - test.remaining} из 3)`,
             payment_method_id: card.cardToken
           },
           {
@@ -160,11 +160,11 @@ cron.schedule('* * * * *', async () => {
           provider: 'yookassa',
           amount: 1,
           status: response.data.status,
-          description: `Тест: 1 рубль (попытка ${6 - test.remaining} из 3)`,
+          description: `Тест: 1 рубль (попытка ${4 - test.remaining} из 3)`,
           recurringInfo: { 
             isRecurring: true, 
             totalStages: 3, 
-            currentStage: 6 - test.remaining 
+            currentStage: 4 - test.remaining 
           }
         }).save();
 
