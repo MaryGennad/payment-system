@@ -195,24 +195,25 @@ router.post('/webhook', async (req, res) => {
       
       console.log('=== СПОСОБ ОПЛАТЫ СОХРАНЁН ===');
       console.log('Payment Method ID:', paymentMethodId);
+      console.log('Metadata из ЮKassa:', paymentMethod.metadata); // <-- ДОБАВЛЕНО ДЛЯ ОТЛАДКИ
 
-      // Находим платёж, к которому привязан этот способ
-      const payment = await Payment.findOne({
-        paymentId: paymentMethod.payment_id?.id
-      }).sort({ createdAt: -1 });
+      // ИЗМЕНЕНИЕ: ЧИТАЕМ USER ID ПРЯМО ИЗ МЕТАДАННЫХ, а не ищем платеж в БД
+      const userId = paymentMethod.metadata?.userId;
 
-      if (payment && payment.userId) {
+      if (!userId) {
+        console.log('⚠️ Пропуск: нет userId в метаданных вебхука');
+      } else {
         const cardData = paymentMethod.card;
         
         if (cardData) {
           const existingCard = await Card.findOne({
-            userId: payment.userId,
+            userId: userId, // <-- ИСПРАВЛЕНО: используем userId из metadata
             last4: cardData.last4
           });
 
           if (!existingCard) {
             const card = new Card({
-              userId: payment.userId,
+              userId: userId, // <-- ИСПРАВЛЕНО
               provider: 'yookassa',
               cardToken: paymentMethodId,
               last4: cardData.last4,
@@ -222,34 +223,41 @@ router.post('/webhook', async (req, res) => {
               isDefault: true
             });
             await card.save();
-            console.log('Карта сохранена:', card._id);
+            console.log('✅ Карта сохранена:', card._id);
           }
 
-          await User.findByIdAndUpdate(payment.userId, {
+          await User.findByIdAndUpdate(userId, { // <-- ИСПРАВЛЕНО
             yookassaPaymentMethodId: paymentMethodId
           });
-          console.log('Токен карты сохранён для пользователя:', payment.userId);
+          console.log('✅ Токен карты сохранён для пользователя:', userId);
 
           // ОТМЕНЯЕМ ПЛАТЁЖ (деньги вернутся)
-          try {
-            await axios.post(
-              `https://api.yookassa.ru/v3/payments/${payment.paymentId}/cancel`,
-              {},
-              {
-                auth: {
-                  username: process.env.YOOKASSA_SHOP_ID,
-                  password: process.env.YOOKASSA_SECRET_KEY
-                },
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Idempotence-Key': Date.now().toString()
+          const paymentIdToCancel = paymentMethod.payment_id?.id; // <-- ИСПРАВЛЕНО: берем ID из самого события
+          if (paymentIdToCancel) {
+            try {
+              await axios.post(
+                `https://api.yookassa.ru/v3/payments/${paymentIdToCancel}/cancel`,
+                {},
+                {
+                  auth: {
+                    username: process.env.YOOKASSA_SHOP_ID,
+                    password: process.env.YOOKASSA_SECRET_KEY
+                  },
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Idempotence-Key': `cancel-${paymentIdToCancel}-${Date.now()}`
+                  }
                 }
-              }
-            );
-            console.log('Платёж отменён, деньги возвращены');
-            await Payment.findByIdAndUpdate(payment._id, { status: 'canceled' });
-          } catch (cancelErr) {
-            console.error('Ошибка отмены:', cancelErr.response?.data);
+              );
+              console.log('✅ Платёж отменён, деньги возвращены:', paymentIdToCancel);
+              
+              await Payment.findOneAndUpdate(
+                { paymentId: paymentIdToCancel },
+                { status: 'canceled' }
+              );
+            } catch (cancelErr) {
+              console.error('❌ Ошибка отмены:', cancelErr.response?.data || cancelErr.message);
+            }
           }
         }
       }
@@ -462,6 +470,7 @@ router.post('/save-card', auth, async (req, res) => {
     console.log('Shop ID:', process.env.YOOKASSA_SHOP_ID);
     console.log('Email:', email);
     console.log('Amount:', amount);
+    console.log('User ID:', req.userId); // <-- ДОБАВЛЕНО ДЛЯ ОТЛАДКИ
 
     const yookassaResponse = await axios.post(
       'https://api.yookassa.ru/v3/payments',
@@ -474,11 +483,14 @@ router.post('/save-card', auth, async (req, res) => {
           type: 'redirect',
           return_url: `${process.env.FRONTEND_URL || 'https://hotel-prod.ru'}/cards.html?status=card-saved`
         },
-        capture: false, // ИЗМЕНЕНО: было true, стало false, чтобы деньги только блокировались и затем отменялись
+        capture: false, // Деньги только блокируются и затем отменяются
         save_payment_method: true,
         description: description,
         payment_method_data: {
           type: 'bank_card'
+         },
+        metadata: {
+          userId: req.userId.toString() // передаем ID пользователя в ЮKassa (УЖЕ БЫЛО У ВАС, ЭТО ПРАВИЛЬНО)
         },
         receipt: {
           customer: { email: email },
@@ -617,8 +629,7 @@ router.post('/marks/check', auth, async (req, res) => {
     }
 
     // Проверяем привязанную карту
-    const Card = (await import('../../models/Card.js')).default;
-    const card = await Card.findOne({ userId: req.userId });
+    const card = await Card.findOne({ userId: req.userId }); // Убрал лишний динамический import, так как Card уже импортирован в начале файла
     if (!card || !card.cardToken) {
       return res.status(400).json({ error: 'Нет привязанной карты. Добавьте карту в разделе "Мои карты".' });
     }
