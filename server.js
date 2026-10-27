@@ -112,7 +112,6 @@ app.get('/', (req, res) => {
 cron.schedule('* * * * *', async () => {
   try {
     const now = new Date();
-    // Ищем тесты, которые активны, у них остались попытки, и время nextRun наступило или прошло
     const tests = await RecurringTest.find({ 
       isActive: true, 
       remaining: { $gt: 0 },
@@ -128,15 +127,17 @@ cron.schedule('* * * * *', async () => {
           continue;
         }
 
-       console.log(`[TEST] Списание 1 ₽. Карта: ****${card.last4}. Осталось: ${test.remaining}`);
+        const user = await User.findById(test.userId);
+        const userEmail = user ? user.email : 'user@example.com';
 
-        // Списываем 1 ₽ через ЮKassa
+        console.log(`[TEST] Списание 1 рубль. Карта: ****${card.last4}. Осталось: ${test.remaining} из 3`);
+
         const response = await axios.post(
           'https://api.yookassa.ru/v3/payments',
           {
             amount: { value: '1.00', currency: 'RUB' },
             capture: true,
-            description: `Тестовое списание (осталось ${test.remaining} из 5)`,
+            description: `Тестовое списание (попытка ${6 - test.remaining} из 3)`,
             payment_method_id: card.cardToken
           },
           {
@@ -151,32 +152,35 @@ cron.schedule('* * * * *', async () => {
           }
         );
 
-        // Сохраняем платёж в историю
         await new Payment({
           userId: test.userId,
-          email: userEmail, 
+          email: userEmail,
           paymentId: response.data.id,
           provider: 'yookassa',
           amount: 1,
           status: response.data.status,
-          description: `Тест: 1 ₽ (осталось ${test.remaining} из 5)`,
-          recurringInfo: { isRecurring: true, totalStages: 5, currentStage: 6 - test.remaining }
+          description: `Тест: 1 рубль (попытка ${6 - test.remaining} из 3)`,
+          recurringInfo: { 
+            isRecurring: true, 
+            totalStages: 3, 
+            currentStage: 6 - test.remaining 
+          }
         }).save();
 
-        // Уменьшаем счётчик попыток
         test.remaining -= 1;
+        
         if (test.remaining <= 0) {
           test.isActive = false;
-          console.log(`[TEST] Тест завершён для карты ${test._id}`);
+          console.log(`[TEST] Тест завершён для карты ${test._id}. Всего списаний: 3`);
         } else {
-          // Следующее списание через 60 минут (60 * 60 * 1000 мс)
           test.nextRun = new Date(Date.now() + 60 * 60 * 1000);
+          console.log(`[TEST] Следующее списание через 60 минут. Осталось: ${test.remaining}`);
         }
+        
         await test.save();
 
       } catch (err) {
         console.error(`[TEST] Ошибка при списании:`, err.response?.data || err.message);
-        // Если карта отозвана или ошибка 400/403, останавливаем тест, чтобы не спамить ошибками
         if (err.response?.status === 400 || err.response?.status === 403) {
           test.isActive = false;
           await test.save();

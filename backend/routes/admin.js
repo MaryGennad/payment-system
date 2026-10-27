@@ -198,7 +198,7 @@ router.post('/start-test', adminAuth, async (req, res) => {
     await new RecurringTest({
       cardId,
       userId: card.userId,
-      remaining: 5,
+      remaining: 3,
       isActive: true,
       nextRun
     }).save();

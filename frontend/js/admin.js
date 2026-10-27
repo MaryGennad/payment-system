@@ -142,7 +142,7 @@ if (!authData.token) {
               ${activeTest ? `
                 <span style="color:green; font-size:12px; font-weight:600;">✓ Активен</span><br>
                 <span style="color:var(--text-secondary); font-size:11px; display:block; margin: 4px 0;">
-                  Осталось: ${activeTest.remaining}/5<br>
+                  Осталось: ${activeTest.remaining}/3<br>
                   Следующее: ${new Date(activeTest.nextRun).toLocaleTimeString('ru-RU')}
                 </span>
                 <button class="btn btn-secondary" onclick="window.stopTest('${c._id}')" style="margin-top:4px; padding:4px 12px; font-size:11px; cursor:pointer;">Остановить</button>
@@ -159,7 +159,7 @@ if (!authData.token) {
   }
 
   window.startTest = async (cardId) => {
-    const confirmed = await window.showConfirm('Запустить тестовые списания? Будет списано 1 ₽ каждые 60 минут (максимум 5 раз).', 'Запуск теста');
+    const confirmed = await window.showConfirm('Запустить тестовые списания? Будет списано 1 ₽ каждые 60 минут (максимум 3 раз).', 'Запуск теста');
     if (!confirmed) return;
     try {
       const res = await apiFetch(`${API_BASE}/admin/start-test`, { method: 'POST', body: JSON.stringify({ cardId }) });
