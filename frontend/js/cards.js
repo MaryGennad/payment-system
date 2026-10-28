@@ -95,8 +95,16 @@ if (!token) {
       okBtn.className = isDanger ? 'btn btn-primary' : 'btn btn-primary'; 
       okBtn.textContent = isDanger ? 'Удалить' : 'Подтвердить';
 
-      const handleOk = () => { cleanup(); resolve(true); };
-      const handleCancel = () => { cleanup(); resolve(false); };
+      const handleOk = () => { 
+        dialog.close(); // Явно закрываем окно при подтверждении
+        cleanup(); 
+        resolve(true); 
+      };
+      const handleCancel = () => { 
+        dialog.close(); // Явно закрываем окно при отмене
+        cleanup(); 
+        resolve(false); 
+      };
       
       const cleanup = () => {
         okBtn.removeEventListener('click', handleOk);
