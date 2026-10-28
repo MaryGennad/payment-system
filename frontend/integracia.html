@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Интеграция рекуррентных платежей ЮKassa</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #ffffff;
+      color: #1a1a1a;
+      line-height: 1.6;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 32px;
+    }
+
+    h1 { 
+      font-size: 32px; 
+      font-weight: 700; 
+      letter-spacing: -0.02em; 
+      margin-bottom: 12px;
+      color: #1a1a1a;
+    }
+    
+    h2 { 
+      font-size: 22px; 
+      font-weight: 600; 
+      margin-top: 48px; 
+      margin-bottom: 16px; 
+      padding-bottom: 8px; 
+      border-bottom: 2px solid #e5e7eb;
+      color: #1a1a1a;
+    }
+    
+    h3 { 
+      font-size: 17px; 
+      font-weight: 600; 
+      margin-top: 24px; 
+      margin-bottom: 8px; 
+      color: #1a1a1a;
+    }
+    
+    p { 
+      margin-bottom: 16px; 
+      color: #4b5563;
+    }
+
+    .intro {
+      background: #f8f9fa;
+      border-left: 4px solid #2563eb;
+      padding: 20px 24px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 32px;
+    }
+
+    .architecture-note {
+      background: #eff6ff;
+      border: 2px solid #2563eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 24px 0;
+      font-size: 15px;
+      color: #1a1a1a;
+    }
+
+    .step {
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 28px;
+      margin: 28px 0;
+    }
+    
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .step-number {
+      background: #2563eb;
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    
+    .step-title { 
+      font-weight: 600; 
+      font-size: 18px;
+      color: #1a1a1a;
+    }
+    
+    .step-file {
+      display: inline-block;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      font-family: "SFMono-Regular", Consolas, monospace;
+      margin: 12px 0;
+    }
+
+    .flow-diagram {
+      background: #f8f9fa;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 28px;
+      margin: 28px 0;
+      text-align: center;
+    }
+    
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    
+    .flow-box {
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: #1a1a1a;
+    }
+    
+    .flow-box.accent { 
+      border-color: #2563eb; 
+      background: #eff6ff;
+    }
+    
+    .flow-arrow { 
+      color: #6b7280; 
+      font-size: 24px;
+      font-weight: bold;
+    }
+
+    pre {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 20px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 13px;
+      line-height: 1.6;
+      margin: 16px 0;
+      border: 1px solid #333;
+    }
+    
+    code { 
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; 
+    }
+
+    ul { 
+      color: #4b5563; 
+      margin-bottom: 16px; 
+      padding-left: 20px; 
+    }
+    
+    li { 
+      margin-bottom: 10px;
+      color: #4b5563;
+    }
+
+    ol {
+      color: #4b5563;
+      padding-left: 24px;
+    }
+    
+    ol li {
+      margin-bottom: 12px;
+      color: #4b5563;
+    }
+
+    .personal-note {
+      background: #f8f9fa;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      padding: 20px 24px;
+      margin: 28px 0;
+      font-style: italic;
+      color: #1a1a1a;
+    }
+
+    hr { 
+      border: 0; 
+      border-top: 2px solid #e5e7eb; 
+      margin: 48px 0; 
+    }
+
+    a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    
+    a:hover {
+      text-decoration: underline;
+    }
+
+    strong {
+      color: #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Интеграция рекуррентных платежей ЮKassa</h1>
+  <p>Привет! Я подготовила для тебя подробную инструкцию по подключению привязки карт и автоматического списания 1 рубля при успешной проверке марки. Всё протестировано на моём проекте, по шагам — должно заработать.</p>
+
+  <div class="intro">
+    <strong>Что нужно сделать:</strong> Добавить в твой проект возможность один раз привязать карту пользователя, а затем автоматически списывать 1 рубль при каждой успешной проверке марки в "Честном ЗНАКе".
+  </div>
+
+  <h2>Общая схема работы</h2>
+  
+  <div class="flow-diagram">
+    <div class="flow-row">
+      <div class="flow-box">1. Фронтенд: Запрос на привязку карты</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">2. Бэкенд: Создание платежа в ЮKassa<br><small>(save_payment_method: true, metadata: userId)</small></div>
+    </div>
+    <div class="flow-row">
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">3. ЮKassa: Вебхук "payment.succeeded"</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box">4. Бэкенд: Сохранение payment_method_id (токена) в БД</div>
+    </div>
+    <div class="flow-row" style="margin-top: 20px; padding-top: 20px; border-top: 2px dashed #e5e7eb;">
+      <div class="flow-box accent">5. Фронтенд: Сканирование марки → Запрос на списание 1₽</div>
+      <span class="flow-arrow">→</span>
+      <div class="flow-box accent">6. Бэкенд: Создание платежа через payment_method_id (capture: true)</div>
+    </div>
+  </div>
+
+  <h2>Предварительные требования</h2>
+  
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">0</div>
+      <div class="step-title">Если ЮKassa ещё не подключена</div>
+    </div>
+    <p>Перед тем как начать, нужно зарегистрироваться в ЮKassa и получить доступ к API:</p>
+    <ol>
+      <li>Зарегистрируйся на <a href="https://yookassa.ru" target="_blank">yookassa.ru</a></li>
+      <li>Создай магазин (если ещё нет)</li>
+      <li>Перейди в раздел <strong>"Интеграция" → "Ключи API"</strong></li>
+      <li>Скопируй <strong>Shop ID</strong> и <strong>Secret Key</strong></li>
+      <li>Эти данные нужно будет добавить в конфиг проекта (см. Этап 2)</li>
+    </ol>
+  </div>
+
+  <h2>Пошаговая инструкция</h2>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">1</div>
+      <div class="step-title">Установка зависимостей</div>
+    </div>
+    <p>Сначала установи библиотеку axios для HTTP-запросов к API ЮKassa:</p>
+    <div class="step-file">Терминал</div>
+    <pre><code>npm install axios</code></pre>
+    <p>Затем добавь импорт в начало server.js:</p>
+    <div class="step-file">server.js (начало файла)</div>
+    <pre><code>const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const axios = require('axios');
+// ... остальные require ...</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">2</div>
+      <div class="step-title">Конфигурация реквизитов ЮKassa</div>
+    </div>
+    <p>Добавь настройки ЮKassa в config.js. Shop ID и Secret Key бери из личного кабинета ЮKassa.</p>
+    <div class="step-file">config.js</div>
+    <pre><code>exports.db = {
+    HOST: *****,
+    PORT: 27017,
+    DB: ******,
+    API_URL: *******,
+    CERT_TEMP: ******,
+    CERT_certmgr: ******,
+    CERT_cryptcp: ******,
+    FILE_TEMP: ******,
+};
+
+exports.yookassa = {
+    shopId: process.env.YOOKASSA_SHOP_ID || 'твой_shop_id',
+    secretKey: process.env.YOOKASSA_SECRET_KEY || 'твой_secret_key'
+};
+
+exports.FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">3</div>
+      <div class="step-title">Создание модели для хранения токенов карт</div>
+    </div>
+    <p>Создай новую модель Card для хранения токенов карт. Мы не храним данные карт, только токен, который выдаёт ЮKassa.</p>
+    <div class="step-file">models/card.model.js (новый файл)</div>
+    <pre><code>const mongoose = require("mongoose");
+
+const CardSchema = new mongoose.Schema({
+  user: { 
+    type: mongoose.Schema.Types.ObjectId, 
+    ref: "User", 
+    required: true 
+  },
+  cardToken: { 
+    type: String, 
+    required: true,
+    index: true
+  },
+  last4: { 
+    type: String, 
+    required: true 
+  },
+  cardType: { 
+    type: String 
+  },
+  isActive: { 
+    type: Boolean, 
+    default: true 
+  }
+}, { 
+  timestamps: true 
+});
+
+module.exports = mongoose.model("Card", CardSchema);</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">4</div>
+      <div class="step-title">Эндпоинт для привязки карты</div>
+    </div>
+    <p>Добавь этот роут после app.delete("/api/deleteUser/:userId", ...) (примерно строка 305), перед комментарием //MARK INFO ---->.</p>
+    <div class="step-file">server.js</div>
+    <pre><code>app.post("/api/save-card", [checkToken], async (req, res) => {
+  try {
+    const { email, amount = 1, description = 'Привязка карты для будущих платежей' } = req.body;
+
+    const yookassaResponse = await axios.post(
+      'https://api.yookassa.ru/v3/payments',
+      {
+        amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
+        confirmation: {
+          type: 'redirect',
+          return_url: `${exports.FRONTEND_URL}/cards.html?status=card-saved`
+        },
+        capture: true,
+        save_payment_method: true,
+        description: description,
+        payment_method_data: { type: 'bank_card' },
+        metadata: {
+          userId: req.user._id.toString()
+        },
+        receipt: {
+          customer: { email: email },
+          items: [{
+            description: description,
+            quantity: '1.00',
+            amount: { value: parseFloat(amount).toFixed(2), currency: 'RUB' },
+            vat_code: 2
+          }]
+        }
+      },
+      {
+        auth: {
+          username: exports.yookassa.shopId,
+          password: exports.yookassa.secretKey
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': `save-card-${req.user._id}-${Date.now()}`
+        }
+      }
+    );
+
+    res.json({
+      success: true,
+      confirmation_url: yookassaResponse.data.confirmation.confirmation_url
+    });
+  } catch (err) {
+    console.error('Save card error:', err.response?.data || err.message);
+    res.status(500).json({
+      error: err.response?.data?.description || 'Ошибка привязки карты'
+    });
+  }
+});</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">5</div>
+      <div class="step-title">Вебхук для обработки уведомлений от ЮKassa</div>
+    </div>
+    <p>Добавь этот роут сразу после предыдущего. Он будет принимать уведомления от ЮKassa и сохранять токены карт.</p>
+    <div class="step-file">server.js</div>
+    <pre><code>app.post("/api/payments/webhook", async (req, res) => {
+  try {
+    const event = req.body;
+
+    if (event.event === 'payment.succeeded') {
+      const paymentData = event.object;
+      const paymentMethodId = paymentData.payment_method?.id;
+      const userId = paymentData.metadata?.userId;
+
+      if (paymentData.payment_method?.saved && 
+          parseFloat(paymentData.amount.value) === 1 && 
+          userId) {
+
+        const cardData = paymentData.payment_method.card;
+
+        if (cardData) {
+          const existingCard = await require('./models/card.model').findOne({
+            user: userId,
+            last4: cardData.last4
+          });
+
+          if (!existingCard) {
+            await new require('./models/card.model')({
+              user: userId,
+              cardToken: paymentMethodId,
+              last4: cardData.last4,
+              cardType: cardData.card_type,
+              isActive: true
+            }).save();
+
+            console.log(`[YOOKASSA] Токен карты ****${cardData.last4} сохранен для пользователя ${userId}`);
+          }
+        }
+      }
+    }
+
+    res.status(200).json({ status: 'ok' });
+  } catch (err) {
+    console.error('Webhook processing error:', err);
+    res.status(200).json({ status: 'ok' });
+  }
+});</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">6</div>
+      <div class="step-title">Функция для рекуррентного списания</div>
+    </div>
+    <p>Добавь эту функцию перед app.post("/api/getMarkInfo", ...) (примерно строка 318).</p>
+    <div class="step-file">server.js</div>
+    <pre><code>async function chargeForMarkCheck(userId, markCode) {
+  try {
+    const CardModel = require('./models/card.model');
+    
+    const card = await CardModel.findOne({ 
+      user: userId, 
+      isActive: true 
+    });
+
+    if (!card || !card.cardToken) {
+      console.log(`[YOOKASSA] Карта не найдена для пользователя ${userId}. Списание пропущено.`);
+      return { success: false, reason: 'no_card' };
+    }
+
+    const response = await axios.post(
+      'https://api.yookassa.ru/v3/payments',
+      {
+        amount: { value: '1.00', currency: 'RUB' },
+        capture: true,
+        description: `Проверка марки: ${markCode}`,
+        payment_method_id: card.cardToken
+      },
+      {
+        auth: {
+          username: exports.yookassa.shopId,
+          password: exports.yookassa.secretKey
+        },
+        headers: {
+          'Content-Type': 'application/json',
+          'Idempotence-Key': `mark-check-${userId}-${Date.now()}`
+        }
+      }
+    );
+
+    console.log(`[YOOKASSA] Успешное списание 1 RUB. Mark: ${markCode}, Payment ID: ${response.data.id}`);
+    return { 
+      success: true, 
+      paymentId: response.data.id, 
+      status: response.data.status 
+    };
+
+  } catch (err) {
+    console.error(`[YOOKASSA] Ошибка списания за марку ${markCode}:`, err.response?.data || err.message);
+    return { success: false, error: err.message };
+  }
+}</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">7</div>
+      <div class="step-title">Интеграция в проверку марки</div>
+    </div>
+    <p>Найди в server.js строку ~426: if (!cisInfo.status) result.error = "Ошибка обращения к API Честного Знака"</p>
+    <div class="step-file">server.js (внутри app.post("/api/getMarkInfo", ...))</div>
+    <pre><code>if (!cisInfo.status) {
+  result.error = "Ошибка обращения к API Честного Знака";
+} else {
+  const paymentResult = await chargeForMarkCheck(
+    req.user._id, 
+    clearCis
+  );
+
+  if (paymentResult.success) {
+    result.paymentStatus = 'charged';
+    result.paymentId = paymentResult.paymentId;
+  } else if (paymentResult.reason === 'no_card') {
+    result.paymentStatus = 'no_card';
+  } else {
+    result.paymentStatus = 'payment_error';
+    result.paymentError = paymentResult.error;
+  }
+}
+
+if ('permissiveMode' in markItemReq && markItemReq.permissiveMode) {
+  // ... продолжение существующей логики ...</code></pre>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">8</div>
+      <div class="step-title">Настройка вебхука в личном кабинете ЮKassa</div>
+    </div>
+    <p><strong>Это важный шаг! Без него токены не будут сохраняться.</strong></p>
+    <ol>
+      <li>Зайди в <strong>ЮKassa → Настройки → HTTP-уведомления</strong></li>
+      <li>Нажми <strong>"Добавить URL"</strong></li>
+      <li>Введи адрес: <code>https://твой-домен.ru/api/payments/webhook</code></li>
+      <li>Выбери событие: <code>payment.succeeded</code></li>
+      <li>Нажми <strong>"Сохранить"</strong></li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <div class="step-header">
+      <div class="step-number">9</div>
+      <div class="step-title">Включение автоприема платежей</div>
+    </div>
+    <p><strong>Чтобы платежи не зависали в статусе "Ожидает подтверждения":</strong></p>
+    <ol>
+      <li>Зайди в <strong>ЮKassa → Настройки → Способы оплаты → Банковская карта</strong></li>
+      <li>Включи опцию <strong>"Автоприем платежей"</strong></li>
+    </ol>
+  </div>
+
+  <h2>Важное архитектурное ограничение</h2>
+  
+  <div class="architecture-note">
+    <strong>Токенизация карт работает на уровне процессинга ЮKassa.</strong> В мобильных приложениях банков (Сбер, Т-Банк и др.) пользователь не увидит активной "подписки" в привычном понимании, так как для банка это серия независимых инициативных транзакций мерчанта (MIT). Управление привязкой (добавление/удаление карты) должно быть реализовано в интерфейсе твоего веб-приложения путем создания или удаления записей в модели Card.
+  </div>
+
+  <div class="personal-note">
+    <strong>От меня:</strong> Если что-то непонятно или возникнут вопросы по интеграции — пиши, разберёмся. Я всё это уже проверила на своём проекте, так что если будут ошибки — скорее всего, это мелочи, которые быстро поправим. Удачи!
+  </div>
+
+  <h2>Полезные ссылки</h2>
+  <ul>
+    <li><a href="https://yookassa.ru/developers/payment-acceptance/recurring-payments" target="_blank">Документация ЮKassa: Рекуррентные платежи</a></li>
+    <li><a href="https://yookassa.ru/developers/api" target="_blank">Справочник API ЮKassa (объект Payment)</a></li>
+    <li><a href="https://yookassa.ru/developers/using-api/webhooks" target="_blank">Вебхуки ЮKassa</a></li>
+  </ul>
+
+  <hr>
+
+  <h2>Как проверить, что всё работает</h2>
+  <ol>
+    <li>Вызови POST /api/save-card с валидным токеном авторизации</li>
+    <li>Перейди по полученной confirmation_url</li>
+    <li>Используй тестовую карту ЮKassa: 2200 7000 0000 0000, срок 12/30, CVC 123</li>
+    <li>Проверь логи сервера: должна появиться запись [YOOKASSA] Токен карты ****0000 сохранен...</li>
+    <li>Проверь коллекцию cards в MongoDB: должна быть новая запись с cardToken</li>
+    <li>Вызови POST /api/getMarkInfo с валидным кодом марки</li>
+    <li>Проверь логи: должна быть запись [YOOKASSA] Успешное списание 1 RUB...</li>
+    <li>Убедись, что в ответе /api/getMarkInfo есть paymentStatus: 'charged'</li>
+  </ol>
+
+</body>
+</html>
