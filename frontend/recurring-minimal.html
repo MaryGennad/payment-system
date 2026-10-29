@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Рекуррентные платежи — минимум кода</title>
+  <style>
+    body {
+      font-family: monospace;
+      background: #ffffff;
+      color: #333333;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 0 20px;
+      line-height: 1.5;
+    }
+    h1 { font-size: 20px; border-bottom: 1px solid #ccc; padding-bottom: 8px; }
+    h2 { font-size: 16px; margin-top: 30px; color: #555; }
+    p { margin: 10px 0; }
+    code { background: #f0f0f0; padding: 2px 6px; font-size: 13px; }
+    pre { background: #f5f5f5; padding: 12px; overflow-x: auto; border: 1px solid #ddd; font-size: 13px; }
+    ul { padding-left: 20px; }
+    li { margin: 6px 0; }
+    a { color: #333; }
+    hr { border: 0; border-top: 1px solid #ddd; margin: 30px 0; }
+  </style>
+</head>
+<body>
+
+<h1>Рекуррентные платежи: минимум кода</h1>
+<p>Третья инструкция. Только суть. Повтори, чтобы закрепить.</p>
+
+<h2>1. Что нужно</h2>
+<ul>
+  <li>Node.js (последняя версия)</li>
+  <li>MongoDB (локально или MongoDB Atlas)</li>
+  <li>Аккаунт ЮKassa с Shop ID и Secret Key</li>
+</ul>
+
+<h2>2. Создать проект</h2>
+<p>Открой терминал в VS Code (Ctrl + `) и выполни:</p>
+<pre><code>mkdir recurring-demo
+cd recurring-demo
+npm init -y
+npm install express mongoose axios dotenv</code></pre>
+
+<h2>3. Создать файлы</h2>
+<p>Создай три файла в корне проекта:</p>
+<ul>
+  <li><code>.env</code> — настройки</li>
+  <li><code>server.js</code> — весь код</li>
+  <li><code>index.html</code> — одна кнопка</li>
+</ul>
+
+<h2>4. Файл .env</h2>
+<pre><code>PORT=3000
+MONGODB_URI=mongodb://localhost:27017/recurring-demo
+YOOKASSA_SHOP_ID=твой_shop_id
+YOOKASSA_SECRET_KEY=твой_secret_key
+FRONTEND_URL=http://localhost:3000</code></pre>
+
+<h2>5. Файл server.js</h2>
+<p>Весь код в одном файле. Четыре блока.</p>
+
+<pre><code>import dotenv from 'dotenv';
+dotenv.config();
+
+import express from 'express';
+import mongoose from 'mongoose';
+import axios from 'axios';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const app = express();
+app.use(express.json());
+app.use(express.static('public'));
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Подключение к MongoDB
+await mongoose.connect(process.env.MONGODB_URI);
+console.log('MongoDB подключен');
+
+// Модель карты
+const CardSchema = new mongoose.Schema({
+  userId: String,
+  cardToken: String,
+  last4: String
+});
+const Card = mongoose.model('Card', CardSchema);
+
+// 1. Привязка карты
+app.post('/api/save-card', async (req, res) => {
+  const { userId } = req.body;
+
+  const response = await axios.post(
+    'https://api.yookassa.ru/v3/payments',
+    {
+      amount: { value: '1.00', currency: 'RUB' },
+      capture: true,
+      save_payment_method: true,
+      payment_method_data: { type: 'bank_card' },
+      metadata: { userId },
+      confirmation: {
+        type: 'redirect',
+        return_url: `${process.env.FRONTEND_URL}/success.html`
+      }
+    },
+    {
+      auth: {
+        username: process.env.YOOKASSA_SHOP_ID,
+        password: process.env.YOOKASSA_SECRET_KEY
+      }
+    }
+  );
+
+  res.json({ url: response.data.confirmation.confirmation_url });
+});
+
+// 2. Вебхук от ЮKassa
+app.post('/api/webhook', async (req, res) => {
+  const event = req.body;
+
+  if (event.event === 'payment.succeeded') {
+    const payment = event.object;
+
+    if (payment.payment_method?.saved && payment.amount.value === '1.00') {
+      const userId = payment.metadata.userId;
+      const cardToken = payment.payment_method.id;
+      const last4 = payment.payment_method.card.last4;
+
+      await Card.create({ userId, cardToken, last4 });
+      console.log('Карта сохранена:', last4);
+    }
+  }
+
+  res.status(200).json({ ok: true });
+});
+
+// 3. Списание 1 рубля
+app.post('/api/charge', async (req, res) => {
+  const { userId } = req.body;
+
+  const card = await Card.findOne({ userId });
+  if (!card) return res.json({ error: 'Карта не найдена' });
+
+  const response = await axios.post(
+    'https://api.yookassa.ru/v3/payments',
+    {
+      amount: { value: '1.00', currency: 'RUB' },
+      capture: true,
+      description: 'Тестовое списание',
+      payment_method_id: card.cardToken
+    },
+    {
+      auth: {
+        username: process.env.YOOKASSA_SHOP_ID,
+        password: process.env.YOOKASSA_SECRET_KEY
+      }
+    }
+  );
+
+  res.json({ status: response.data.status });
+});
+
+app.listen(process.env.PORT, () => {
+  console.log(`Сервер запущен на порту ${process.env.PORT}`);
+});</code></pre>
+
+<p>В <code>package.json</code> добавь:</p>
+<pre><code>"type": "module"</code></pre>
+
+<h2>6. Файл public/index.html</h2>
+<p>Создай папку <code>public</code> и файл <code>index.html</code> внутри:</p>
+
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;&lt;title&gt;Тест&lt;/title&gt;&lt;/head&gt;
+&lt;body&gt;
+  &lt;h1&gt;Рекуррентные платежи&lt;/h1&gt;
+  &lt;button onclick="saveCard()"&gt;Привязать карту&lt;/button&gt;
+  &lt;button onclick="charge()"&gt;Списать 1 рубль&lt;/button&gt;
+
+  &lt;script&gt;
+    const userId = 'user-123';
+
+    async function saveCard() {
+      const res = await fetch('/api/save-card', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      const data = await res.json();
+      window.location.href = data.url;
+    }
+
+    async function charge() {
+      const res = await fetch('/api/charge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+      const data = await res.json();
+      alert('Статус: ' + data.status);
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+<h2>7. Запустить локально</h2>
+<pre><code>node server.js</code></pre>
+<p>Открой <code>http://localhost:3000</code></p>
+
+<h2>8. Настроить вебхук</h2>
+<p>Для тестов используй ngrok:</p>
+<pre><code>ngrok http 3000</code></pre>
+<p>Скопируй URL из ngrok (например, <code>https://abc123.ngrok.io</code>) и добавь в ЮKassa:</p>
+<ul>
+  <li>Настройки → HTTP-уведомления</li>
+  <li>URL: <code>https://abc123.ngrok.io/api/webhook</code></li>
+  <li>Событие: <code>payment.succeeded</code></li>
+</ul>
+
+<h2>9. Как это работает</h2>
+<ol>
+  <li>Нажимаешь "Привязать карту" → редирект на ЮKassa</li>
+  <li>Вводишь тестовую карту: <code>2200 7000 0000 0000</code>, срок <code>12/30</code>, CVC <code>123</code></li>
+  <li>ЮKassa шлёт вебхук → сервер сохраняет токен в MongoDB</li>
+  <li>Нажимаешь "Списать 1 рубль" → сервер берёт токен из БД и списывает деньги</li>
+</ol>
+
+<h2>10. Схема</h2>
+<pre><code>Кнопка "Привязать" → ЮKassa → Вебхук → Сохранить токен в БД
+                                                              ↓
+Кнопка "Списать" → Взять токен из БД → ЮKassa → Деньги списаны</code></pre>
+
+<hr>
+<p>Всё. Больше ничего не нужно.</p>
+
+</body>
+</html>
